@@ -49,12 +49,10 @@ google.appengine.timeclicker.enableButtons = function() {
   startButton.addEventListener('click', google.appengine.timeclicker.start);
   var stopButton = document.querySelector('#stop');
   stopButton.addEventListener('click', function(e) {
-    google.appengine.timeclicker.stop(document.querySelector('#key').value);
+    google.appengine.timeclicker.stop();
   });
-
   var signinButton = document.querySelector('#signinButton');
   signinButton.addEventListener('click', google.appengine.timeclicker.auth);
-
 };
 
 /**
@@ -80,6 +78,8 @@ google.appengine.timeclicker.userAuthed = function() {
       document.querySelector('#signinButton').textContent = 'Sign out';
       // load entries
       google.appengine.timeclicker.listEntries();
+      // calculate sum
+      google.appengine.timeclicker.overallSum();
     }
   });
 };
@@ -91,8 +91,20 @@ google.appengine.timeclicker.userAuthed = function() {
 google.appengine.timeclicker.print = function(entry) {
   var element = document.createElement('tr');
   //element.classList.add('row');
-  element.innerHTML = '<td>' + entry.key + '</td><td>Start: ' + entry.start + '</td><td>' + entry.stop + '</td><td>' + moment.duration(moment(entry.stop) - moment(entry.start)).humanize() + '</td>';
+  element.innerHTML = '<td>' + entry.key + '</td><td>' + entry.start + '</td><td>' + entry.stop + '</td>';
   document.querySelector('#outputLog').appendChild(element);
+};
+
+
+/**
+ * Prints the overall sum to the sum field.
+ * param {Object} TimeSum to print.
+ */
+google.appengine.timeclicker.printSum = function(entry) {
+  var element = document.createElement('div');
+  //element.classList.add('row');
+  element.innerHTML = humanizeDuration(parseInt(entry.duration));
+  document.querySelector('#sumLog').appendChild(element);
 };
 
 /**
@@ -130,14 +142,27 @@ google.appengine.timeclicker.start = function() {
 /**
  * Stop entry via the API.
  */
-google.appengine.timeclicker.stop = function(key) {
-  gapi.client.timeclicker.stop({'key': key}).execute(
+google.appengine.timeclicker.stop = function() {
+  gapi.client.timeclicker.stopLatest().execute(
       function(resp) {
         if (!resp.code) {
           resp.items = resp.items || [];
           for (var i = 0; i < resp.items.length; i++) {
             google.appengine.timeclicker.print(resp.items[i]);
           }
+        }
+      });
+};
+
+
+/**
+ * Calculate overall sum via the API.
+ */
+google.appengine.timeclicker.overallSum = function() {
+  gapi.client.timeclicker.overallSum().execute(
+      function(resp) {
+        if (!resp.code) {
+          google.appengine.timeclicker.printSum(resp);
         }
       });
 };

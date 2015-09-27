@@ -1,13 +1,11 @@
 package de.kopis.timeclicker;
 
-import com.google.appengine.api.datastore.Key;
-
 import java.util.Date;
 
 public class TimeEntry {
 
-    private Date start;
-    private Date stop;
+    private Date start = null;
+    private Date stop = null;
     private String key;
 
     public TimeEntry() {
