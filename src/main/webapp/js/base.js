@@ -76,8 +76,8 @@ google.appengine.timeclicker.userAuthed = function() {
     if (!resp.code) {
       google.appengine.timeclicker.signedIn = true;
       document.querySelector('#signinButton').textContent = 'Sign out';
-      // load entries
-      google.appengine.timeclicker.listEntries();
+      // display message if already tracking
+      google.appengine.timeclicker.latest();
       // calculate sum
       google.appengine.timeclicker.overallSum();
     }
@@ -95,6 +95,16 @@ google.appengine.timeclicker.print = function(entry) {
   document.querySelector('#outputLog').appendChild(element);
 };
 
+/**
+ * Prints the currently active entry.
+ */
+google.appengine.timeclicker.printActive = function(entry) {
+  var element = document.createElement('div');
+  element.classList.add('alert');
+  element.classList.add('alert-info')
+  element.innerHTML = 'You are already tracking since ' + entry.start;
+  document.querySelector('#messages').appendChild(element);
+}
 
 /**
  * Prints the overall sum to the sum field.
@@ -123,18 +133,28 @@ google.appengine.timeclicker.listEntries = function() {
 };
 
 /**
+ * Find latest open entry via the API.
+ */
+google.appengine.timeclicker.latest = function() {
+  gapi.client.timeclicker.latest().execute(
+      function(resp) {
+        if (!resp.code && resp.start != undefined) {
+          console.log("Latest found");
+          console.log(resp.start);
+          google.appengine.timeclicker.printActive(resp);
+        }
+      });
+};
+
+/**
  * Start entry via the API.
  */
 google.appengine.timeclicker.start = function() {
   gapi.client.timeclicker.start().execute(
       function(resp) {
         if (!resp.code) {
-          resp.items = resp.items || [];
-          for (var i = 0; i < resp.items.length; i++) {
-            google.appengine.timeclicker.print(resp.items[i]);
-            //TODO add key of last started entry
-            document.querySelector('#key').value = resp.items[i].key;
-          }
+          console.log('Entry started');
+          console.log(resp);
         }
       });
 };
@@ -146,10 +166,8 @@ google.appengine.timeclicker.stop = function() {
   gapi.client.timeclicker.stopLatest().execute(
       function(resp) {
         if (!resp.code) {
-          resp.items = resp.items || [];
-          for (var i = 0; i < resp.items.length; i++) {
-            google.appengine.timeclicker.print(resp.items[i]);
-          }
+          console.log('Entry stopped');
+          console.log(resp);
         }
       });
 };
@@ -162,6 +180,18 @@ google.appengine.timeclicker.overallSum = function() {
       function(resp) {
         if (!resp.code) {
           google.appengine.timeclicker.printSum('Overall', resp);
+        }
+      });
+};
+
+/**
+ * Calculate monthly sum via the API.
+ */
+google.appengine.timeclicker.monthlySum = function() {
+  gapi.client.timeclicker.monthlySum().execute(
+      function(resp) {
+        if (!resp.code) {
+          google.appengine.timeclicker.printSum('Monthly', resp);
         }
       });
 };

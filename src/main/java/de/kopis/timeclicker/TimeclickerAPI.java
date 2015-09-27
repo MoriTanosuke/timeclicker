@@ -8,6 +8,7 @@ import com.google.appengine.api.users.User;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -24,6 +25,12 @@ public class TimeclickerAPI {
 
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         // TODO check if there is an open entry and close it
+        Entity openEntity = findLatest(user, datastore);
+        if (openEntity != null) {
+            LOGGER.warning("Open entity found, closing it");
+            openEntity.setProperty("stop", new Date());
+            datastore.put(openEntity);
+        }
 
         // start new entry
         Entity timeEntryEntity = new Entity("TimeEntry");
@@ -91,10 +98,13 @@ public class TimeclickerAPI {
 
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         Entity entity = findLatest(user, datastore);
-        TimeEntry timeEntry = buildTimeEntryFromEntity(entity);
+        if (entity != null) {
+            TimeEntry timeEntry = buildTimeEntryFromEntity(entity);
+            LOGGER.info("User " + user.getUserId() + " loaded the latest entry");
+            return timeEntry;
+        }
 
-        LOGGER.info("User " + user.getUserId() + " loaded the latest entry");
-        return timeEntry;
+        return null;
     }
 
     @ApiMethod(name = "show", path = "show")
@@ -149,6 +159,43 @@ public class TimeclickerAPI {
         }
 
         LOGGER.info("User " + user.getUserId() + " calculated overall sum: " + sum);
+        return sum;
+    }
+
+    @ApiMethod(name = "monthlySum", path = "sum/monthly")
+    public TimeSum getMonthlySum(User user) throws NotAuthenticatedException {
+        if (user == null) throw new NotAuthenticatedException();
+
+        TimeSum sum = new TimeSum();
+        //TODO calculate sum for this month
+
+        // get first of month
+        final Calendar cal = Calendar.getInstance();
+        // set everything to 0
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+
+        cal.set(Calendar.DAY_OF_MONTH, 0);
+        final Date firstOfMonth = cal.getTime();
+        // get first of next month
+        cal.add(Calendar.MONTH, 1);
+        final Date firstOfNextMonth = cal.getTime();
+        //TODO define query where START > FIRST OF MONTH and STOP < LAST OF MONTH
+
+        Query.FilterPredicate userFilter = new Query.FilterPredicate("userId",
+                Query.FilterOperator.EQUAL,
+                user.getUserId());
+        Query.FilterPredicate startAfterFirstOfMonth = new Query.FilterPredicate("start", Query.FilterOperator.GREATER_THAN_OR_EQUAL, firstOfMonth);
+        Query.FilterPredicate stopBeforeLastOfMonth = new Query.FilterPredicate("start", Query.FilterOperator.LESS_THAN, firstOfNextMonth);
+        ;
+        Query.Filter propertyFilter = Query.CompositeFilterOperator.and(userFilter, startAfterFirstOfMonth, stopBeforeLastOfMonth);
+        Query q = new Query("TimeEntry").setFilter(propertyFilter);
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        PreparedQuery pq = datastore.prepare(q);
+        // only return 1 match
+        List<Entity> entities = pq.asList(FetchOptions.Builder.withLimit(1));
+
         return sum;
     }
 
