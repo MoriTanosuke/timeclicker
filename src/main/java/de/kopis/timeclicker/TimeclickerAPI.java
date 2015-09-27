@@ -152,6 +152,26 @@ public class TimeclickerAPI {
         return sum;
     }
 
+    @ApiMethod(name = "weeklySum", path = "sum/weekly")
+    public TimeSum getWeeklySum(User user) throws NotAuthenticatedException {
+        if (user == null) throw new NotAuthenticatedException();
+
+        TimeSum sum = new TimeSum();
+        //TODO calculate sum for this week
+
+        return sum;
+    }
+
+    @ApiMethod(name = "dailySum", path = "sum/daily")
+    public TimeSum getDailySum(User user) throws NotAuthenticatedException {
+        if (user == null) throw new NotAuthenticatedException();
+
+        TimeSum sum = new TimeSum();
+        //TODO calculate sum for today
+
+        return sum;
+    }
+
     private List<Entity> listEntities(User user) {
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         // load all time entries for this user

@@ -100,10 +100,10 @@ google.appengine.timeclicker.print = function(entry) {
  * Prints the overall sum to the sum field.
  * param {Object} TimeSum to print.
  */
-google.appengine.timeclicker.printSum = function(entry) {
+google.appengine.timeclicker.printSum = function(prefix, entry) {
   var element = document.createElement('div');
   //element.classList.add('row');
-  element.innerHTML = humanizeDuration(parseInt(entry.duration));
+  element.innerHTML = prefix + ' ' + humanizeDuration(parseInt(entry.duration));
   document.querySelector('#sumLog').appendChild(element);
 };
 
@@ -154,7 +154,6 @@ google.appengine.timeclicker.stop = function() {
       });
 };
 
-
 /**
  * Calculate overall sum via the API.
  */
@@ -162,7 +161,31 @@ google.appengine.timeclicker.overallSum = function() {
   gapi.client.timeclicker.overallSum().execute(
       function(resp) {
         if (!resp.code) {
-          google.appengine.timeclicker.printSum(resp);
+          google.appengine.timeclicker.printSum('Overall', resp);
+        }
+      });
+};
+
+/**
+ * Calculate weekly sum via the API.
+ */
+google.appengine.timeclicker.weeklySum = function() {
+  gapi.client.timeclicker.weeklySum().execute(
+      function(resp) {
+        if (!resp.code) {
+          google.appengine.timeclicker.printSum('Weekly', resp);
+        }
+      });
+};
+
+/**
+ * Calculate daily sum via the API.
+ */
+google.appengine.timeclicker.dailySum = function() {
+  gapi.client.timeclicker.dailySum().execute(
+      function(resp) {
+        if (!resp.code) {
+          google.appengine.timeclicker.printSum('Daily', resp);
         }
       });
 };
