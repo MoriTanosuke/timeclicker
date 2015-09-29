@@ -149,13 +149,16 @@ public class TimeclickerAPI {
 
         List<Entity> entities = listEntities(user);
         for (Entity entity : entities) {
+            // default to current timestamp
+            Date stop = new Date();
+            // try to load stop date from entry
             if (entity.getProperty("stop") != null) {
-                Date stop = (Date) entity.getProperty("stop");
-                Date start = (Date) entity.getProperty("start");
-
-                long duration = stop.getTime() - start.getTime();
-                sum.setDuration(sum.getDuration() + duration);
+                stop = (Date) entity.getProperty("stop");
             }
+            Date start = (Date) entity.getProperty("start");
+
+            long duration = stop.getTime() - start.getTime();
+            sum.setDuration(sum.getDuration() + duration);
         }
 
         LOGGER.info("User " + user.getUserId() + " calculated overall sum: " + sum);
@@ -188,7 +191,6 @@ public class TimeclickerAPI {
                 user.getUserId());
         Query.FilterPredicate startAfterFirstOfMonth = new Query.FilterPredicate("start", Query.FilterOperator.GREATER_THAN_OR_EQUAL, firstOfMonth);
         Query.FilterPredicate stopBeforeLastOfMonth = new Query.FilterPredicate("start", Query.FilterOperator.LESS_THAN, firstOfNextMonth);
-        ;
         Query.Filter propertyFilter = Query.CompositeFilterOperator.and(userFilter, startAfterFirstOfMonth, stopBeforeLastOfMonth);
         Query q = new Query("TimeEntry").setFilter(propertyFilter);
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();

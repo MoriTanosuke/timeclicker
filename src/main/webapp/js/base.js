@@ -53,6 +53,10 @@ google.appengine.timeclicker.enableButtons = function() {
   });
   var signinButton = document.querySelector('#signinButton');
   signinButton.addEventListener('click', google.appengine.timeclicker.auth);
+
+  // enable "start" button by default
+  google.appengine.timeclicker.enableButton(document.querySelector('#start'));
+  google.appengine.timeclicker.disableButton(document.querySelector('#stop'));
 };
 
 /**
@@ -79,7 +83,7 @@ google.appengine.timeclicker.userAuthed = function() {
       // display message if already tracking
       google.appengine.timeclicker.latest();
       // calculate sum
-      google.appengine.timeclicker.overallSum();
+      google.appengine.timeclicker.displaySum();
     }
   });
 };
@@ -96,15 +100,36 @@ google.appengine.timeclicker.print = function(entry) {
 };
 
 /**
- * Prints the currently active entry.
+ * Prints the "currently active" message.
  */
 google.appengine.timeclicker.printActive = function(entry) {
   var element = document.createElement('div');
+  element.id = 'currentlyactive';
   element.classList.add('alert');
   element.classList.add('alert-info')
   element.innerHTML = 'You are already tracking since ' + entry.start;
   document.querySelector('#messages').appendChild(element);
-}
+};
+
+/**
+ * Removes the "currently active" message.
+ */
+google.appengine.timeclicker.removeActive = function() {
+  var element = document.querySelector('#currentlyactive');
+  if(element != undefined) {
+    element.remove();
+  }
+};
+
+/**
+ * Removes all sum output.
+ */
+google.appengine.timeclicker.removeSum = function() {
+  var elements = document.querySelector('#sumLog');
+  for(var i = elements.children.length - 1;i >= 0;i--) {
+    elements.children[i].remove();
+  }
+};
 
 /**
  * Prints the overall sum to the sum field.
@@ -112,9 +137,28 @@ google.appengine.timeclicker.printActive = function(entry) {
  */
 google.appengine.timeclicker.printSum = function(prefix, entry) {
   var element = document.createElement('div');
+  element.id = prefix.toLowerCase();
   //element.classList.add('row');
   element.innerHTML = prefix + ' ' + humanizeDuration(parseInt(entry.duration));
   document.querySelector('#sumLog').appendChild(element);
+};
+
+/**
+ * Enable the given element.
+ *
+ * param {Node} DOM element
+ */
+google.appengine.timeclicker.enableButton = function(element) {
+  element.classList.remove("hidden");
+};
+
+/**
+ * Disable the given element.
+ *
+ * param {Node} DOM element
+ */
+google.appengine.timeclicker.disableButton = function(element) {
+  element.classList.add("hidden");
 };
 
 /**
@@ -142,6 +186,14 @@ google.appengine.timeclicker.latest = function() {
           console.log("Latest found");
           console.log(resp.start);
           google.appengine.timeclicker.printActive(resp);
+          // hide "start" button until "stop" button is clicked
+          google.appengine.timeclicker.enableButton(document.querySelector('#stop'));
+          google.appengine.timeclicker.disableButton(document.querySelector('#start'));
+        } else {
+          google.appengine.timeclicker.removeActive();
+          // hide "stop" button
+          google.appengine.timeclicker.enableButton(document.querySelector('#start'));
+          google.appengine.timeclicker.disableButton(document.querySelector('#stop'));
         }
       });
 };
@@ -154,7 +206,9 @@ google.appengine.timeclicker.start = function() {
       function(resp) {
         if (!resp.code) {
           console.log('Entry started');
-          console.log(resp);
+          console.log(resp.start);
+          google.appengine.timeclicker.latest();
+          google.appengine.timeclicker.displaySum();
         }
       });
 };
@@ -167,9 +221,21 @@ google.appengine.timeclicker.stop = function() {
       function(resp) {
         if (!resp.code) {
           console.log('Entry stopped');
-          console.log(resp);
+          console.log(resp.stop);
+          google.appengine.timeclicker.latest();
+          google.appengine.timeclicker.displaySum();
         }
       });
+};
+
+google.appengine.timeclicker.displaySum = function() {
+  // remove old sum
+  google.appengine.timeclicker.removeSum();
+  // display current sum
+  google.appengine.timeclicker.overallSum();
+  google.appengine.timeclicker.monthlySum();
+  google.appengine.timeclicker.weeklySum();
+  google.appengine.timeclicker.dailySum();
 };
 
 /**
