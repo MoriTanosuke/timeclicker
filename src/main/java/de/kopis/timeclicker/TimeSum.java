@@ -11,6 +11,10 @@ public class TimeSum {
         this.duration = duration;
     }
 
+    public void addDuration(long duration) {
+        this.duration += duration;
+    }
+
     @Override
     public String toString() {
         return "TimeSum{" +

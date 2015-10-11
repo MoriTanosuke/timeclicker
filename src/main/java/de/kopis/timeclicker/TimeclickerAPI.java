@@ -17,6 +17,29 @@ import java.util.logging.Logger;
         clientIds = {Constants.WEB_CLIENT_ID, Constants.ANDROID_CLIENT_ID, "292824132082.apps.googleusercontent.com"},
         audiences = {Constants.ANDROID_AUDIENCE})
 public class TimeclickerAPI {
+    @ApiMethod(name = "stop", path = "stop", httpMethod = "post")
+    public TimeEntry stop(@Named("key") String key, User user) throws NotAuthenticatedException {
+        if (user == null) throw new NotAuthenticatedException();
+
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        try {
+            Entity timeEntryEntity = datastore.get(KeyFactory.stringToKey(key));
+            if (!timeEntryEntity.getProperty("userId").equals(user.getUserId())) {
+                throw new RuntimeException("Referenced entry does not belong to this user!");
+            }
+            //TODO check if entry is still open before closing it
+            timeEntryEntity.setProperty("stop", new Date());
+            datastore.put(timeEntryEntity);
+
+            TimeEntry entry = buildTimeEntryFromEntity(timeEntryEntity);
+            LOGGER.info("User " + user.getUserId() + " stopped entry " + timeEntryEntity.getKey());
+            return entry;
+        } catch (EntityNotFoundException e) {
+            LOGGER.warning("Can not find entity with key " + KeyFactory.stringToKey(key));
+        }
+        return null;
+    }
+
     private static final Logger LOGGER = Logger.getLogger(TimeclickerAPI.class.getName());
 
     @ApiMethod(name = "start", path = "start", httpMethod = "post")
@@ -46,6 +69,7 @@ public class TimeclickerAPI {
         return entry;
     }
 
+
     @ApiMethod(name = "stopLatest", path = "stop/latest", httpMethod = "post")
     public TimeEntry stopLatest(User user) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();
@@ -66,30 +90,6 @@ public class TimeclickerAPI {
         TimeEntry entry = buildTimeEntryFromEntity(timeEntryEntity);
         LOGGER.info("User " + user.getUserId() + " stopped the latest entry");
         return entry;
-    }
-
-
-    @ApiMethod(name = "stop", path = "stop", httpMethod = "post")
-    public TimeEntry stop(@Named("key") String key, User user) throws NotAuthenticatedException {
-        if (user == null) throw new NotAuthenticatedException();
-
-        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        try {
-            Entity timeEntryEntity = datastore.get(KeyFactory.stringToKey(key));
-            if (!timeEntryEntity.getProperty("userId").equals(user.getUserId())) {
-                throw new RuntimeException("Referenced entry does not belong to this user!");
-            }
-            //TODO check if entry is still open before closing it
-            timeEntryEntity.setProperty("stop", new Date());
-            datastore.put(timeEntryEntity);
-
-            TimeEntry entry = buildTimeEntryFromEntity(timeEntryEntity);
-            LOGGER.info("User " + user.getUserId() + " stopped entry " + timeEntryEntity.getKey());
-            return entry;
-        } catch (EntityNotFoundException e) {
-            LOGGER.warning("Can not find entity with key " + KeyFactory.stringToKey(key));
-        }
-        return null;
     }
 
     @ApiMethod(name = "latest", path = "latest")
@@ -149,16 +149,8 @@ public class TimeclickerAPI {
 
         List<Entity> entities = listEntities(user);
         for (Entity entity : entities) {
-            // default to current timestamp
-            Date stop = new Date();
-            // try to load stop date from entry
-            if (entity.getProperty("stop") != null) {
-                stop = (Date) entity.getProperty("stop");
-            }
-            Date start = (Date) entity.getProperty("start");
-
-            long duration = stop.getTime() - start.getTime();
-            sum.setDuration(sum.getDuration() + duration);
+            final long duration = calculateDuration(entity);
+            sum.addDuration(duration);
         }
 
         LOGGER.info("User " + user.getUserId() + " calculated overall sum: " + sum);
@@ -169,35 +161,26 @@ public class TimeclickerAPI {
     public TimeSum getMonthlySum(User user) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();
 
-        TimeSum sum = new TimeSum();
-        //TODO calculate sum for this month
-
         // get first of month
-        final Calendar cal = Calendar.getInstance();
-        // set everything to 0
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
+        final Calendar cal = getCalendar();
 
-        cal.set(Calendar.DAY_OF_MONTH, 0);
-        final Date firstOfMonth = cal.getTime();
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        final Date firstDate = cal.getTime();
         // get first of next month
         cal.add(Calendar.MONTH, 1);
-        final Date firstOfNextMonth = cal.getTime();
-        //TODO define query where START > FIRST OF MONTH and STOP < LAST OF MONTH
+        final Date lastDate = cal.getTime();
+        LOGGER.info("Searching from " + firstDate + " to " + lastDate);
+        final List<Entity> entities = searchTimeEntries(user, firstDate, lastDate);
 
-        Query.FilterPredicate userFilter = new Query.FilterPredicate("userId",
-                Query.FilterOperator.EQUAL,
-                user.getUserId());
-        Query.FilterPredicate startAfterFirstOfMonth = new Query.FilterPredicate("start", Query.FilterOperator.GREATER_THAN_OR_EQUAL, firstOfMonth);
-        Query.FilterPredicate stopBeforeLastOfMonth = new Query.FilterPredicate("start", Query.FilterOperator.LESS_THAN, firstOfNextMonth);
-        Query.Filter propertyFilter = Query.CompositeFilterOperator.and(userFilter, startAfterFirstOfMonth, stopBeforeLastOfMonth);
-        Query q = new Query("TimeEntry").setFilter(propertyFilter);
-        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        PreparedQuery pq = datastore.prepare(q);
-        // only return 1 match
-        List<Entity> entities = pq.asList(FetchOptions.Builder.withLimit(1));
 
+        // calculate the sum from the result list
+        final TimeSum sum = new TimeSum();
+        for (Entity e : entities) {
+            long duration = calculateDuration(e);
+            sum.addDuration(duration);
+        }
+
+        LOGGER.info("User " + user.getUserId() + " calculated monthly sum: " + sum);
         return sum;
     }
 
@@ -205,9 +188,26 @@ public class TimeclickerAPI {
     public TimeSum getWeeklySum(User user) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();
 
-        TimeSum sum = new TimeSum();
-        //TODO calculate sum for this week
+        final Calendar cal = getCalendar();
 
+        // get first of week
+        cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+        final Date firstDate = cal.getTime();
+        // get first of next week
+        cal.add(Calendar.DAY_OF_YEAR, 7);
+        final Date lastDate = cal.getTime();
+        LOGGER.info("Searching from " + firstDate + " to " + lastDate);
+        final List<Entity> entities = searchTimeEntries(user, firstDate, lastDate);
+
+
+        // calculate the sum from the result list
+        final TimeSum sum = new TimeSum();
+        for (Entity e : entities) {
+            long duration = calculateDuration(e);
+            sum.addDuration(duration);
+        }
+
+        LOGGER.info("User " + user.getUserId() + " calculated weekly sum: " + sum);
         return sum;
     }
 
@@ -215,9 +215,23 @@ public class TimeclickerAPI {
     public TimeSum getDailySum(User user) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();
 
-        TimeSum sum = new TimeSum();
-        //TODO calculate sum for today
+        final Calendar cal = getCalendar();
+        final Date firstDate = cal.getTime();
+        // get tomorrow
+        cal.add(Calendar.DAY_OF_YEAR, 1);
+        final Date lastDate = cal.getTime();
+        LOGGER.info("Searching from " + firstDate + " to " + lastDate);
+        final List<Entity> entities = searchTimeEntries(user, firstDate, lastDate);
 
+
+        // calculate the sum from the result list
+        final TimeSum sum = new TimeSum();
+        for (Entity e : entities) {
+            long duration = calculateDuration(e);
+            sum.addDuration(duration);
+        }
+
+        LOGGER.info("User " + user.getUserId() + " calculated daily sum: " + sum);
         return sum;
     }
 
@@ -278,5 +292,55 @@ public class TimeclickerAPI {
             entry.setStop((Date) timeEntryEntity.getProperty("stop"));
         }
         return entry;
+    }
+
+    private List<Entity> searchTimeEntries(User user, Date firstDate, Date lastDate) {
+        // define query where START > FIRST OF MONTH and STOP < LAST OF MONTH
+        Query.FilterPredicate userFilter = new Query.FilterPredicate("userId",
+                Query.FilterOperator.EQUAL,
+                user.getUserId());
+        Query.FilterPredicate startAfter = new Query.FilterPredicate("start", Query.FilterOperator.GREATER_THAN_OR_EQUAL, firstDate);
+        Query.FilterPredicate stopBefore = new Query.FilterPredicate("start", Query.FilterOperator.LESS_THAN, lastDate);
+        Query.Filter propertyFilter = Query.CompositeFilterOperator.and(userFilter, startAfter, stopBefore);
+        Query q = new Query("TimeEntry").setFilter(propertyFilter);
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        PreparedQuery pq = datastore.prepare(q);
+
+        // TODO use a limit? FetchOptions.Builder.withLimit(1)
+        return pq.asList(FetchOptions.Builder.withDefaults());
+    }
+
+    /**
+     * Calculates the duration for the given TimeEntry entity. If no "stop" property is available, the current Date is used.
+     *
+     * @param entity a {@link TimeEntry}
+     * @return duration as <code>long</code> value, calculated from properties "start" and "stop"
+     */
+    private long calculateDuration(Entity entity) {
+        Date start = (Date) entity.getProperty("start");
+        // check if the entity is already stopped, else use the current date
+        Date stop;
+        if (entity.getProperty("stop") != null) {
+            stop = (Date) entity.getProperty("stop");
+        } else {
+            stop = new Date();
+        }
+
+        return stop.getTime() - start.getTime();
+    }
+
+    /**
+     * Returns a calendar with HOUR, MINUTE, SECOND, MILLISECOND set to ZERO.
+     *
+     * @return {@link Calendar}
+     */
+    private Calendar getCalendar() {
+        final Calendar cal = Calendar.getInstance();
+        // set everything to 0
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal;
     }
 }
