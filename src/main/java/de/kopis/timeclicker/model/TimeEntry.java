@@ -1,4 +1,4 @@
-package de.kopis.timeclicker;
+package de.kopis.timeclicker.model;
 
 import java.util.Date;
 

@@ -1,4 +1,4 @@
-package de.kopis.timeclicker;
+package de.kopis.timeclicker.model;
 
 public class TimeSum {
     private long duration;

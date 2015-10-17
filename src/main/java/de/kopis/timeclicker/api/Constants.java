@@ -1,4 +1,4 @@
-package de.kopis.timeclicker;
+package de.kopis.timeclicker.api;
 
 /**
  * Contains the client IDs and scopes for allowed clients consuming your API.

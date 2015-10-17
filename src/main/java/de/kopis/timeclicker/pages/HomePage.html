@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:wicket="http://wicket.apache.org">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -18,11 +18,9 @@
 <div id="container">
     <h1>Time Clicker</h1>
 
-    <div class="">
-        <a href="javascript:void(0);" class="btn" id="signinButton">Sign in</a>
-    </div>
+    <div id="header" wicket:id="headerPanel">header</div>
 
-    <div id="messages"></div>
+    <div id="messages" wicket:id="currentEntry"></div>
 
     <div class="panel panel-default">
         <div class="panel-heading">
@@ -30,27 +28,26 @@
         </div>
         <div class="panel-body">
             <div id="sumLog">
+                <ul>
+                    <li wicket:id="dailySum">0</li>
+                    <li wicket:id="weeklySum">0</li>
+                    <li wicket:id="monthlySum">0</li>
+                    <li wicket:id="overallSum">0</li>
+                </ul>
             </div>
-            </table>
         </div>
     </div>
 
     <form onsubmit="return false;">
-        <div><input id="start" type="submit" class="btn btn-small" value="Start"/></div>
-        <div><input id="stop" type="submit" class="hidden btn btn-small" value="Stop"/></div>
+        <div><a class="btn btn-default" wicket:id="start">Start</a></div>
+        <div><a class="btn btn-default" wicket:id="stop">Stop</a></div>
     </form>
+
+    <div id="footer" wicket:id="footerPanel">footer</div>
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 
-<script>
-    function init() {
-        google.appengine.timeclicker.init('//' + window.location.host + '/_ah/api');
-    }
-</script>
-<script src="https://apis.google.com/js/client.js?onload=init"></script>
-<script async src="/js/base.js"></script>
-<script async src="/js/humanize-duration.js"></script>
 </body>
 </html>

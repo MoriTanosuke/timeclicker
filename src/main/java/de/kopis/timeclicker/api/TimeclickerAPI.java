@@ -1,4 +1,4 @@
-package de.kopis.timeclicker;
+package de.kopis.timeclicker.api;
 
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
@@ -6,6 +6,8 @@ import com.google.api.server.spi.config.Named;
 import com.google.appengine.api.datastore.*;
 import com.google.appengine.api.users.User;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TimeEntry;
+import de.kopis.timeclicker.model.TimeSum;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -17,6 +19,8 @@ import java.util.logging.Logger;
         clientIds = {Constants.WEB_CLIENT_ID, Constants.ANDROID_CLIENT_ID, "292824132082.apps.googleusercontent.com"},
         audiences = {Constants.ANDROID_AUDIENCE})
 public class TimeclickerAPI {
+    private static final Logger LOGGER = Logger.getLogger(TimeclickerAPI.class.getName());
+
     @ApiMethod(name = "stop", path = "stop", httpMethod = "post")
     public TimeEntry stop(@Named("key") String key, User user) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();
@@ -39,8 +43,6 @@ public class TimeclickerAPI {
         }
         return null;
     }
-
-    private static final Logger LOGGER = Logger.getLogger(TimeclickerAPI.class.getName());
 
     @ApiMethod(name = "start", path = "start", httpMethod = "post")
     public TimeEntry start(User user) throws NotAuthenticatedException {
