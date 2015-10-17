@@ -76,6 +76,7 @@ public class HomePage extends WebPage {
         final UserService userService = UserServiceFactory.getUserService();
         final User user = userService.getCurrentUser();
         try {
+            Label currentEntryLabel;
             if (user != null) {
                 add(new Label("dailySum", "Daily: " + getReadableDuration(api.getDailySum(user))));
                 add(new Label("weeklySum", "Weekly: " + getReadableDuration(api.getWeeklySum(user))));
@@ -83,17 +84,24 @@ public class HomePage extends WebPage {
                 add(new Label("overallSum", "Overall: " + getReadableDuration(api.getOverallSum(user))));
 
                 TimeEntry latest = api.latest(user);
-                Label currentEntryLabel;
                 if (latest != null) {
                     currentEntryLabel = new Label("currentEntry", "Tracking since: " + latest.getStart());
                     currentEntryLabel.add(new AttributeModifier("class", "alert alert-info"));
                 } else {
-                    // TODO hide this if no currently active entry
                     currentEntryLabel = new Label("currentEntry", "");
                     currentEntryLabel.add(new AttributeModifier("style", "display: none;"));
                 }
-                add(currentEntryLabel);
+            } else {
+                // TODO remove duplication of label "currentEntry"
+                currentEntryLabel = new Label("currentEntry", "");
+                currentEntryLabel.add(new AttributeModifier("style", "display: none;"));
+
+                add(new Label("dailySum", "Daily: 0"));
+                add(new Label("weeklySum", "Weekly: 0"));
+                add(new Label("monthlySum", "Monthly: 0"));
+                add(new Label("overallSum", "Overall: 0"));
             }
+            add(currentEntryLabel);
         } catch (NotAuthenticatedException e) {
             throw new RedirectToUrlException(userService.createLoginURL("/"));
         }
