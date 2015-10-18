@@ -8,14 +8,23 @@ import org.apache.wicket.markup.html.link.ExternalLink;
 import org.apache.wicket.markup.html.panel.Panel;
 
 public class HeaderPanel extends Panel {
+    private static final long serialVersionUID = 1L;
+
     public HeaderPanel(String id) {
         super(id);
+    }
+
+    @Override
+    public void onInitialize() {
+        super.onInitialize();
+        setVersioned(false);
 
         final UserService userService = UserServiceFactory.getUserService();
         final User user = userService.getCurrentUser();
         final String url = getUrl(userService, user);
         final String label = getLabel(user);
 
+        //TODO extract into AuthenticationLink component?
         add(new ExternalLink("signinButton", url).add(new Label("signinLabel", label)));
     }
 

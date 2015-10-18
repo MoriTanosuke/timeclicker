@@ -1,8 +1,10 @@
 package de.kopis.timeclicker.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class TimeEntry {
+public class TimeEntry implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private Date start = null;
     private Date stop = null;

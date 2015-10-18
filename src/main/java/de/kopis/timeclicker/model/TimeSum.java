@@ -1,6 +1,9 @@
 package de.kopis.timeclicker.model;
 
-public class TimeSum {
+import java.io.Serializable;
+
+public class TimeSum implements Serializable {
+    private static final long serialVersionUID = 1L;
     private long duration;
 
     public long getDuration() {

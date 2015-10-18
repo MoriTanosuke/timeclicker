@@ -3,14 +3,10 @@ package de.kopis.timeclicker.pages;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
-import de.kopis.timeclicker.api.TimeclickerAPI;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
-import de.kopis.timeclicker.panels.FooterPanel;
-import de.kopis.timeclicker.panels.HeaderPanel;
 import org.apache.wicket.AttributeModifier;
-import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.request.flow.RedirectToUrlException;
@@ -19,25 +15,25 @@ import org.apache.wicket.request.mapper.parameter.PageParameters;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
-import java.util.logging.Logger;
 
-public class HomePage extends WebPage {
+public class HomePage extends TemplatePage {
     private static final long serialVersionUID = 1L;
 
-    private static final Logger LOGGER = Logger.getLogger(HomePage.class.getName());
-
-    private static final TimeclickerAPI api = new TimeclickerAPI();
-
     public HomePage(final PageParameters parameters) {
-        super(parameters);
+        super("Statistics", parameters);
 
-        // add all the wicket components
-        add(new HeaderPanel("headerPanel"));
-        add(new FooterPanel("footerPanel"));
+    }
+
+    @Override
+    public void onInitialize() {
+        super.onInitialize();
+        setStatelessHint(true);
+        setVersioned(false);
+
         add(new Link("start") {
             @Override
             public void onClick() {
-                //TODO start a new entry
+                // start a new entry
                 UserService userService = UserServiceFactory.getUserService();
                 User user = userService.getCurrentUser();
                 if (user == null) {
@@ -51,12 +47,13 @@ public class HomePage extends WebPage {
                     }
                     //TODO set flash message "Entry started"
                 }
+                setResponsePage(findPage());
             }
         });
         add(new Link("stop") {
             @Override
             public void onClick() {
-                //TODO start a new entry
+                // stop latest entry
                 UserService userService = UserServiceFactory.getUserService();
                 User user = userService.getCurrentUser();
                 if (user == null) {
@@ -70,6 +67,7 @@ public class HomePage extends WebPage {
                     }
                     //TODO set flash message "Entry started"
                 }
+                setResponsePage(findPage());
             }
         });
 

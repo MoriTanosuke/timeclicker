@@ -2,52 +2,22 @@
 <html lang="en" xmlns:wicket="http://wicket.apache.org">
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Time Clicker</title>
-
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
-
-    <!--[if lt IE 9]>
-    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
 </head>
 <body>
-<div id="container">
-    <h1>Time Clicker</h1>
-
-    <div id="header" wicket:id="headerPanel">header</div>
-
-    <div id="messages" wicket:id="currentEntry"></div>
-
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h3 class="panel-title">Statistics</h3>
-        </div>
-        <div class="panel-body">
-            <div id="sumLog">
-                <ul>
-                    <li wicket:id="dailySum">0</li>
-                    <li wicket:id="weeklySum">0</li>
-                    <li wicket:id="monthlySum">0</li>
-                    <li wicket:id="overallSum">0</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-
+<wicket:extend>
+    <div wicket:id="currentEntry"></div>
+    <div id="sumLog">
+        <ul>
+            <li wicket:id="dailySum">0</li>
+            <li wicket:id="weeklySum">0</li>
+            <li wicket:id="monthlySum">0</li>
+            <li wicket:id="overallSum">0</li>
+        </ul>
+</div>
     <form onsubmit="return false;">
         <div><a class="btn btn-default" wicket:id="start">Start</a></div>
         <div><a class="btn btn-default" wicket:id="stop">Stop</a></div>
     </form>
-
-    <div id="footer" wicket:id="footerPanel">footer</div>
-</div>
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-
+</wicket:extend>
 </body>
 </html>

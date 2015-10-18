@@ -19,7 +19,21 @@ import java.util.logging.Logger;
         clientIds = {Constants.WEB_CLIENT_ID, Constants.ANDROID_CLIENT_ID, "292824132082.apps.googleusercontent.com"},
         audiences = {Constants.ANDROID_AUDIENCE})
 public class TimeclickerAPI {
-    private static final Logger LOGGER = Logger.getLogger(TimeclickerAPI.class.getName());
+    private static final transient Logger LOGGER = Logger.getLogger(TimeclickerAPI.class.getName());
+
+    @ApiMethod(name = "delete", path = "delete", httpMethod = "post")
+    public void delete(@Named("key") String key, User user) throws NotAuthenticatedException {
+        if (user == null) throw new NotAuthenticatedException();
+
+        final TimeEntry entry = show(key, user);
+        if (entry != null) {
+            DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+            datastore.delete(KeyFactory.stringToKey(entry.getKey()));
+            LOGGER.info("User " + user.getUserId() + " deleted entry " + entry.getKey());
+        } else {
+            LOGGER.warning("No entry found for user " + user + " and key " + key);
+        }
+    }
 
     @ApiMethod(name = "stop", path = "stop", httpMethod = "post")
     public TimeEntry stop(@Named("key") String key, User user) throws NotAuthenticatedException {

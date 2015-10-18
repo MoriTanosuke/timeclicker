@@ -4,9 +4,15 @@
 </head>
 <body>
 <wicket:panel>
-    <a wicket:id="signinButton">
-        <wicket:container wicket:id="signinLabel">Sign in</wicket:container>
-    </a>
+    <ul>
+        <wicket:link>
+            <li><a href="/de/kopis/timeclicker/pages/HomePage.html">Home</a></li>
+            <li><a href="/de/kopis/timeclicker/pages/ListEntriesPage.html">List</a></li>
+        </wicket:link>
+        <li><a wicket:id="signinButton">
+            <wicket:container wicket:id="signinLabel">Sign in</wicket:container>
+        </a></li>
+    </ul>
 </wicket:panel>
 </body>
 </html>

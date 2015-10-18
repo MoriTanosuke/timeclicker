@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:wicket="http://wicket.apache.org">
+<head>
+    <meta charset="utf-8">
+</head>
+<body>
+<wicket:extend>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Start</th>
+            <th>Stop</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr wicket:id="listView">
+            <td wicket:id="entryKey">Key</td>
+            <td wicket:id="entryStart">Start</td>
+            <td wicket:id="entryStop">Stop</td>
+            <td><a wicket:id="editLink">Edit</a> <a wicket:id="deleteLink">Delete</a></td>
+        </tr>
+        </tbody>
+    </table>
+</wicket:extend>
+</body>
+</html>
