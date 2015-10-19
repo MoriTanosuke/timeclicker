@@ -104,9 +104,11 @@ public class TimeclickerAPI {
         return null;
     }
 
-    @ApiMethod(name = "update", path = "update")
-    public void update(@Named("key") String key, Date start, Date stop, User user) throws NotAuthenticatedException {
+    @ApiMethod(name = "update", path = "update", httpMethod = "post")
+    public void update(@Named("key") String key, @Named("start") Date start, @Named("stop") Date stop, User user) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();
+
+        LOGGER.info("User " + user.getUserId() + " starting to update entry " + key + " with start=" + start + " stop=" + stop);
 
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         try {
