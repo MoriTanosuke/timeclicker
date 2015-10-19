@@ -36,7 +36,7 @@ public class TimeclickerAPI {
     }
 
     @ApiMethod(name = "stop", path = "stop", httpMethod = "post")
-    public TimeEntry stop(@Named("key") String key, User user) throws NotAuthenticatedException {
+    public TimeEntry stop(@Named("stopKey") String key, User user) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();
 
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
@@ -85,6 +85,43 @@ public class TimeclickerAPI {
         return entry;
     }
 
+    @ApiMethod(name = "show", path = "show")
+    public TimeEntry show(@Named("showKey") String key, User user) throws NotAuthenticatedException {
+        if (user == null) throw new NotAuthenticatedException();
+
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        try {
+            Entity timeEntryEntity = datastore.get(KeyFactory.stringToKey(key));
+            if (!timeEntryEntity.getProperty("userId").equals(user.getUserId())) {
+                throw new RuntimeException("Referenced entry does not belong to this user!");
+            }
+            TimeEntry entry = buildTimeEntryFromEntity(timeEntryEntity);
+            LOGGER.info("User " + user.getUserId() + " showed entry " + entry.getKey());
+            return entry;
+        } catch (EntityNotFoundException e) {
+            LOGGER.warning("Can not find entity with key " + KeyFactory.stringToKey(key));
+        }
+        return null;
+    }
+
+    @ApiMethod(name = "update", path = "update")
+    public void update(@Named("key") String key, Date start, Date stop, User user) throws NotAuthenticatedException {
+        if (user == null) throw new NotAuthenticatedException();
+
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        try {
+            Entity timeEntryEntity = datastore.get(KeyFactory.stringToKey(key));
+            if (!timeEntryEntity.getProperty("userId").equals(user.getUserId())) {
+                throw new RuntimeException("Referenced entry does not belong to this user!");
+            }
+            timeEntryEntity.setProperty("start", start);
+            timeEntryEntity.setProperty("stop", stop);
+            datastore.put(timeEntryEntity);
+            LOGGER.info("User " + user.getUserId() + " updated entry " + timeEntryEntity.getKey());
+        } catch (EntityNotFoundException e) {
+            LOGGER.warning("Can not find entity with key " + KeyFactory.stringToKey(key));
+        }
+    }
 
     @ApiMethod(name = "stopLatest", path = "stop/latest", httpMethod = "post")
     public TimeEntry stopLatest(User user) throws NotAuthenticatedException {
@@ -120,25 +157,6 @@ public class TimeclickerAPI {
             return timeEntry;
         }
 
-        return null;
-    }
-
-    @ApiMethod(name = "show", path = "show")
-    public TimeEntry show(@Named("key") String key, User user) throws NotAuthenticatedException {
-        if (user == null) throw new NotAuthenticatedException();
-
-        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        try {
-            Entity timeEntryEntity = datastore.get(KeyFactory.stringToKey(key));
-            if (!timeEntryEntity.getProperty("userId").equals(user.getUserId())) {
-                throw new RuntimeException("Referenced entry does not belong to this user!");
-            }
-            TimeEntry entry = buildTimeEntryFromEntity(timeEntryEntity);
-            LOGGER.info("User " + user.getUserId() + " showed entry " + entry.getKey());
-            return entry;
-        } catch (EntityNotFoundException e) {
-            LOGGER.warning("Can not find entity with key " + KeyFactory.stringToKey(key));
-        }
         return null;
     }
 

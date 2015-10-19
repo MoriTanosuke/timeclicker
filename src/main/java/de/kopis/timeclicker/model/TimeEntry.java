@@ -37,4 +37,13 @@ public class TimeEntry implements Serializable {
     public String getKey() {
         return key;
     }
+
+    @Override
+    public String toString() {
+        return "TimeEntry{" +
+                "start=" + start +
+                ", stop=" + stop +
+                ", key='" + key + '\'' +
+                '}';
+    }
 }

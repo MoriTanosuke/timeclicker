@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:wicket="http://wicket.apache.org">
+<head>
+    <meta charset="utf-8">
+</head>
+<body>
+<wicket:extend>
+    <div wicket:id="feedbackPanel"></div>
+
+    <form id="entryForm" wicket:id="thisEntryForm">
+        <input type="hidden" wicket:id="key"/>
+        <label for="start">Start</label>
+
+        <div type="text" wicket:id="start"/>
+        <br/>
+        <label for="stop">Stop</label>
+
+        <div type="text" wicket:id="stop"/>
+        <br/>
+
+        <input type="submit"/>
+        <wicket:link>
+            <a href="/de/kopis/timeclicker/pages/ListEntriesPage.html">back</a>
+        </wicket:link>
+    </form>
+</wicket:extend>
+</body>
+</html>

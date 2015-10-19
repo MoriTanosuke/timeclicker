@@ -1,6 +1,8 @@
 package de.kopis.timeclicker;
 
 import de.kopis.timeclicker.pages.HomePage;
+import de.kopis.timeclicker.pages.ListEntriesPage;
+import de.kopis.timeclicker.pages.TimeEntryPage;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.protocol.http.WebApplication;
 
@@ -21,7 +23,8 @@ public class WicketApplication extends WebApplication {
         LOGGER.info("Initializing application.");
 
         // configure nice URLs
-        //mountPage("/", HomePage.class);
-        //mountPage("/list", ListEntriesPage.class);
+        mountPage("/home", HomePage.class);
+        mountPage("/list", ListEntriesPage.class);
+        mountPage("/edit/${key}", TimeEntryPage.class);
     }
 }

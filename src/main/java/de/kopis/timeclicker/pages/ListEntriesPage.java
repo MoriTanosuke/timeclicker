@@ -55,9 +55,9 @@ public class ListEntriesPage extends TemplatePage {
                 item.add(new Link("editLink") {
                     @Override
                     public void onClick() {
-                        //TODO implement edit page
-                        LOGGER.warning("EDIT not yet implemented");
-                        setResponsePage(findPage());
+                        PageParameters parameters = new PageParameters();
+                        parameters.add("key", item.getModelObject().getKey());
+                        setResponsePage(TimeEntryPage.class, parameters);
                     }
                 });
                 item.add(new Link("deleteLink") {
