@@ -1,12 +1,9 @@
 package de.kopis.timeclicker.pages;
 
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
-import org.apache.wicket.AttributeModifier;
+import de.kopis.timeclicker.panels.ActiveEntryPanel;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.request.flow.RedirectToUrlException;
@@ -19,9 +16,12 @@ import javax.xml.datatype.Duration;
 public class HomePage extends TemplatePage {
     private static final long serialVersionUID = 1L;
 
+    private ActiveEntryPanel activeEntry;
+    private Link stop;
+    private Link start;
+
     public HomePage(final PageParameters parameters) {
         super("Statistics", parameters);
-
     }
 
     @Override
@@ -30,83 +30,81 @@ public class HomePage extends TemplatePage {
         setStatelessHint(true);
         setVersioned(false);
 
-        add(new Link("start") {
+        add(activeEntry = new ActiveEntryPanel("activePanel"));
+        add(start = new Link("start") {
             @Override
             public void onClick() {
                 // start a new entry
-                UserService userService = UserServiceFactory.getUserService();
-                User user = userService.getCurrentUser();
-                if (user == null) {
+                if (getCurrentUser() == null) {
                     //TODO add error or redirect to login
-                    LOGGER.info("Not logged in, have to redirect...");
+                    error("You are not logged in.");
                 } else {
                     try {
-                        api.start(user);
+                        final TimeEntry entry = api.start(getCurrentUser());
+                        //TODO how to invalidate activeEntry model?
+                        activeEntry.modelChanged();
+                        // TODO make the links figure visibility out themselves
+                        start.setVisible(false);
+                        stop.setVisible(true);
+                        success("Entry " + entry.getKey() + " started.");
                     } catch (NotAuthenticatedException e) {
                         LOGGER.severe("Can not start entry: " + e.getMessage());
+                        error(e.getMessage());
                     }
-                    //TODO set flash message "Entry started"
                 }
                 setResponsePage(findPage());
             }
         });
-        add(new Link("stop") {
+        add(stop = new Link("stop") {
             @Override
             public void onClick() {
                 // stop latest entry
-                UserService userService = UserServiceFactory.getUserService();
-                User user = userService.getCurrentUser();
-                if (user == null) {
+                if (getCurrentUser() == null) {
                     //TODO add error or redirect to login
-                    LOGGER.info("Not logged in, have to redirect...");
+                    error("You are not logged in.");
                 } else {
                     try {
-                        api.stopLatest(user);
+                        api.stopLatest(getCurrentUser());
+                        //TODO how to invalidate activeEntry model?
+                        activeEntry.modelChanged();
+                        // TODO make the links figure visibility out themselves
+                        start.setVisible(true);
+                        stop.setVisible(false);
+                        success("Latest entry stopped.");
                     } catch (NotAuthenticatedException e) {
                         LOGGER.severe("Can not stop entry: " + e.getMessage());
+                        error(e.getMessage());
                     }
-                    //TODO set flash message "Entry started"
                 }
                 setResponsePage(findPage());
             }
         });
 
-        final UserService userService = UserServiceFactory.getUserService();
-        final User user = userService.getCurrentUser();
+        // TODO make the links figure visibility out themselves
+        start.setVisible(!activeEntry.isVisible());
+        stop.setVisible(activeEntry.isVisible());
+
         try {
-            Label currentEntryLabel;
-            if (user != null) {
-                add(new Label("dailySum", "Daily: " + getReadableDuration(api.getDailySum(user))));
-                add(new Label("weeklySum", "Weekly: " + getReadableDuration(api.getWeeklySum(user))));
-                add(new Label("monthlySum", "Monthly: " + getReadableDuration(api.getMonthlySum(user))));
-                add(new Label("overallSum", "Overall: " + getReadableDuration(api.getOverallSum(user))));
-
-                TimeEntry latest = api.latest(user);
-                if (latest != null) {
-                    currentEntryLabel = new Label("currentEntry", "Tracking since: " + latest.getStart());
-                    currentEntryLabel.add(new AttributeModifier("class", "alert alert-info"));
-                } else {
-                    currentEntryLabel = new Label("currentEntry", "");
-                    currentEntryLabel.add(new AttributeModifier("style", "display: none;"));
-                }
+            if (getCurrentUser() != null) {
+                //TODO implement LoadableDetachableModel with sums
+                add(new Label("dailySum", "Daily: " + getReadableDuration(api.getDailySum(getCurrentUser()))));
+                add(new Label("weeklySum", "Weekly: " + getReadableDuration(api.getWeeklySum(getCurrentUser()))));
+                add(new Label("monthlySum", "Monthly: " + getReadableDuration(api.getMonthlySum(getCurrentUser()))));
+                add(new Label("overallSum", "Overall: " + getReadableDuration(api.getOverallSum(getCurrentUser()))));
             } else {
-                // TODO remove duplication of label "currentEntry"
-                currentEntryLabel = new Label("currentEntry", "");
-                currentEntryLabel.add(new AttributeModifier("style", "display: none;"));
-
                 add(new Label("dailySum", "Daily: 0"));
                 add(new Label("weeklySum", "Weekly: 0"));
                 add(new Label("monthlySum", "Monthly: 0"));
                 add(new Label("overallSum", "Overall: 0"));
             }
-            add(currentEntryLabel);
         } catch (NotAuthenticatedException e) {
-            throw new RedirectToUrlException(userService.createLoginURL("/"));
+            throw new RedirectToUrlException(getLoginURL("/"));
         }
     }
 
     private String getReadableDuration(TimeSum sum) throws NotAuthenticatedException {
         final long duration = sum.getDuration();
+        //TODO use formatter with model
 
         String readableDuration = "" + duration;
         try {

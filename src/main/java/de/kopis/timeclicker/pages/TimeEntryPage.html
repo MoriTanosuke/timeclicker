@@ -5,20 +5,18 @@
 </head>
 <body>
 <wicket:extend>
-    <div wicket:id="feedbackPanel"></div>
-
-    <form id="entryForm" wicket:id="thisEntryForm">
+    <form wicket:id="entryForm">
         <input type="hidden" wicket:id="key"/>
         <label for="start">Start</label>
 
-        <div type="text" wicket:id="start"/>
+        <div wicket:id="start"/>
         <br/>
         <label for="stop">Stop</label>
 
-        <div type="text" wicket:id="stop"/>
+        <div wicket:id="stop"/>
         <br/>
 
-        <input type="submit"/>
+        <input type="submit" wicket:id="update" />
         <wicket:link>
             <a href="/de/kopis/timeclicker/pages/ListEntriesPage.html">back</a>
         </wicket:link>

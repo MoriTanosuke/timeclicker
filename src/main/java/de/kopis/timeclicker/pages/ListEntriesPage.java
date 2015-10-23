@@ -5,19 +5,24 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
+import org.apache.wicket.datetime.markup.html.basic.DateLabel;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class ListEntriesPage extends TemplatePage {
     private static final long serialVersionUID = 1L;
+    private final DateFormat DF = new SimpleDateFormat("HH:mm:ss dd.MM.yyyy Z");
 
     public ListEntriesPage(PageParameters parameters) {
         super("Time Entries", parameters);
@@ -31,17 +36,22 @@ public class ListEntriesPage extends TemplatePage {
 
         final List<TimeEntry> entries = new ArrayList<>();
 
-        final UserService userService = UserServiceFactory.getUserService();
-        final User user = userService.getCurrentUser();
-        if (user != null) {
+        if (getCurrentUser() != null) {
             try {
-                entries.addAll(api.list(user));
+                entries.addAll(api.list(getCurrentUser()));
+                Collections.sort(entries, new Comparator<TimeEntry>() {
+                    @Override
+                    public int compare(TimeEntry o1, TimeEntry o2) {
+                        // sort DESC by start date
+                        return o2.getStart().compareTo(o1.getStart());
+                    }
+                });
             } catch (NotAuthenticatedException e) {
-                LOGGER.severe("Can not load entries for user " + user + ": " + e.getMessage());
+                LOGGER.severe("Can not load entries for user " + getCurrentUser() + ": " + e.getMessage());
             }
         }
 
-        final DateFormat DF = new SimpleDateFormat("HH:mm:ss dd.MM.yyyy");
+        //TODO use pagination for list of TimeEntry!
         add(new ListView<TimeEntry>("listView", entries) {
             @Override
             protected void populateItem(final ListItem<TimeEntry> item) {
@@ -64,7 +74,7 @@ public class ListEntriesPage extends TemplatePage {
                     @Override
                     public void onClick() {
                         try {
-                            api.delete(item.getModelObject().getKey(), user);
+                            api.delete(item.getModelObject().getKey(), getCurrentUser());
                         } catch (NotAuthenticatedException e) {
                             LOGGER.severe("Can not delete entry " + item.getModelObject().getKey());
                         }

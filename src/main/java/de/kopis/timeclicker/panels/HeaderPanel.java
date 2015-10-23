@@ -20,29 +20,24 @@ public class HeaderPanel extends Panel {
         setVersioned(false);
 
         final UserService userService = UserServiceFactory.getUserService();
-        final User user = userService.getCurrentUser();
-        final String url = getUrl(userService, user);
-        final String label = getLabel(user);
 
-        //TODO extract into AuthenticationLink component?
-        add(new ExternalLink("signinButton", url).add(new Label("signinLabel", label)));
+        final ExternalLink signin = new ExternalLink("signinButton", userService.createLoginURL("/")) {
+            @Override
+            protected void onConfigure() {
+                super.onConfigure();
+                setVisible(UserServiceFactory.getUserService().getCurrentUser() == null);
+            }
+        };
+        add(signin.add(new Label("signinLabel", "Sign in")));
+
+        final ExternalLink signout = new ExternalLink("signoutButton", userService.createLogoutURL("/")) {
+            @Override
+            protected void onConfigure() {
+                super.onConfigure();
+                setVisible(UserServiceFactory.getUserService().getCurrentUser() != null);
+            }
+        };
+        add(signout.add(new Label("signoutLabel", "Sign out")));
     }
 
-    private String getLabel(User user) {
-        String label = "Sign in";
-        if (user != null) {
-            label = "Sign out";
-        }
-        return label;
-    }
-
-    private String getUrl(UserService userService, User user) {
-        String url;
-        if (user == null) {
-            url = userService.createLoginURL("/");
-        } else {
-            url = userService.createLogoutURL("/");
-        }
-        return url;
-    }
 }
