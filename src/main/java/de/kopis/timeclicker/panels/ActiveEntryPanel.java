@@ -18,9 +18,6 @@ import java.util.logging.Logger;
 public class ActiveEntryPanel extends Panel {
 
     private static final Logger LOGGER = Logger.getLogger(ActiveEntryPanel.class.getName());
-
-    // TODO inject TimeclickerAPI
-    private final transient TimeclickerAPI api = new TimeclickerAPI();
     private final Label label;
 
     public ActiveEntryPanel(String id) {
@@ -28,6 +25,8 @@ public class ActiveEntryPanel extends Panel {
 
         label = new Label("activeEntry", new LoadableDetachableModel<String>() {
             private final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+            // TODO inject TimeclickerAPI
+            private final TimeclickerAPI api = new TimeclickerAPI();
 
             @Override
             protected String load() {
