@@ -13,3 +13,12 @@ What I am working on
 * Better webpage to start/stop
 * Android app
 * Better webpage to display daily/weekly/monthly sums
+
+Using the Dockerfile
+--------------------
+
+You can use the included *Dockerfile* to compile this application:
+
+````
+docker run -it --rm --name my-maven-project -v "$PWD":/usr/src/mymaven -w /usr/src/mymaven maven:3-jdk-8-onbuild mvn clean install
+````
