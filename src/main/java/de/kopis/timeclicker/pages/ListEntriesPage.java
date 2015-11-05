@@ -1,16 +1,11 @@
 package de.kopis.timeclicker.pages;
 
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
-import org.apache.wicket.datetime.markup.html.basic.DateLabel;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
-import org.apache.wicket.model.Model;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
 import java.text.DateFormat;
@@ -38,7 +33,7 @@ public class ListEntriesPage extends TemplatePage {
 
         if (getCurrentUser() != null) {
             try {
-                entries.addAll(api.list(getCurrentUser()));
+                entries.addAll(getApi().list(getCurrentUser()));
                 Collections.sort(entries, new Comparator<TimeEntry>() {
                     @Override
                     public int compare(TimeEntry o1, TimeEntry o2) {
@@ -74,7 +69,7 @@ public class ListEntriesPage extends TemplatePage {
                     @Override
                     public void onClick() {
                         try {
-                            api.delete(item.getModelObject().getKey(), getCurrentUser());
+                            getApi().delete(item.getModelObject().getKey(), getCurrentUser());
                         } catch (NotAuthenticatedException e) {
                             LOGGER.severe("Can not delete entry " + item.getModelObject().getKey());
                         }

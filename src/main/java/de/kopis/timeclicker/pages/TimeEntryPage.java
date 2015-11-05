@@ -5,16 +5,12 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
-import org.apache.wicket.extensions.yui.calendar.DatePicker;
 import org.apache.wicket.extensions.yui.calendar.DateTimeField;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.HiddenField;
 import org.apache.wicket.model.CompoundPropertyModel;
-import org.apache.wicket.model.Model;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
-
-import java.util.Locale;
 
 public class TimeEntryPage extends TemplatePage {
 
@@ -28,7 +24,7 @@ public class TimeEntryPage extends TemplatePage {
         }
 
         try {
-            final TimeEntry entry = api.show(key, getCurrentUser());
+            final TimeEntry entry = getApi().show(key, getCurrentUser());
             //TODO extract Form?
             final Form<TimeEntry> form = new Form<>("entryForm");
             form.setDefaultModel(new CompoundPropertyModel(entry));
@@ -44,7 +40,7 @@ public class TimeEntryPage extends TemplatePage {
                     try {
                         UserService userService = UserServiceFactory.getUserService();
                         User user = userService.getCurrentUser();
-                        api.update(updateEntry.getKey(), updateEntry.getStart(), updateEntry.getStop(), user);
+                        getApi().update(updateEntry.getKey(), updateEntry.getStart(), updateEntry.getStop(), user);
                         success("Entry saved.");
                     } catch (NotAuthenticatedException e) {
                         error("Can not save entry. Try again.");

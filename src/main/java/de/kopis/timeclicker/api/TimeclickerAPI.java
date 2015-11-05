@@ -181,7 +181,7 @@ public class TimeclickerAPI {
     public TimeSum getOverallSum(User user) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();
 
-        TimeSum sum = new TimeSum();
+        TimeSum sum = new TimeSum(0L);
 
         List<Entity> entities = listEntities(user);
         for (Entity entity : entities) {
@@ -210,7 +210,7 @@ public class TimeclickerAPI {
 
 
         // calculate the sum from the result list
-        final TimeSum sum = new TimeSum();
+        final TimeSum sum = new TimeSum(0L);
         for (Entity e : entities) {
             long duration = calculateDuration(e);
             sum.addDuration(duration);
@@ -237,7 +237,7 @@ public class TimeclickerAPI {
 
 
         // calculate the sum from the result list
-        final TimeSum sum = new TimeSum();
+        final TimeSum sum = new TimeSum(0L);
         for (Entity e : entities) {
             long duration = calculateDuration(e);
             sum.addDuration(duration);
@@ -261,7 +261,7 @@ public class TimeclickerAPI {
 
 
         // calculate the sum from the result list
-        final TimeSum sum = new TimeSum();
+        final TimeSum sum = new TimeSum(0L);
         for (Entity e : entities) {
             long duration = calculateDuration(e);
             sum.addDuration(duration);

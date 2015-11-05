@@ -5,6 +5,8 @@ import de.kopis.timeclicker.pages.ListEntriesPage;
 import de.kopis.timeclicker.pages.TimeEntryPage;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.protocol.http.WebApplication;
+import org.apache.wicket.request.resource.IResource;
+import org.apache.wicket.request.resource.ResourceReference;
 
 import java.util.logging.Logger;
 
@@ -26,5 +28,15 @@ public class WicketApplication extends WebApplication {
         mountPage("/home", HomePage.class);
         mountPage("/list", ListEntriesPage.class);
         mountPage("/edit/${key}", TimeEntryPage.class);
+
+        final ResourceReference resourceReference = new ResourceReference("rssProducer") {
+            ListEntriesChartProducerResource resource = new ListEntriesChartProducerResource();
+
+            @Override
+            public IResource getResource() {
+                return resource;
+            }
+        };
+        mountResource("/chart.json", resourceReference);
     }
 }

@@ -16,6 +16,7 @@ import javax.xml.datatype.Duration;
 public class HomePage extends TemplatePage {
     private static final long serialVersionUID = 1L;
 
+    private ActiveEntryPanel activeEntry;
     private Link stop;
     private Link start;
 
@@ -29,6 +30,7 @@ public class HomePage extends TemplatePage {
         setStatelessHint(true);
         setVersioned(false);
 
+        add(activeEntry = new ActiveEntryPanel("activePanel"));
         add(start = new Link("start") {
             @Override
             public void onClick() {
@@ -38,7 +40,7 @@ public class HomePage extends TemplatePage {
                     error("You are not logged in.");
                 } else {
                     try {
-                        final TimeEntry entry = api.start(getCurrentUser());
+                        final TimeEntry entry = getApi().start(getCurrentUser());
                   	// TODO make the links figure visibility out themselves
                         start.setVisible(false);
                         stop.setVisible(true);
@@ -60,7 +62,9 @@ public class HomePage extends TemplatePage {
                     error("You are not logged in.");
                 } else {
                     try {
-                        api.stopLatest(getCurrentUser());
+                        getApi().stopLatest(getCurrentUser());
+                        //TODO how to invalidate activeEntry model?
+                        activeEntry.modelChanged();
                         // TODO make the links figure visibility out themselves
                         start.setVisible(true);
                         stop.setVisible(false);
@@ -74,13 +78,17 @@ public class HomePage extends TemplatePage {
             }
         });
 
+        // TODO make the links figure visibility out themselves
+        start.setVisible(!activeEntry.isVisible());
+        stop.setVisible(activeEntry.isVisible());
+
         try {
             if (getCurrentUser() != null) {
                 //TODO implement LoadableDetachableModel with sums
-                add(new Label("dailySum", "Daily: " + getReadableDuration(api.getDailySum(getCurrentUser()))));
-                add(new Label("weeklySum", "Weekly: " + getReadableDuration(api.getWeeklySum(getCurrentUser()))));
-                add(new Label("monthlySum", "Monthly: " + getReadableDuration(api.getMonthlySum(getCurrentUser()))));
-                add(new Label("overallSum", "Overall: " + getReadableDuration(api.getOverallSum(getCurrentUser()))));
+                add(new Label("dailySum", "Daily: " + getReadableDuration(getApi().getDailySum(getCurrentUser()))));
+                add(new Label("weeklySum", "Weekly: " + getReadableDuration(getApi().getWeeklySum(getCurrentUser()))));
+                add(new Label("monthlySum", "Monthly: " + getReadableDuration(getApi().getMonthlySum(getCurrentUser()))));
+                add(new Label("overallSum", "Overall: " + getReadableDuration(getApi().getOverallSum(getCurrentUser()))));
             } else {
                 add(new Label("dailySum", "Daily: 0"));
                 add(new Label("weeklySum", "Weekly: 0"));

@@ -9,7 +9,6 @@ import de.kopis.timeclicker.model.TimeEntry;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.LoadableDetachableModel;
-import org.apache.wicket.model.Model;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -25,8 +24,6 @@ public class ActiveEntryPanel extends Panel {
 
         label = new Label("activeEntry", new LoadableDetachableModel<String>() {
             private final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
-            // TODO inject TimeclickerAPI
-            private final TimeclickerAPI api = new TimeclickerAPI();
 
             @Override
             protected String load() {
@@ -34,6 +31,8 @@ public class ActiveEntryPanel extends Panel {
 
                 final UserService userService = UserServiceFactory.getUserService();
                 final User user = userService.getCurrentUser();
+                // TODO inject TimeclickerAPI
+                final TimeclickerAPI api = new TimeclickerAPI();
                 try {
                     final TimeEntry latest = api.latest(user);
                     if (latest != null) {
