@@ -16,7 +16,6 @@ import javax.xml.datatype.Duration;
 public class HomePage extends TemplatePage {
     private static final long serialVersionUID = 1L;
 
-    private ActiveEntryPanel activeEntry;
     private Link stop;
     private Link start;
 
@@ -30,7 +29,6 @@ public class HomePage extends TemplatePage {
         setStatelessHint(true);
         setVersioned(false);
 
-        add(activeEntry = new ActiveEntryPanel("activePanel"));
         add(start = new Link("start") {
             @Override
             public void onClick() {
@@ -41,9 +39,7 @@ public class HomePage extends TemplatePage {
                 } else {
                     try {
                         final TimeEntry entry = api.start(getCurrentUser());
-                        //TODO how to invalidate activeEntry model?
-                        activeEntry.modelChanged();
-                        // TODO make the links figure visibility out themselves
+                  	// TODO make the links figure visibility out themselves
                         start.setVisible(false);
                         stop.setVisible(true);
                         success("Entry " + entry.getKey() + " started.");
@@ -65,8 +61,6 @@ public class HomePage extends TemplatePage {
                 } else {
                     try {
                         api.stopLatest(getCurrentUser());
-                        //TODO how to invalidate activeEntry model?
-                        activeEntry.modelChanged();
                         // TODO make the links figure visibility out themselves
                         start.setVisible(true);
                         stop.setVisible(false);
@@ -79,10 +73,6 @@ public class HomePage extends TemplatePage {
                 setResponsePage(findPage());
             }
         });
-
-        // TODO make the links figure visibility out themselves
-        start.setVisible(!activeEntry.isVisible());
-        stop.setVisible(activeEntry.isVisible());
 
         try {
             if (getCurrentUser() != null) {
