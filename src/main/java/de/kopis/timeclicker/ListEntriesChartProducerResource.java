@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -44,6 +46,15 @@ public class ListEntriesChartProducerResource extends AbstractResource {
 
                 try {
                     final List<TimeEntry> entries = api.list(currentUser);
+                    // sort ascending
+                    Collections.sort(entries, new Comparator<TimeEntry>() {
+                        @Override
+                        public int compare(TimeEntry o1, TimeEntry o2) {
+                            // sort ASC by start date
+                            return o1.getStart().compareTo(o2.getStart());
+                        }
+                    });
+
                     for (int i = 0; i < entries.size(); i++) {
                         final TimeEntry entry = entries.get(i);
                         if (entry.getStart() != null && entry.getStop() != null) {

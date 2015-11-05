@@ -319,7 +319,7 @@ public class TimeclickerAPI {
     }
 
     private TimeEntry buildTimeEntryFromEntity(Entity timeEntryEntity) {
-        TimeEntry entry = new TimeEntry();
+        final TimeEntry entry = new TimeEntry();
         entry.setKey(KeyFactory.keyToString(timeEntryEntity.getKey()));
         if (timeEntryEntity.hasProperty("start")) {
             entry.setStart((Date) timeEntryEntity.getProperty("start"));
