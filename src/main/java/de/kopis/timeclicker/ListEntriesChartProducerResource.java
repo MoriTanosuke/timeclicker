@@ -57,16 +57,12 @@ public class ListEntriesChartProducerResource extends AbstractResource {
 
                     for (int i = 0; i < entries.size(); i++) {
                         final TimeEntry entry = entries.get(i);
-                        if (entry.getStart() != null && entry.getStop() != null) {
-                            // need to convert to ISO8601 for javascript
-                            writer.write("{\"c\":[" +
-                                    "{\"v\":\"" + new DateTime(entry.getStart()) + "\"}," +
-                                    "{\"v\":" + new TimeSum(entry).getDuration() + "}" +
-                                    "]}");
-                        } else {
-                            LOGGER.fine("Skipping entry " + entry);
-                        }
-                        // only write , if NOT last entry
+                        // need to convert to ISO8601 for javascript
+                        writer.write("{\"c\":[" +
+                                "{\"v\":\"" + new DateTime(entry.getStart()) + "\"}," +
+                                "{\"v\":" + new TimeSum(entry).getDuration() + "}" +
+                                "]}");
+                        // only write "," if NOT last entry
                         if (i < entries.size() - 1) {
                             writer.write(",");
                         }
