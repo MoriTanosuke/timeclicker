@@ -1,17 +1,21 @@
 package de.kopis.timeclicker.pages;
 
+import com.google.appengine.api.users.User;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
 import de.kopis.timeclicker.panels.ActiveEntryPanel;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
-import org.apache.wicket.request.flow.RedirectToUrlException;
+import org.apache.wicket.model.LoadableDetachableModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class HomePage extends TemplatePage {
     private static final long serialVersionUID = 1L;
@@ -30,7 +34,31 @@ public class HomePage extends TemplatePage {
         setStatelessHint(true);
         setVersioned(false);
 
-        add(activeEntry = new ActiveEntryPanel("activePanel"));
+        add(activeEntry = new ActiveEntryPanel("activePanel", new LoadableDetachableModel<String>() {
+            private final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+
+            @Override
+            protected String load() {
+                String activeEntry = null;
+
+                final User user = getCurrentUser();
+                if (user == null) return null;
+
+                try {
+                    final TimeEntry latest = getApi().latest(user);
+                    if (latest != null) {
+                        final Date start = latest.getStart();
+                        activeEntry = DATE_FORMAT.format(start);
+                    } else {
+                        activeEntry = null;
+                    }
+                } catch (NotAuthenticatedException e) {
+                    LOGGER.severe("Can not load active entry: " + e.getMessage());
+                }
+
+                return activeEntry;
+            }
+        }));
         add(start = new Link("start") {
             @Override
             public void onClick() {
@@ -41,7 +69,7 @@ public class HomePage extends TemplatePage {
                 } else {
                     try {
                         final TimeEntry entry = getApi().start(getCurrentUser());
-                  	// TODO make the links figure visibility out themselves
+                        // TODO make the links figure visibility out themselves
                         start.setVisible(false);
                         stop.setVisible(true);
                         success("Entry " + entry.getKey() + " started.");
@@ -82,21 +110,62 @@ public class HomePage extends TemplatePage {
         start.setVisible(!activeEntry.isVisible());
         stop.setVisible(activeEntry.isVisible());
 
-        try {
-            if (getCurrentUser() != null) {
-                //TODO implement LoadableDetachableModel with sums
-                add(new Label("dailySum", "Daily: " + getReadableDuration(getApi().getDailySum(getCurrentUser()))));
-                add(new Label("weeklySum", "Weekly: " + getReadableDuration(getApi().getWeeklySum(getCurrentUser()))));
-                add(new Label("monthlySum", "Monthly: " + getReadableDuration(getApi().getMonthlySum(getCurrentUser()))));
-                add(new Label("overallSum", "Overall: " + getReadableDuration(getApi().getOverallSum(getCurrentUser()))));
-            } else {
-                add(new Label("dailySum", "Daily: 0"));
-                add(new Label("weeklySum", "Weekly: 0"));
-                add(new Label("monthlySum", "Monthly: 0"));
-                add(new Label("overallSum", "Overall: 0"));
-            }
-        } catch (NotAuthenticatedException e) {
-            throw new RedirectToUrlException(getLoginURL("/"));
+        if (getCurrentUser() != null) {
+            //TODO implement LoadableDetachableModel with sums
+            add(new Label("dailySum", new LoadableDetachableModel<String>() {
+                @Override
+                protected String load() {
+                    String s = null;
+                    try {
+                        s = "Daily: " +
+                                getReadableDuration(HomePage.this.getApi().getDailySum(getCurrentUser()));
+                    } catch (NotAuthenticatedException e) {
+                        LOGGER.severe("Can not load daily time sum: " + e.getMessage());
+                    }
+                    return s;
+                }
+            }));
+            add(new Label("weeklySum", new LoadableDetachableModel<String>() {
+                @Override
+                protected String load() {
+                    String s = null;
+                    try {
+                        s = "Weekly: " + getReadableDuration(getApi().getWeeklySum(getCurrentUser()));
+                    } catch (NotAuthenticatedException e) {
+                        LOGGER.severe("Can not load daily time sum: " + e.getMessage());
+                    }
+                    return s;
+                }
+            }));
+            add(new Label("monthlySum", new LoadableDetachableModel<String>() {
+                @Override
+                protected String load() {
+                    String s = null;
+                    try {
+                        s = "Monthly: " + getReadableDuration(getApi().getMonthlySum(getCurrentUser()));
+                    } catch (NotAuthenticatedException e) {
+                        LOGGER.severe("Can not load daily time sum: " + e.getMessage());
+                    }
+                    return s;
+                }
+            }));
+            add(new Label("overallSum", new LoadableDetachableModel<String>() {
+                @Override
+                protected String load() {
+                    String s = null;
+                    try {
+                        s = "Overall: " + getReadableDuration(getApi().getOverallSum(getCurrentUser()));
+                    } catch (NotAuthenticatedException e) {
+                        LOGGER.severe("Can not load daily time sum: " + e.getMessage());
+                    }
+                    return s;
+                }
+            }));
+        } else {
+            add(new Label("dailySum", Model.of("Daily: 0")));
+            add(new Label("weeklySum", Model.of("Weekly: 0")));
+            add(new Label("monthlySum", Model.of("Monthly: 0")));
+            add(new Label("overallSum", Model.of("Overall: 0")));
         }
     }
 
