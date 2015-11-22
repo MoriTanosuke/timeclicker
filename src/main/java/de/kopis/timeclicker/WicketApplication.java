@@ -29,14 +29,17 @@ public class WicketApplication extends WebApplication {
         mountPage("/list", ListEntriesPage.class);
         mountPage("/edit/${key}", TimeEntryPage.class);
 
-        final ResourceReference resourceReference = new ResourceReference("rssProducer") {
-            ListEntriesChartProducerResource resource = new ListEntriesChartProducerResource();
-
+        mountResource("/chart.json", new ResourceReference("jsonProducer") {
             @Override
             public IResource getResource() {
-                return resource;
+                return new ListEntriesChartProducerResource();
             }
-        };
-        mountResource("/chart.json", resourceReference);
+        });
+        mountResource("/list.csv", new ResourceReference("csvProducer") {
+            @Override
+            public IResource getResource() {
+                return new ListEntriesCsvProducerResource();
+            }
+        });
     }
 }

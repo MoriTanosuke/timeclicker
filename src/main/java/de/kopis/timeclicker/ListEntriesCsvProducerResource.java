@@ -19,15 +19,15 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 
-public class ListEntriesChartProducerResource extends AbstractResource {
+public class ListEntriesCsvProducerResource extends AbstractResource {
     private static final Logger LOGGER = Logger.getLogger(ListEntriesChartProducerResource.class.getName());
 
-    private static final TimeclickerAPI api = new TimeclickerAPI();
+    private static final transient TimeclickerAPI api = new TimeclickerAPI();
 
     @Override
     protected ResourceResponse newResourceResponse(Attributes attributes) {
         final ResourceResponse resourceResponse = new ResourceResponse();
-        resourceResponse.setContentType("application/json");
+        resourceResponse.setContentType("application/text");
         resourceResponse.setTextEncoding("utf-8");
 
         resourceResponse.setWriteCallback(new WriteCallback() {
@@ -39,10 +39,6 @@ public class ListEntriesChartProducerResource extends AbstractResource {
                 final OutputStream outputStream = attributes.getResponse().getOutputStream();
                 final Writer writer = new OutputStreamWriter(outputStream);
 
-                writer.write("{\"cols\":[" +
-                        "{\"label\":\"Start\",\"type\":\"string\"}," +
-                        "{\"label\":\"Tracked\",\"type\":\"number\"}" +
-                        "],\"rows\":[");
 
                 try {
                     final List<TimeEntry> entries = api.list(currentUser);
@@ -55,24 +51,20 @@ public class ListEntriesChartProducerResource extends AbstractResource {
                         }
                     });
 
-                    for (int i = 0; i < entries.size(); i++) {
-                        final TimeEntry entry = entries.get(i);
-                        // need to convert to ISO8601 for javascript
-                        writer.write("{\"c\":[" +
-                                "{\"v\":\"" + new DateTime(entry.getStart()) + "\"}," +
-                                "{\"v\":" + new TimeSum(entry).getDuration() + "}" +
-                                "]}");
-                        // only write "," if NOT last entry
-                        if (i < entries.size() - 1) {
-                            writer.write(",");
-                        }
+                    writer.write("Date,Start,Stop,Sum\n");
+                    for (TimeEntry entry : entries) {
+                        writer.write("\"" +
+                                new DateTime(entry.getStart()).toString("YYYY-MM-dd") + "\",\"" +
+                                new DateTime(entry.getStart()).toString("HH:mm:ss") + "\",\"" +
+                                new DateTime(entry.getStop()).toString("HH:mm:ss") + "\"," +
+                                new TimeSum(entry).getDuration() + "\n");
                     }
                 } catch (NotAuthenticatedException e) {
                     LOGGER.severe("Can not load entries: " + e.getMessage());
                 }
 
-                writer.write("]}");
                 writer.flush();
+                writer.close();
             }
         });
 

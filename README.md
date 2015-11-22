@@ -22,3 +22,12 @@ You can use the included *Dockerfile* to compile this application:
 ````
 docker run -it --rm --name my-maven-project -v "$PWD":/usr/src/mymaven -w /usr/src/mymaven maven:3-jdk-8-onbuild mvn clean install
 ````
+
+To avoid re-downloading all the maven dependencies, I recommend mounting a directory into the docker container:
+
+````
+docker run -it --rm --name my-maven-project -v $(pwd):/usr/src/mymaven -v $(pwd)/repo:/root/.m2/repository -w /usr/src/mymaven maven:3-jdk-8-ouild mvn clean install
+````
+
+The local directory `repo` will now hold all the downloaded dependencies and it will live through container restarts.
+
