@@ -29,6 +29,7 @@ public class ListEntriesCsvProducerResource extends AbstractResource {
         final ResourceResponse resourceResponse = new ResourceResponse();
         resourceResponse.setContentType("application/text");
         resourceResponse.setTextEncoding("utf-8");
+        resourceResponse.setFileName("list.csv");
 
         resourceResponse.setWriteCallback(new WriteCallback() {
             @Override

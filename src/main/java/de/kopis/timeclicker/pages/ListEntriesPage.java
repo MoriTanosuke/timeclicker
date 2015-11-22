@@ -1,9 +1,11 @@
 package de.kopis.timeclicker.pages;
 
+import de.kopis.timeclicker.ListEntriesCsvProducerResource;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.markup.html.link.ResourceLink;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
@@ -29,8 +31,9 @@ public class ListEntriesPage extends TemplatePage {
         setStatelessHint(true);
         setVersioned(false);
 
-        final List<TimeEntry> entries = new ArrayList<>();
+        add(new ResourceLink("csvLink", new ListEntriesCsvProducerResource()));
 
+        final List<TimeEntry> entries = new ArrayList<>();
         if (getCurrentUser() != null) {
             try {
                 entries.addAll(getApi().list(getCurrentUser()));
