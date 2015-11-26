@@ -31,8 +31,6 @@ public class HomePage extends TemplatePage {
     @Override
     public void onInitialize() {
         super.onInitialize();
-        setStatelessHint(true);
-        setVersioned(false);
 
         add(activeEntry = new ActiveEntryPanel("activePanel", new LoadableDetachableModel<String>() {
             private final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
@@ -42,7 +40,9 @@ public class HomePage extends TemplatePage {
                 String activeEntry = null;
 
                 final User user = getCurrentUser();
-                if (user == null) return null;
+                if (user == null) {
+                    return null;
+                }
 
                 try {
                     final TimeEntry latest = getApi().latest(user);
@@ -61,17 +61,19 @@ public class HomePage extends TemplatePage {
         }));
         add(start = new Link("start") {
             @Override
+            public boolean isVisible() {
+                return !activeEntry.isVisible();
+            };
+
+            @Override
             public void onClick() {
                 // start a new entry
                 if (getCurrentUser() == null) {
-                    //TODO add error or redirect to login
+                    // TODO add error or redirect to login
                     error("You are not logged in.");
                 } else {
                     try {
                         final TimeEntry entry = getApi().start(getCurrentUser());
-                        // TODO make the links figure visibility out themselves
-                        start.setVisible(false);
-                        stop.setVisible(true);
                         success("Entry " + entry.getKey() + " started.");
                     } catch (NotAuthenticatedException e) {
                         LOGGER.severe("Can not start entry: " + e.getMessage());
@@ -83,19 +85,21 @@ public class HomePage extends TemplatePage {
         });
         add(stop = new Link("stop") {
             @Override
+            public boolean isVisible() {
+                return activeEntry.isVisible();
+            };
+
+            @Override
             public void onClick() {
                 // stop latest entry
                 if (getCurrentUser() == null) {
-                    //TODO add error or redirect to login
+                    // TODO add error or redirect to login
                     error("You are not logged in.");
                 } else {
                     try {
                         getApi().stopLatest(getCurrentUser());
-                        //TODO how to invalidate activeEntry model?
+                        // TODO how to invalidate activeEntry model?
                         activeEntry.modelChanged();
-                        // TODO make the links figure visibility out themselves
-                        start.setVisible(true);
-                        stop.setVisible(false);
                         success("Latest entry stopped.");
                     } catch (NotAuthenticatedException e) {
                         LOGGER.severe("Can not stop entry: " + e.getMessage());
@@ -106,19 +110,14 @@ public class HomePage extends TemplatePage {
             }
         });
 
-        // TODO make the links figure visibility out themselves
-        start.setVisible(!activeEntry.isVisible());
-        stop.setVisible(activeEntry.isVisible());
-
         if (getCurrentUser() != null) {
-            //TODO implement LoadableDetachableModel with sums
+            // TODO implement LoadableDetachableModel with sums
             add(new Label("dailySum", new LoadableDetachableModel<String>() {
                 @Override
                 protected String load() {
                     String s = null;
                     try {
-                        s = "Daily: " +
-                                getReadableDuration(HomePage.this.getApi().getDailySum(getCurrentUser()));
+                        s = "Daily: " + getReadableDuration(HomePage.this.getApi().getDailySum(getCurrentUser()));
                     } catch (NotAuthenticatedException e) {
                         LOGGER.severe("Can not load daily time sum: " + e.getMessage());
                     }
@@ -171,12 +170,13 @@ public class HomePage extends TemplatePage {
 
     private String getReadableDuration(TimeSum sum) throws NotAuthenticatedException {
         final long duration = sum.getDuration();
-        //TODO use formatter with model
+        // TODO use formatter with model
 
         String readableDuration = "" + duration;
         try {
             Duration d = DatatypeFactory.newInstance().newDuration(duration);
-            readableDuration = String.format("%02d hours, %02d minutes, %02d seconds", d.getDays() * 24 + d.getHours(), d.getMinutes(), d.getSeconds());
+            readableDuration = String.format("%02d hours, %02d minutes, %02d seconds", d.getDays() * 24 + d.getHours(),
+                    d.getMinutes(), d.getSeconds());
         } catch (DatatypeConfigurationException e) {
             LOGGER.severe("Can not format duration: " + e.getMessage());
         }
