@@ -8,6 +8,8 @@ import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.link.ResourceLink;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
+import org.apache.wicket.markup.html.list.PageableListView;
+import org.apache.wicket.markup.html.navigation.paging.PagingNavigator;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
 import java.text.DateFormat;
@@ -49,8 +51,7 @@ public class ListEntriesPage extends TemplatePage {
             }
         }
 
-        //TODO use pagination for list of TimeEntry!
-        add(new ListView<TimeEntry>("listView", entries) {
+        final PageableListView<TimeEntry> listView = new PageableListView<TimeEntry>("listView", entries, 10) {
             @Override
             protected void populateItem(final ListItem<TimeEntry> item) {
                 item.add(new Label("entryKey", item.getModelObject().getKey()));
@@ -80,6 +81,9 @@ public class ListEntriesPage extends TemplatePage {
                     }
                 });
             }
-        });
+        };
+        final PagingNavigator navigator = new PagingNavigator("paginator", listView);
+        add(navigator);
+		add(listView);
     }
 }
