@@ -1,23 +1,26 @@
 package de.kopis.timeclicker;
 
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
-import de.kopis.timeclicker.api.TimeclickerAPI;
-import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
-import de.kopis.timeclicker.model.TimeEntry;
-import de.kopis.timeclicker.model.TimeSum;
-import org.apache.wicket.request.resource.AbstractResource;
-import org.joda.time.DateTime;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
+
+import org.apache.wicket.request.resource.AbstractResource;
+
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
+
+import de.kopis.timeclicker.api.TimeclickerAPI;
+import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TimeEntry;
+import de.kopis.timeclicker.model.TimeSum;
 
 public class ListEntriesChartProducerResource extends AbstractResource {
     private static final Logger LOGGER = Logger.getLogger(ListEntriesChartProducerResource.class.getName());
@@ -40,7 +43,7 @@ public class ListEntriesChartProducerResource extends AbstractResource {
                 final Writer writer = new OutputStreamWriter(outputStream);
 
                 writer.write("{\"cols\":[" +
-                        "{\"label\":\"Start\",\"type\":\"string\"}," +
+                        "{\"label\":\"Tag\",\"type\":\"string\"}," +
                         "{\"label\":\"Tracked\",\"type\":\"number\"}" +
                         "],\"rows\":[");
 
@@ -55,18 +58,31 @@ public class ListEntriesChartProducerResource extends AbstractResource {
                         }
                     });
 
+                    final Map<String, TimeSum> timeByTags = new HashMap<>();
                     for (int i = 0; i < entries.size(); i++) {
                         final TimeEntry entry = entries.get(i);
-                        // need to convert to ISO8601 for javascript
-                        writer.write("{\"c\":[" +
-                                "{\"v\":\"" + new DateTime(entry.getStart()) + "\"}," +
-                                "{\"v\":" + new TimeSum(entry).getDuration() + "}" +
+                        final String tags = entry.getTags() != null ? entry.getTags() : "no tag";
+                        if(!timeByTags.containsKey(tags)) {
+                        	timeByTags.put(tags, new TimeSum(0));
+                        }
+                        final TimeSum sum = timeByTags.get(tags);
+                        sum.addDuration(new TimeSum(entry).getDuration());
+                    }
+                    
+                    // write by tag
+                    final String[] keys = timeByTags.keySet().toArray(new String[0]);
+                    for (int i = 0;i < keys.length;i++) {
+                    	final String tag = keys[i];
+						final TimeSum sum = timeByTags.get(tag);
+						writer.write("{\"c\":[" +
+                                "{\"v\":\"" + tag + "\"}," +
+                                "{\"v\":" + sum.getDuration() + "}" +
                                 "]}");
-                        // only write "," if NOT last entry
+						// only write "," if NOT last entry
                         if (i < entries.size() - 1) {
                             writer.write(",");
                         }
-                    }
+					}
                 } catch (NotAuthenticatedException e) {
                     LOGGER.severe("Can not load entries: " + e.getMessage());
                 }
