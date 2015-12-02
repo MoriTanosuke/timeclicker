@@ -1,17 +1,5 @@
 package de.kopis.timeclicker.pages;
 
-import de.kopis.timeclicker.ListEntriesCsvProducerResource;
-import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
-import de.kopis.timeclicker.model.TimeEntry;
-import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.link.Link;
-import org.apache.wicket.markup.html.link.ResourceLink;
-import org.apache.wicket.markup.html.list.ListItem;
-import org.apache.wicket.markup.html.list.ListView;
-import org.apache.wicket.markup.html.list.PageableListView;
-import org.apache.wicket.markup.html.navigation.paging.PagingNavigator;
-import org.apache.wicket.request.mapper.parameter.PageParameters;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -19,9 +7,21 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.markup.html.link.ResourceLink;
+import org.apache.wicket.markup.html.list.ListItem;
+import org.apache.wicket.markup.html.list.PageableListView;
+import org.apache.wicket.markup.html.navigation.paging.PagingNavigator;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
+
+import de.kopis.timeclicker.ListEntriesCsvProducerResource;
+import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TimeEntry;
+
 public class ListEntriesPage extends TemplatePage {
     private static final long serialVersionUID = 1L;
-    private final DateFormat DF = new SimpleDateFormat("HH:mm:ss dd.MM.yyyy Z");
+    private DateFormat DATE_FORMAT;
 
     public ListEntriesPage(PageParameters parameters) {
         super("Time Entries", parameters);
@@ -34,6 +34,8 @@ public class ListEntriesPage extends TemplatePage {
         setVersioned(false);
 
         add(new ResourceLink("csvLink", new ListEntriesCsvProducerResource()));
+        // use the locale to figure out the dateformat
+        DATE_FORMAT = new SimpleDateFormat("HH:mm:ss dd.MM.yyyy Z", getLocale());
 
         final List<TimeEntry> entries = new ArrayList<>();
         if (getCurrentUser() != null) {
@@ -55,9 +57,9 @@ public class ListEntriesPage extends TemplatePage {
             @Override
             protected void populateItem(final ListItem<TimeEntry> item) {
                 item.add(new Label("entryKey", item.getModelObject().getKey()));
-                item.add(new Label("entryStart", DF.format(item.getModelObject().getStart())));
+                item.add(new Label("entryStart", DATE_FORMAT.format(item.getModelObject().getStart())));
                 if (item.getModelObject().getStop() != null) {
-                    item.add(new Label("entryStop", DF.format(item.getModelObject().getStop())));
+                    item.add(new Label("entryStop", DATE_FORMAT.format(item.getModelObject().getStop())));
                 } else {
                     item.add(new Label("entryStop", "-"));
                 }
