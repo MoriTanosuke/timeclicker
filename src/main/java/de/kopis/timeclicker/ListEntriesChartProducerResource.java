@@ -79,7 +79,7 @@ public class ListEntriesChartProducerResource extends AbstractResource {
                                 "{\"v\":" + sum.getDuration() + "}" +
                                 "]}");
 						// only write "," if NOT last entry
-                        if (i < entries.size() - 1) {
+                        if (i < keys.length - 1) {
                             writer.write(",");
                         }
 					}
