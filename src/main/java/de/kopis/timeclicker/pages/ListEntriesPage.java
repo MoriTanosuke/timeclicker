@@ -63,6 +63,11 @@ public class ListEntriesPage extends TemplatePage {
                 } else {
                     item.add(new Label("entryStop", "-"));
                 }
+                if (item.getModelObject().getTags() != null) {
+                    item.add(new Label("tags",item.getModelObject().getTags()));
+                } else {
+                    item.add(new Label("tags", "-"));
+                }
                 item.add(new Link("editLink") {
                     @Override
                     public void onClick() {

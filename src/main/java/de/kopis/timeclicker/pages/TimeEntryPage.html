@@ -7,13 +7,17 @@
 <wicket:extend>
     <form wicket:id="entryForm">
         <input type="hidden" wicket:id="key"/>
-        <label for="start">Start</label>
 
+        <label for="start">Start</label>
         <div wicket:id="start"/>
         <br/>
-        <label for="stop">Stop</label>
 
+        <label for="stop">Stop</label>
         <div wicket:id="stop"/>
+        <br/>
+        
+        <label for="tags">Tags</label>
+        <div><input type="text" wicket:id="tags" /></div>
         <br/>
 
         <input type="submit" wicket:id="update" />

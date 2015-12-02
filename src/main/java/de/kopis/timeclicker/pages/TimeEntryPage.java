@@ -9,6 +9,7 @@ import org.apache.wicket.extensions.yui.calendar.DateTimeField;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.HiddenField;
+import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
@@ -29,9 +30,10 @@ public class TimeEntryPage extends TemplatePage {
             final Form<TimeEntry> form = new Form<>("entryForm");
             form.setDefaultModel(new CompoundPropertyModel(entry));
             form.add(new HiddenField("key"));
-            form.add(new DateTimeField("start"));
             //TODO add timezone to DateTimeField?
+            form.add(new DateTimeField("start"));
             form.add(new DateTimeField("stop"));
+            form.add(new TextField("tags"));
             form.add(new Button("update") {
                 @Override
                 public void onSubmit() {
@@ -40,7 +42,7 @@ public class TimeEntryPage extends TemplatePage {
                     try {
                         UserService userService = UserServiceFactory.getUserService();
                         User user = userService.getCurrentUser();
-                        getApi().update(updateEntry.getKey(), updateEntry.getStart(), updateEntry.getStop(), user);
+                        getApi().update(updateEntry.getKey(), updateEntry.getStart(), updateEntry.getStop(), updateEntry.getTags(), user);
                         success("Entry saved.");
                     } catch (NotAuthenticatedException e) {
                         error("Can not save entry. Try again.");

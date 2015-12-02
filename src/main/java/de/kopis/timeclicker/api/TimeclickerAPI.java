@@ -105,7 +105,7 @@ public class TimeclickerAPI {
     }
 
     @ApiMethod(name = "update", path = "update", httpMethod = "post")
-    public void update(@Named("key") String key, @Named("start") Date start, @Named("stop") Date stop, User user) throws NotAuthenticatedException {
+    public void update(@Named("key") String key, @Named("start") Date start, @Named("stop") Date stop, @Named("tags") String tags, User user) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();
 
         LOGGER.info("User " + user.getUserId() + " starting to update entry " + key + " with start=" + start + " stop=" + stop);
@@ -118,6 +118,7 @@ public class TimeclickerAPI {
             }
             timeEntryEntity.setProperty("start", start);
             timeEntryEntity.setProperty("stop", stop);
+            timeEntryEntity.setProperty("tags", tags);
             datastore.put(timeEntryEntity);
             LOGGER.info("User " + user.getUserId() + " updated entry " + timeEntryEntity.getKey());
         } catch (EntityNotFoundException e) {
@@ -326,6 +327,9 @@ public class TimeclickerAPI {
         }
         if (timeEntryEntity.hasProperty("stop")) {
             entry.setStop((Date) timeEntryEntity.getProperty("stop"));
+        }
+        if (timeEntryEntity.hasProperty("tags")) {
+            entry.setTags((String) timeEntryEntity.getProperty("tags"));
         }
         return entry;
     }

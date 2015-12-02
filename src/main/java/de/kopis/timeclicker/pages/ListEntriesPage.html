@@ -7,6 +7,7 @@
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script type="text/javascript">
+    /* CHART DISABLED FOR THE MOMENT
         google.load('visualization', '1', {'packages':['corechart', 'bar']});
         google.setOnLoadCallback(drawChart);
 
@@ -22,7 +23,7 @@
                 chart.draw(data, {title: 'Tracked time'});
             });
         }
-
+    */
     </script>
 </wicket:head>
 <body>
@@ -37,6 +38,7 @@
             <th>Id</th>
             <th>Start</th>
             <th>Stop</th>
+            <th>Tags</th>
             <th>Actions</th>
         </tr>
         </thead>
@@ -45,12 +47,13 @@
             <td wicket:id="entryKey">Key</td>
             <td wicket:id="entryStart">Start</td>
             <td wicket:id="entryStop">Stop</td>
+            <td wicket:id="tags">Tags</td>
             <td><a wicket:id="editLink">Edit</a> <a wicket:id="deleteLink">Delete</a></td>
         </tr>
         </tbody>
     </table>
 
-    <div id="timeline" style="height: 180px;"></div>
+    <div id="timeline"></div>
 </wicket:extend>
 </body>
 </html>

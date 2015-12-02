@@ -9,6 +9,7 @@ public class TimeEntry implements Serializable {
     private Date start = null;
     private Date stop = null;
     private String key;
+    private String tags;
 
     public TimeEntry() {
         start = new Date();
@@ -38,12 +39,21 @@ public class TimeEntry implements Serializable {
         return key;
     }
 
-    @Override
+    public String getTags() {
+		return tags;
+	}
+
+	public void setTags(String tags) {
+		this.tags = tags;
+	}
+
+	@Override
     public String toString() {
         return "TimeEntry{" +
                 "start=" + start +
                 ", stop=" + stop +
-                ", key='" + key + '\'' +
+                ", key='" + key + "'" +
+                ", tags='" + tags + "'" + 
                 '}';
     }
 }
