@@ -13,11 +13,13 @@ import org.apache.wicket.markup.html.link.ResourceLink;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.PageableListView;
 import org.apache.wicket.markup.html.navigation.paging.PagingNavigator;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
 import de.kopis.timeclicker.ListEntriesCsvProducerResource;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
+import de.kopis.timeclicker.model.TimeSum;
 
 public class ListEntriesPage extends TemplatePage {
     private static final long serialVersionUID = 1L;
@@ -60,8 +62,10 @@ public class ListEntriesPage extends TemplatePage {
                 item.add(new Label("entryStart", DATE_FORMAT.format(item.getModelObject().getStart())));
                 if (item.getModelObject().getStop() != null) {
                     item.add(new Label("entryStop", DATE_FORMAT.format(item.getModelObject().getStop())));
+                    item.add(new Label("entrySum", Model.of(new TimeSum(item.getModelObject()).getDuration())));
                 } else {
                     item.add(new Label("entryStop", "-"));
+                    item.add(new Label("entrySum", "-"));
                 }
                 if (item.getModelObject().getTags() != null) {
                     item.add(new Label("tags",item.getModelObject().getTags()));
