@@ -5,16 +5,16 @@ import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
 import de.kopis.timeclicker.panels.ActiveEntryPanel;
+import de.kopis.timeclicker.utils.WorkdayCalculator;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
-import org.apache.wicket.model.Model;
+import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.Duration;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 public class HomePage extends TemplatePage {
@@ -63,7 +63,7 @@ public class HomePage extends TemplatePage {
             @Override
             public boolean isVisible() {
                 return !activeEntry.isVisible();
-            };
+            }
 
             @Override
             public void onClick() {
@@ -87,7 +87,7 @@ public class HomePage extends TemplatePage {
             @Override
             public boolean isVisible() {
                 return activeEntry.isVisible();
-            };
+            }
 
             @Override
             public void onClick() {
@@ -110,76 +110,84 @@ public class HomePage extends TemplatePage {
             }
         });
 
-        if (getCurrentUser() != null) {
-            // TODO implement LoadableDetachableModel with sums
-            add(new Label("dailySum", new LoadableDetachableModel<String>() {
-                @Override
-                protected String load() {
-                    String s = null;
-                    try {
-                        s = "Daily: " + getReadableDuration(HomePage.this.getApi().getDailySum(getCurrentUser()));
-                    } catch (NotAuthenticatedException e) {
-                        LOGGER.severe("Can not load daily time sum: " + e.getMessage());
-                    }
-                    return s;
-                }
-            }));
-            add(new Label("weeklySum", new LoadableDetachableModel<String>() {
-                @Override
-                protected String load() {
-                    String s = null;
-                    try {
-                        s = "Weekly: " + getReadableDuration(getApi().getWeeklySum(getCurrentUser()));
-                    } catch (NotAuthenticatedException e) {
-                        LOGGER.severe("Can not load daily time sum: " + e.getMessage());
-                    }
-                    return s;
-                }
-            }));
-            add(new Label("monthlySum", new LoadableDetachableModel<String>() {
-                @Override
-                protected String load() {
-                    String s = null;
-                    try {
-                        s = "Monthly: " + getReadableDuration(getApi().getMonthlySum(getCurrentUser()));
-                    } catch (NotAuthenticatedException e) {
-                        LOGGER.severe("Can not load daily time sum: " + e.getMessage());
-                    }
-                    return s;
-                }
-            }));
-            add(new Label("overallSum", new LoadableDetachableModel<String>() {
-                @Override
-                protected String load() {
-                    String s = null;
-                    try {
-                        s = "Overall: " + getReadableDuration(getApi().getOverallSum(getCurrentUser()));
-                    } catch (NotAuthenticatedException e) {
-                        LOGGER.severe("Can not load daily time sum: " + e.getMessage());
-                    }
-                    return s;
-                }
-            }));
-        } else {
-            add(new Label("dailySum", Model.of("Daily: 0")));
-            add(new Label("weeklySum", Model.of("Weekly: 0")));
-            add(new Label("monthlySum", Model.of("Monthly: 0")));
-            add(new Label("overallSum", Model.of("Overall: 0")));
-        }
-    }
+        final IModel<TimeSum> overallSum = new LoadableDetachableModel<TimeSum>() {
+            private TimeSum sum;
 
-    private String getReadableDuration(TimeSum sum) throws NotAuthenticatedException {
-        final long duration = sum.getDuration();
-        // TODO use formatter with model
+            @Override
+            protected TimeSum load() {
+                try {
+                    sum = getApi().getOverallSum(getCurrentUser());
+                } catch (NotAuthenticatedException e) {
+                    LOGGER.severe("Can not load overall sum: " + e.getMessage());
+                }
+                return sum;
+            }
+        };
+        final IModel<TimeSum> monthlySum = new LoadableDetachableModel<TimeSum>() {
+            private TimeSum sum;
 
-        String readableDuration = "" + duration;
-        try {
-            Duration d = DatatypeFactory.newInstance().newDuration(duration);
-            readableDuration = String.format("%02d hours, %02d minutes, %02d seconds", d.getDays() * 24 + d.getHours(),
-                    d.getMinutes(), d.getSeconds());
-        } catch (DatatypeConfigurationException e) {
-            LOGGER.severe("Can not format duration: " + e.getMessage());
-        }
-        return readableDuration;
+            @Override
+            protected TimeSum load() {
+                try {
+                    sum = getApi().getMonthlySum(getCurrentUser());
+                } catch (NotAuthenticatedException e) {
+                    LOGGER.severe("Can not load monthly sum: " + e.getMessage());
+                }
+                return sum;
+            }
+        };
+        final IModel<TimeSum> weeklySum = new LoadableDetachableModel<TimeSum>() {
+            private TimeSum sum;
+
+            @Override
+            protected TimeSum load() {
+                try {
+                    sum = getApi().getWeeklySum(getCurrentUser());
+                } catch (NotAuthenticatedException e) {
+                    LOGGER.severe("Can not load weekly sum: " + e.getMessage());
+                }
+                return sum;
+            }
+        };
+        final IModel<TimeSum> dailySum = new LoadableDetachableModel<TimeSum>() {
+            private TimeSum sum;
+
+            @Override
+            protected TimeSum load() {
+                try {
+                    sum = getApi().getDailySum(getCurrentUser());
+                } catch (NotAuthenticatedException e) {
+                    LOGGER.severe("Can not load daily sum: " + e.getMessage());
+                }
+                return sum;
+            }
+        };
+
+        final IModel<Double> averagePerWorkday = new LoadableDetachableModel<Double>() {
+            @Override
+            protected Double load() {
+                final Calendar cal = Calendar.getInstance();
+                // end now
+                final Date endDate = cal.getTime();
+                // start first of month
+                cal.set(Calendar.DAY_OF_MONTH, 0);
+                final Date startDate = cal.getTime();
+                final int workdays = WorkdayCalculator.getWorkingDays(startDate, endDate);
+                double averagePerDay = 0;
+
+                final TimeSum overallTimeSum = overallSum.getObject();
+                if (overallTimeSum != null) {
+                    averagePerDay = overallTimeSum.getDuration() / workdays;
+                }
+                return averagePerDay;
+            }
+        };
+
+        add(new Label("averagePerDay", new StringResourceModel("average.sum", null, averagePerWorkday.getObject().longValue())));
+        //TODO sums are not updating on page refresh!
+        add(new Label("dailySum", new StringResourceModel("daily.sum", null, dailySum.getObject())));
+        add(new Label("weeklySum", new StringResourceModel("weekly.sum", null, weeklySum.getObject())));
+        add(new Label("monthlySum", new StringResourceModel("monthly.sum", null, monthlySum.getObject())));
+        add(new Label("sum", new StringResourceModel("overall.sum", null, overallSum.getObject())));
     }
 }
