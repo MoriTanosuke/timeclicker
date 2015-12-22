@@ -1,12 +1,9 @@
 package de.kopis.timeclicker.pages;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
+import de.kopis.timeclicker.ListEntriesCsvProducerResource;
+import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TimeEntry;
+import de.kopis.timeclicker.model.TimeSum;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.link.ResourceLink;
@@ -14,12 +11,14 @@ import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.PageableListView;
 import org.apache.wicket.markup.html.navigation.paging.PagingNavigator;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
-import de.kopis.timeclicker.ListEntriesCsvProducerResource;
-import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
-import de.kopis.timeclicker.model.TimeEntry;
-import de.kopis.timeclicker.model.TimeSum;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class ListEntriesPage extends TemplatePage {
     private static final long serialVersionUID = 1L;
@@ -39,11 +38,11 @@ public class ListEntriesPage extends TemplatePage {
         // use the locale to figure out the dateformat
         DATE_FORMAT = new SimpleDateFormat("HH:mm:ss dd.MM.yyyy Z", getLocale());
 
-        final List<TimeEntry> entries = new ArrayList<>();
+        final ListModel<TimeEntry> entries = new ListModel<TimeEntry>(new ArrayList<TimeEntry>());
         if (getCurrentUser() != null) {
             try {
-                entries.addAll(getApi().list(getCurrentUser()));
-                Collections.sort(entries, new Comparator<TimeEntry>() {
+                entries.getObject().addAll(getApi().list(getCurrentUser()));
+                Collections.sort(entries.getObject(), new Comparator<TimeEntry>() {
                     @Override
                     public int compare(TimeEntry o1, TimeEntry o2) {
                         // sort DESC by start date
@@ -84,7 +83,10 @@ public class ListEntriesPage extends TemplatePage {
                     @Override
                     public void onClick() {
                         try {
+                            // remove from API
                             getApi().delete(item.getModelObject().getKey(), getCurrentUser());
+                            // remove from listmodel
+                            entries.getObject().remove(item.getModelObject());
                         } catch (NotAuthenticatedException e) {
                             LOGGER.severe("Can not delete entry " + item.getModelObject().getKey());
                         }
