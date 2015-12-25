@@ -1,6 +1,6 @@
 package de.kopis.timeclicker.model;
 
-import de.kopis.timeclicker.utils.FormattedDurationPrinter;
+import de.kopis.timeclicker.utils.DurationUtils;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -51,7 +51,7 @@ public class TimeSum implements Serializable {
 
     private String getReadableDuration(TimeSum sum) {
         if (sum != null) {
-            return FormattedDurationPrinter.getReadableDuration(sum.getDuration());
+            return DurationUtils.getReadableDuration(sum.getDuration());
         } else {
             return "--";
         }

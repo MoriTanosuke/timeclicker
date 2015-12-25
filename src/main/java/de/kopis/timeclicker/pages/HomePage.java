@@ -5,6 +5,7 @@ import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
 import de.kopis.timeclicker.panels.ActiveEntryPanel;
+import de.kopis.timeclicker.utils.DurationUtils;
 import de.kopis.timeclicker.utils.WorkdayCalculator;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
@@ -163,7 +164,7 @@ public class HomePage extends TemplatePage {
             }
         };
 
-        final IModel<Integer> workingDaysInMonth = new LoadableDetachableModel<Integer>() {
+        final IModel<Integer> workdaysModel = new LoadableDetachableModel<Integer>() {
             @Override
             protected Integer load() {
                 final Calendar cal = Calendar.getInstance();
@@ -180,25 +181,37 @@ public class HomePage extends TemplatePage {
                 cal.set(Calendar.SECOND, 0);
                 cal.set(Calendar.MILLISECOND, 0);
                 final Date startDate = cal.getTime();
-                return WorkdayCalculator.getWorkingDays(startDate, endDate);
+                final int workdays = WorkdayCalculator.getWorkingDays(startDate, endDate);
+                return workdays;
             }
         };
-        final IModel<TimeSum> averagePerWorkday = new LoadableDetachableModel<TimeSum>() {
+        final IModel<Long> averagePerWorkdayPerMonth = new LoadableDetachableModel<Long>() {
             @Override
-            protected TimeSum load() {
-                final double workdays = workingDaysInMonth.getObject();
-                double averagePerDay = 0;
+            protected Long load() {
+                Long averagePerDay = Long.valueOf(0L);
 
-                final TimeSum monthlyTimeSum = monthlySum.getObject();
-                if (monthlyTimeSum != null) {
-                    averagePerDay = monthlyTimeSum.getDuration() / workdays;
+                final TimeSum overallTimeSum = monthlySum.getObject();
+                final long workdays = (long) workdaysModel.getObject();
+                if (overallTimeSum != null) {
+                    averagePerDay = overallTimeSum.getDuration() / workdays;
                 }
-                return new TimeSum((long) averagePerDay);
+                // return in milliseconds
+                return averagePerDay;
+            }
+        };
+        final IModel<String> readableAveragePerDay = new LoadableDetachableModel<String>() {
+            @Override
+            protected String load() {
+                final Long averagePerDay = averagePerWorkdayPerMonth.getObject();
+                final String readableDuration = DurationUtils.getReadableDuration(averagePerDay);
+                return readableDuration;
             }
         };
 
-        //TODO display averagePerWorkday as readable duration
-        add(new Label("averagePerDay", new StringResourceModel("average.sum", null, averagePerWorkday.getObject())));
+        add(new Label("averagePerDay", new StringResourceModel("average.sum", null, new Object[]{
+                readableAveragePerDay.getObject(),
+                workdaysModel.getObject().intValue()
+        })));
         //TODO sums are not updating on page refresh!
         add(new Label("dailySum", new StringResourceModel("daily.sum", null, dailySum.getObject())));
         add(new Label("weeklySum", new StringResourceModel("weekly.sum", null, weeklySum.getObject())));

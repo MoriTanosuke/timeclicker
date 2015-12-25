@@ -4,6 +4,7 @@ import de.kopis.timeclicker.ListEntriesCsvProducerResource;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
+import de.kopis.timeclicker.utils.DurationUtils;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.link.ResourceLink;
@@ -68,7 +69,7 @@ public class ListEntriesPage extends TemplatePage {
                 item.add(new Label("entryStart", DATE_FORMAT.format(item.getModelObject().getStart())));
                 if (item.getModelObject().getStop() != null) {
                     item.add(new Label("entryStop", DATE_FORMAT.format(item.getModelObject().getStop())));
-                    item.add(new Label("entrySum", Model.of(new TimeSum(item.getModelObject()).getDuration())));
+                    item.add(new Label("entrySum", Model.of(DurationUtils.getReadableDuration(new TimeSum(item.getModelObject()).getDuration()))));
                 } else {
                     item.add(new Label("entryStop", "-"));
                     item.add(new Label("entrySum", "-"));
