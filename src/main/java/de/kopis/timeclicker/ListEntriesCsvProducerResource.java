@@ -52,13 +52,14 @@ public class ListEntriesCsvProducerResource extends AbstractResource {
                         }
                     });
 
-                    writer.write("Date,Start,Stop,Sum\n");
+                    writer.write("Date,Start,Stop,Sum,Tags\n");
                     for (TimeEntry entry : entries) {
                         writer.write("\"" +
                                 new DateTime(entry.getStart()).toString("YYYY-MM-dd") + "\",\"" +
                                 new DateTime(entry.getStart()).toString("HH:mm:ss") + "\",\"" +
                                 new DateTime(entry.getStop()).toString("HH:mm:ss") + "\"," +
-                                new TimeSum(entry).getDuration() + "\n");
+                                new TimeSum(entry).getDuration() + ",\"" +
+                                ((entry.getTags() != null) ? entry.getTags() : "") + "\"\n");
                     }
                 } catch (NotAuthenticatedException e) {
                     LOGGER.severe("Can not load entries: " + e.getMessage());
