@@ -35,6 +35,13 @@ public class ListEntriesPage extends TemplatePage {
         setVersioned(false);
 
         add(new ResourceLink("csvLink", new ListEntriesCsvProducerResource()));
+        add(new Link("addEntryLink") {
+            @Override
+            public void onClick() {
+                setResponsePage(TimeEntryPage.class);
+            }
+        });
+
         // use the locale to figure out the dateformat
         DATE_FORMAT = new SimpleDateFormat("HH:mm:ss dd.MM.yyyy Z", getLocale());
 

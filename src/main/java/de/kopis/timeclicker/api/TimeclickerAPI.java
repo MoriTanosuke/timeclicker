@@ -72,11 +72,7 @@ public class TimeclickerAPI {
         }
 
         // start new entry
-        Entity timeEntryEntity = new Entity("TimeEntry");
-        timeEntryEntity.setProperty("start", new Date());
-        // set stop=null to make if queriable
-        timeEntryEntity.setProperty("stop", null);
-        timeEntryEntity.setProperty("userId", user.getUserId());
+        Entity timeEntryEntity = createTimeEntryEntity(user);
         datastore.put(timeEntryEntity);
 
         TimeEntry entry = buildTimeEntryFromEntity(timeEntryEntity);
@@ -108,13 +104,20 @@ public class TimeclickerAPI {
     public void update(@Named("key") String key, @Named("start") Date start, @Named("stop") Date stop, @Named("tags") String tags, User user) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();
 
-        LOGGER.info("User " + user.getUserId() + " starting to update entry " + key + " with start=" + start + " stop=" + stop);
+        final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
-        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         try {
-            Entity timeEntryEntity = datastore.get(KeyFactory.stringToKey(key));
-            if (!timeEntryEntity.getProperty("userId").equals(user.getUserId())) {
-                throw new RuntimeException("Referenced entry does not belong to this user!");
+            Entity timeEntryEntity;
+            if (key != null) {
+                LOGGER.info("User " + user.getUserId() + " starting to update entry " + key + " with start=" + start + " stop=" + stop);
+                timeEntryEntity = datastore.get(KeyFactory.stringToKey(key));
+
+                if (!timeEntryEntity.getProperty("userId").equals(user.getUserId())) {
+                    throw new RuntimeException("Referenced entry does not belong to this user!");
+                }
+            } else {
+                LOGGER.info("User " + user.getUserId() + " starting to save new entry " + key + " with start=" + start + " stop=" + stop);
+                timeEntryEntity = createTimeEntryEntity(user);
             }
             timeEntryEntity.setProperty("start", start);
             timeEntryEntity.setProperty("stop", stop);
@@ -332,6 +335,21 @@ public class TimeclickerAPI {
             entry.setTags((String) timeEntryEntity.getProperty("tags"));
         }
         return entry;
+    }
+
+    /**
+     * Create a new {@link TimeEntry} for the given user.
+     *
+     * @param user
+     * @return a {@link TimeEntry} with property <code>start</code> set to current date
+     */
+    private Entity createTimeEntryEntity(User user) {
+        Entity timeEntryEntity = new Entity("TimeEntry");
+        timeEntryEntity.setProperty("start", new Date());
+        // set stop=null to make if queriable
+        timeEntryEntity.setProperty("stop", null);
+        timeEntryEntity.setProperty("userId", user.getUserId());
+        return timeEntryEntity;
     }
 
     private List<Entity> searchTimeEntries(User user, Date firstDate, Date lastDate) {

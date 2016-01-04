@@ -18,14 +18,20 @@ public class TimeEntryPage extends TemplatePage {
     public TimeEntryPage(PageParameters parameters) {
         super("Edit entry", parameters);
 
-        final String key = parameters.get("key").toString();
-        // load TimeEntry by key
         if (getCurrentUser() == null) {
             error("Not authenticated!");
         }
 
+        final String key = parameters.get("key").toString();
+
         try {
-            final TimeEntry entry = getApi().show(key, getCurrentUser());
+            // load TimeEntry by key
+            TimeEntry entry;
+            if (key != null) {
+                entry = getApi().show(key, getCurrentUser());
+            } else {
+                entry = new TimeEntry();
+            }
             //TODO extract Form?
             final Form<TimeEntry> form = new Form<>("entryForm");
             form.setDefaultModel(new CompoundPropertyModel(entry));
