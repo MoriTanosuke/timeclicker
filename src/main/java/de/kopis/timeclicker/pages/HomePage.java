@@ -172,17 +172,18 @@ public class HomePage extends TemplatePage {
                 // start first of month
                 cal.set(Calendar.DAY_OF_MONTH, 0);
                 final Date startDate = cal.getTime();
-                final int workdays = WorkdayCalculator.getWorkingDays(startDate, endDate);
+                final double workdays = WorkdayCalculator.getWorkingDays(startDate, endDate);
                 double averagePerDay = 0;
 
-                final TimeSum overallTimeSum = overallSum.getObject();
-                if (overallTimeSum != null) {
-                    averagePerDay = overallTimeSum.getDuration() / workdays;
+                final TimeSum monthlyTimeSum = monthlySum.getObject();
+                if (monthlyTimeSum != null) {
+                    averagePerDay = monthlyTimeSum.getDuration() / workdays;
                 }
                 return averagePerDay;
             }
         };
 
+        //TODO display averagePerWorkday as readable duration
         add(new Label("averagePerDay", new StringResourceModel("average.sum", null, averagePerWorkday.getObject().longValue())));
         //TODO sums are not updating on page refresh!
         add(new Label("dailySum", new StringResourceModel("daily.sum", null, dailySum.getObject())));
