@@ -3,10 +3,15 @@ package de.kopis.timeclicker.pages;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference;
+import de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference;
 import de.kopis.timeclicker.api.TimeclickerAPI;
 import de.kopis.timeclicker.panels.CustomFeedbackPanel;
 import de.kopis.timeclicker.panels.FooterPanel;
 import de.kopis.timeclicker.panels.HeaderPanel;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
+import org.apache.wicket.markup.head.JavaScriptHeaderItem;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
@@ -59,4 +64,17 @@ public abstract class TemplatePage extends WebPage {
         }
         return userService;
     }
+
+    @Override
+    public void renderHead(IHeaderResponse response) {
+        super.renderHead(response);
+        response.render(JavaScriptHeaderItem.forReference(
+                new WebjarsJavaScriptResourceReference("jquery/1.11.3/jquery.js")));
+        response.render(JavaScriptHeaderItem.forReference(
+                new WebjarsJavaScriptResourceReference("bootstrap/3.3.6/js/bootstrap.js")));
+
+        response.render(CssHeaderItem.forReference(
+                new WebjarsCssResourceReference("bootstrap/3.3.6/css/bootstrap.css")));
+    }
+
 }

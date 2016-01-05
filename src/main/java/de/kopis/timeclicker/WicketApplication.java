@@ -1,5 +1,8 @@
 package de.kopis.timeclicker;
 
+import de.agilecoders.wicket.webjars.WicketWebjars;
+import de.agilecoders.wicket.webjars.settings.ResourceStreamProvider;
+import de.agilecoders.wicket.webjars.settings.WebjarsSettings;
 import de.kopis.timeclicker.pages.HomePage;
 import de.kopis.timeclicker.pages.ListEntriesPage;
 import de.kopis.timeclicker.pages.TimeEntryPage;
@@ -23,6 +26,9 @@ public class WicketApplication extends WebApplication {
     public void init() {
         super.init();
         LOGGER.info("Initializing application.");
+
+        // initialize webjar resources with ClassLoader provider
+        WicketWebjars.install(this, new WebjarsSettings().resourceStreamProvider(ResourceStreamProvider.ClassLoader));
 
         // configure nice URLs
         mountPage("/home", HomePage.class);
