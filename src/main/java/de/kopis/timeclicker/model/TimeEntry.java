@@ -12,7 +12,11 @@ public class TimeEntry implements Serializable {
     private String tags;
 
     public TimeEntry() {
-        start = new Date();
+        this(new Date());
+    }
+
+    public TimeEntry(Date start) {
+        this.start = start;
     }
 
     public Date getStart() {
