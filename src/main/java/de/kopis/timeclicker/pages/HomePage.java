@@ -163,28 +163,42 @@ public class HomePage extends TemplatePage {
             }
         };
 
-        final IModel<Double> averagePerWorkday = new LoadableDetachableModel<Double>() {
+        final IModel<Integer> workingDaysInMonth = new LoadableDetachableModel<Integer>() {
             @Override
-            protected Double load() {
+            protected Integer load() {
                 final Calendar cal = Calendar.getInstance();
-                // end now
+                // end today midnight
+                cal.set(Calendar.HOUR_OF_DAY, 23);
+                cal.set(Calendar.MINUTE, 59);
+                cal.set(Calendar.SECOND, 59);
+                cal.set(Calendar.MILLISECOND, 999);
                 final Date endDate = cal.getTime();
                 // start first of month
-                cal.set(Calendar.DAY_OF_MONTH, 0);
+                cal.set(Calendar.DAY_OF_MONTH, 1);
+                cal.set(Calendar.HOUR_OF_DAY, 0);
+                cal.set(Calendar.MINUTE, 0);
+                cal.set(Calendar.SECOND, 0);
+                cal.set(Calendar.MILLISECOND, 0);
                 final Date startDate = cal.getTime();
-                final double workdays = WorkdayCalculator.getWorkingDays(startDate, endDate);
+                return WorkdayCalculator.getWorkingDays(startDate, endDate);
+            }
+        };
+        final IModel<TimeSum> averagePerWorkday = new LoadableDetachableModel<TimeSum>() {
+            @Override
+            protected TimeSum load() {
+                final double workdays = workingDaysInMonth.getObject();
                 double averagePerDay = 0;
 
                 final TimeSum monthlyTimeSum = monthlySum.getObject();
                 if (monthlyTimeSum != null) {
                     averagePerDay = monthlyTimeSum.getDuration() / workdays;
                 }
-                return averagePerDay;
+                return new TimeSum((long) averagePerDay);
             }
         };
 
         //TODO display averagePerWorkday as readable duration
-        add(new Label("averagePerDay", new StringResourceModel("average.sum", null, averagePerWorkday.getObject().longValue())));
+        add(new Label("averagePerDay", new StringResourceModel("average.sum", null, averagePerWorkday.getObject())));
         //TODO sums are not updating on page refresh!
         add(new Label("dailySum", new StringResourceModel("daily.sum", null, dailySum.getObject())));
         add(new Label("weeklySum", new StringResourceModel("weekly.sum", null, weeklySum.getObject())));
