@@ -276,14 +276,14 @@ public class TimeclickerAPI {
     }
 
     private List<Entity> listEntities(User user) {
-        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         // load all time entries for this user
-        Query.Filter propertyFilter =
+        final Query.Filter propertyFilter =
                 new Query.FilterPredicate("userId",
                         Query.FilterOperator.EQUAL,
                         user.getUserId());
-        Query q = new Query("TimeEntry").setFilter(propertyFilter);
-        PreparedQuery pq = datastore.prepare(q);
+        final Query q = new Query("TimeEntry").setFilter(propertyFilter);
+        final PreparedQuery pq = datastore.prepare(q);
         //TODO remove limit?
         return pq.asList(FetchOptions.Builder.withLimit(100));
     }

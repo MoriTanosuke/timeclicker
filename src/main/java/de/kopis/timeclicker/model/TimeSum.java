@@ -32,6 +32,10 @@ public class TimeSum implements Serializable {
         this.duration += duration;
     }
 
+    public void add(final TimeSum sum) {
+        this.duration = sum.getDuration();
+    }
+
     private long calculateDuration(TimeEntry entry) {
         final Date start = entry.getStart();
         // check if the entity is already stopped, else use the current date

@@ -4,14 +4,14 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>war</packaging>
-    <version>0.1.5-SNAPSHOT</version>
+	<version>0.1.6-SNAPSHOT</version>
 
 	<groupId>de.kopis.timeclicker</groupId>
 	<artifactId>timeclicker</artifactId>
 
 	<properties>
 		<app.id>timeclicker-1079</app.id>
-        <app.version>5</app.version>
+		<app.version>6</app.version>
 		<appengine.version>1.9.26</appengine.version>
 		<gcloud.plugin.version>2.0.9.74.v20150814</gcloud.plugin.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

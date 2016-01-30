@@ -57,7 +57,7 @@ public class TimeEntryPage extends TemplatePage {
             });
             add(form);
         } catch (NotAuthenticatedException e) {
-            error(e.getMessage());
+            error("Can not load entry, you're not authenticated");
         }
     }
 }

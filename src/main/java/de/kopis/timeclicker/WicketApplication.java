@@ -5,6 +5,7 @@ import de.agilecoders.wicket.webjars.settings.ResourceStreamProvider;
 import de.agilecoders.wicket.webjars.settings.WebjarsSettings;
 import de.kopis.timeclicker.pages.HomePage;
 import de.kopis.timeclicker.pages.ListEntriesPage;
+import de.kopis.timeclicker.pages.ListSumPage;
 import de.kopis.timeclicker.pages.TimeEntryPage;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.protocol.http.WebApplication;
@@ -33,6 +34,7 @@ public class WicketApplication extends WebApplication {
         // configure nice URLs
         mountPage("/home", HomePage.class);
         mountPage("/list", ListEntriesPage.class);
+        mountPage("/sum", ListSumPage.class);
         mountPage("/edit/${key}", TimeEntryPage.class);
 
         mountResource("/chart.json", new ResourceReference("jsonProducer") {
