@@ -21,9 +21,9 @@ public class WorkdayCalculator {
 
         int workDays = 0;
 
-        //Return 0 if start and end are the same
+        //Return 1 if start and end are the same
         if (startCal.getTimeInMillis() == endCal.getTimeInMillis()) {
-            return 0;
+            return 1;
         }
 
         if (startCal.getTimeInMillis() > endCal.getTimeInMillis()) {
@@ -36,6 +36,11 @@ public class WorkdayCalculator {
                 ++workDays;
             }
             startCal.add(Calendar.DAY_OF_MONTH, 1);
+        }
+
+        // dirty workaround for div by zero
+        if (workDays == 0) {
+            workDays = 1;
         }
 
         return workDays;

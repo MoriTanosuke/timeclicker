@@ -24,4 +24,20 @@ public class WorkdayCalculatorTest {
         final int workdays = WorkdayCalculator.getWorkingDays(date1, date2);
         assertEquals(8, workdays);
     }
+
+    @Test
+    public void testGetWorkingDaysOnFirstDayOfMonth() throws Exception {
+        final Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, 2016);
+        cal.set(Calendar.MONTH, Calendar.FEBRUARY);
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        // 2016-02-01
+        final Date date1 = cal.getTime();
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        // 2016-02-01
+        final Date date2 = cal.getTime();
+
+        final int workdays = WorkdayCalculator.getWorkingDays(date1, date2);
+        assertEquals(1, workdays);
+    }
 }
