@@ -170,11 +170,11 @@ public class TimeclickerAPI {
     public List<TimeEntry> list(User user) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();
 
-        List<Entity> entities = listEntities(user);
+        final List<Entity> entities = listEntities(user);
 
-        List<TimeEntry> l = new ArrayList<>();
+        final List<TimeEntry> l = new ArrayList<>();
         for (Entity timeEntryEntity : entities) {
-            TimeEntry entry = buildTimeEntryFromEntity(timeEntryEntity);
+            final TimeEntry entry = buildTimeEntryFromEntity(timeEntryEntity);
             l.add(entry);
         }
         LOGGER.info("User " + user.getUserId() + " listed all entries");
@@ -282,7 +282,9 @@ public class TimeclickerAPI {
                 new Query.FilterPredicate("userId",
                         Query.FilterOperator.EQUAL,
                         user.getUserId());
-        final Query q = new Query("TimeEntry").setFilter(propertyFilter);
+        final Query q = new Query("TimeEntry")
+                .setFilter(propertyFilter)
+                .addSort("start", Query.SortDirection.DESCENDING);
         final PreparedQuery pq = datastore.prepare(q);
         //TODO remove limit?
         return pq.asList(FetchOptions.Builder.withLimit(100));
