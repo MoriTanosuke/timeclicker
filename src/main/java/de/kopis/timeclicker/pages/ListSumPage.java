@@ -3,9 +3,9 @@ package de.kopis.timeclicker.pages;
 import de.kopis.timeclicker.ListEntriesCsvProducerResource;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
-import de.kopis.timeclicker.model.TimeSum;
 import de.kopis.timeclicker.model.TimeSumWithDate;
 import de.kopis.timeclicker.utils.DurationUtils;
+import de.kopis.timeclicker.utils.TimeSumUtility;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.link.ResourceLink;
@@ -17,7 +17,8 @@ import org.apache.wicket.request.mapper.parameter.PageParameters;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ListSumPage extends TemplatePage {
     private static final long serialVersionUID = 1L;
@@ -48,36 +49,8 @@ public class ListSumPage extends TemplatePage {
         if (getCurrentUser() != null) {
             try {
                 final List<TimeEntry> allEntries = getApi().list(getCurrentUser());
-                // calculate overall sum per day
-                final Map<Long, TimeSumWithDate> perDay = new HashMap<>();
-                for (TimeEntry e : allEntries) {
-                    // build the key from given TimeEntry
-                    final Date entryDate = e.getStart();
-                    final Calendar cal = Calendar.getInstance();
-                    cal.setTime(entryDate);
-                    // reset to midnight
-                    cal.set(Calendar.HOUR_OF_DAY, 0);
-                    cal.set(Calendar.MINUTE, 0);
-                    cal.set(Calendar.SECOND, 0);
-                    cal.set(Calendar.MILLISECOND, 0);
-                    // check if date is already set as key previously
-                    final Long key = cal.getTimeInMillis();
-                    if (!perDay.containsKey(key)) {
-                        perDay.put(key, new TimeSumWithDate(cal.getTime(), 0L));
-                    }
-                    // add sum to existing entry
-                    final TimeSumWithDate sum = perDay.get(key);
-                    sum.addDuration(new TimeSum(e).getDuration());
-                }
+                final List<TimeSumWithDate> sortedPerDay = new TimeSumUtility().calculateDailyTimeSum(allEntries);
 
-                final List<TimeSumWithDate> sortedPerDay = Arrays.asList(perDay.values().toArray(new TimeSumWithDate[0]));
-                Collections.sort(sortedPerDay, new Comparator<TimeSumWithDate>() {
-                    @Override
-                    public int compare(TimeSumWithDate o1, TimeSumWithDate o2) {
-                        // sort DESC by start date
-                        return o2.getDate().compareTo(o1.getDate());
-                    }
-                });
                 entries.setObject(sortedPerDay);
             } catch (NotAuthenticatedException e) {
                 LOGGER.severe("Can not load entries for user " + getCurrentUser() + ": " + e.getMessage());
@@ -95,4 +68,5 @@ public class ListSumPage extends TemplatePage {
         add(navigator);
         add(listView);
     }
+
 }

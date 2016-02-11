@@ -33,9 +33,12 @@ public class HomePage extends TemplatePage {
     public void onInitialize() {
         super.onInitialize();
 
-        add(activeEntry = new ActiveEntryPanel("activePanel", new LoadableDetachableModel<String>() {
-            private final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+        // TODO get user TimeZone
+        LOGGER.fine("getLocale() = " + getLocale());
+        LOGGER.fine("request getLocale() = " + getRequest().getLocale());
+        final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", getLocale());
 
+        add(activeEntry = new ActiveEntryPanel("activePanel", new LoadableDetachableModel<String>() {
             @Override
             protected String load() {
                 String activeEntry = null;

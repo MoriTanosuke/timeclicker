@@ -43,6 +43,12 @@ public class WicketApplication extends WebApplication {
                 return new ListEntriesChartProducerResource();
             }
         });
+        mountResource("/sumchart.json", new ResourceReference("jsonProducer") {
+            @Override
+            public IResource getResource() {
+                return new SumChartProducerResource();
+            }
+        });
         mountResource("/list.csv", new ResourceReference("csvProducer") {
             @Override
             public IResource getResource() {
