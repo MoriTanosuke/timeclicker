@@ -63,7 +63,7 @@ public class TimeclickerAPI {
         if (user == null) throw new NotAuthenticatedException();
 
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        // TODO check if there is an open entry and close it
+        // check if there is an open entry and close it
         Entity openEntity = findLatest(user, datastore);
         if (openEntity != null) {
             LOGGER.warning("Open entity found, closing it");
