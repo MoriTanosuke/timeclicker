@@ -22,12 +22,11 @@ public class TimeEntryPage extends TemplatePage {
             error("Not authenticated!");
         }
 
-        final String key = parameters.get("key").toString();
-
         try {
             // load TimeEntry by key
             TimeEntry entry;
-            if (key != null) {
+            if (parameters.get("key") != null) {
+                final String key = parameters.get("key").toString();
                 entry = getApi().show(key, getCurrentUser());
             } else {
                 entry = new TimeEntry();

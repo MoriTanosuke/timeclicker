@@ -36,6 +36,7 @@ public class WicketApplication extends WebApplication {
         mountPage("/list", ListEntriesPage.class);
         mountPage("/sum", ListSumPage.class);
         mountPage("/edit/${key}", TimeEntryPage.class);
+        mountPage("/add", TimeEntryPage.class);
 
         mountResource("/chart.json", new ResourceReference("jsonProducer") {
             @Override
