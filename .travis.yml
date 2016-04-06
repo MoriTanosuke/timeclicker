@@ -1,5 +1,8 @@
 language: java
 
+after_success:
+  - python <(curl -s https://raw.githubusercontent.com/TouK/sputnik-ci/master/sputnik-ci.py)
+
 #deploy:
 #  provider: gae
 #  config: "src/main/webapp/WEB-INF/appengine-web.xml"
