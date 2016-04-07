@@ -1,10 +1,10 @@
 package de.kopis.timeclicker.model;
 
-import de.kopis.timeclicker.utils.DurationUtils;
-
 import java.io.Serializable;
 import java.util.Date;
 import java.util.logging.Logger;
+
+import de.kopis.timeclicker.utils.DurationUtils;
 
 public class TimeSum implements Serializable {
     private static final Logger LOGGER = Logger.getLogger(TimeSum.class.getName());
@@ -52,6 +52,9 @@ public class TimeSum implements Serializable {
         return getReadableDuration(this);
     }
 
+    public String getReadableDuration() {
+        return getReadableDuration(this);
+    }
 
     private String getReadableDuration(TimeSum sum) {
         if (sum != null) {

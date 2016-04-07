@@ -1,5 +1,9 @@
 package de.kopis.timeclicker.pages;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
 import com.google.appengine.api.users.User;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
@@ -14,12 +18,12 @@ import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-
 public class HomePage extends TemplatePage {
     private static final long serialVersionUID = 1L;
+
+    //TODO GAppEngine does not have a user locale
+    // maybe return all times as timestamps in UNIX format and convert in frontend?
+    private final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", getLocale());
 
     private ActiveEntryPanel activeEntry;
     private Link stop;
@@ -32,11 +36,6 @@ public class HomePage extends TemplatePage {
     @Override
     public void onInitialize() {
         super.onInitialize();
-
-        // TODO get user TimeZone
-        LOGGER.fine("getLocale() = " + getLocale());
-        LOGGER.fine("request getLocale() = " + getRequest().getLocale());
-        final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", getLocale());
 
         add(activeEntry = new ActiveEntryPanel("activePanel", new LoadableDetachableModel<String>() {
             @Override
@@ -73,7 +72,6 @@ public class HomePage extends TemplatePage {
             public void onClick() {
                 // start a new entry
                 if (getCurrentUser() == null) {
-                    // TODO add error or redirect to login
                     error("You are not logged in.");
                 } else {
                     try {
@@ -97,7 +95,6 @@ public class HomePage extends TemplatePage {
             public void onClick() {
                 // stop latest entry
                 if (getCurrentUser() == null) {
-                    // TODO add error or redirect to login
                     error("You are not logged in.");
                 } else {
                     try {
@@ -211,14 +208,15 @@ public class HomePage extends TemplatePage {
             }
         };
 
+        //TODO average sum is not updating on page refresh!
         add(new Label("averagePerDay", new StringResourceModel("average.sum", null, new Object[]{
                 readableAveragePerDay.getObject(),
                 workdaysModel.getObject().intValue()
         })));
-        //TODO sums are not updating on page refresh!
-        add(new Label("dailySum", new StringResourceModel("daily.sum", null, dailySum.getObject())));
-        add(new Label("weeklySum", new StringResourceModel("weekly.sum", null, weeklySum.getObject())));
-        add(new Label("monthlySum", new StringResourceModel("monthly.sum", null, monthlySum.getObject())));
-        add(new Label("sum", new StringResourceModel("overall.sum", null, overallSum.getObject())));
+
+        add(new Label("dailySum", new StringResourceModel("daily.sum", dailySum)));
+        add(new Label("weeklySum", new StringResourceModel("weekly.sum", weeklySum)));
+        add(new Label("monthlySum", new StringResourceModel("monthly.sum", monthlySum)));
+        add(new Label("sum", new StringResourceModel("overall.sum", overallSum)));
     }
 }
