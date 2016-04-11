@@ -1,5 +1,14 @@
 package de.kopis.timeclicker;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.logging.Logger;
+
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -9,15 +18,6 @@ import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
 import org.apache.wicket.request.resource.AbstractResource;
 import org.joda.time.DateTime;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.logging.Logger;
 
 public class ListEntriesCsvProducerResource extends AbstractResource {
     private static final Logger LOGGER = Logger.getLogger(ListEntriesChartProducerResource.class.getName());
@@ -42,7 +42,7 @@ public class ListEntriesCsvProducerResource extends AbstractResource {
 
 
                 try {
-                    final List<TimeEntry> entries = api.list(currentUser);
+                    final List<TimeEntry> entries = api.list(currentUser, 99999);
                     // sort ascending
                     Collections.sort(entries, new Comparator<TimeEntry>() {
                         @Override

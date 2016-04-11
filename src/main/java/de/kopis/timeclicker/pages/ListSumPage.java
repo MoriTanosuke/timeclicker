@@ -1,5 +1,10 @@
 package de.kopis.timeclicker.pages;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+
 import de.kopis.timeclicker.ListEntriesCsvProducerResource;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
@@ -14,15 +19,12 @@ import org.apache.wicket.markup.html.list.PageableListView;
 import org.apache.wicket.markup.html.navigation.paging.PagingNavigator;
 import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.wicket.util.string.StringValue;
 
 public class ListSumPage extends TemplatePage {
     private static final long serialVersionUID = 1L;
     private DateFormat DATE_FORMAT;
+    private int pageSize = 31;
 
     public ListSumPage(PageParameters parameters) {
         super("Daily Sums", parameters);
@@ -31,8 +33,11 @@ public class ListSumPage extends TemplatePage {
     @Override
     public void onInitialize() {
         super.onInitialize();
-        setStatelessHint(true);
-        setVersioned(false);
+
+        if (getPageParameters().get("pageSize") != null) {
+            final StringValue ps = getPageParameters().get("pageSize");
+            pageSize = ps.toInt(31);
+        }
 
         add(new ResourceLink("csvLink", new ListEntriesCsvProducerResource()));
         add(new Link("addEntryLink") {
@@ -48,7 +53,7 @@ public class ListSumPage extends TemplatePage {
         final ListModel<TimeSumWithDate> entries = new ListModel<TimeSumWithDate>(new ArrayList<TimeSumWithDate>());
         if (getCurrentUser() != null) {
             try {
-                final List<TimeEntry> allEntries = getApi().list(getCurrentUser());
+                final List<TimeEntry> allEntries = getApi().list(getCurrentUser(), pageSize);
                 final List<TimeSumWithDate> sortedPerDay = new TimeSumUtility().calculateDailyTimeSum(allEntries);
 
                 entries.setObject(sortedPerDay);
@@ -57,7 +62,7 @@ public class ListSumPage extends TemplatePage {
             }
         }
 
-        final PageableListView<TimeSumWithDate> listView = new PageableListView<TimeSumWithDate>("listView", entries, 31) {
+        final PageableListView<TimeSumWithDate> listView = new PageableListView<TimeSumWithDate>("listView", entries, pageSize) {
             @Override
             protected void populateItem(final ListItem<TimeSumWithDate> item) {
                 item.add(new Label("entryDate", DATE_FORMAT.format(item.getModelObject().getDate())));

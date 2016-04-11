@@ -25,7 +25,7 @@ public class TimeEntryPage extends TemplatePage {
         try {
             // load TimeEntry by key
             TimeEntry entry;
-            if (parameters.get("key") != null) {
+            if (parameters.get("key") != null && !parameters.get("key").isEmpty()) {
                 final String key = parameters.get("key").toString();
                 entry = getApi().show(key, getCurrentUser());
             } else {

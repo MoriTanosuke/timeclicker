@@ -4,23 +4,17 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
-
-import org.apache.wicket.request.resource.AbstractResource;
 
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
-
 import de.kopis.timeclicker.api.TimeclickerAPI;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
+import org.apache.wicket.request.resource.AbstractResource;
 
 public class ListEntriesChartProducerResource extends AbstractResource {
     private static final Logger LOGGER = Logger.getLogger(ListEntriesChartProducerResource.class.getName());
@@ -48,7 +42,7 @@ public class ListEntriesChartProducerResource extends AbstractResource {
                         "],\"rows\":[");
 
                 try {
-                    final List<TimeEntry> entries = api.list(currentUser);
+                    final List<TimeEntry> entries = api.list(currentUser, 99999);
                     // sort ascending
                     Collections.sort(entries, new Comparator<TimeEntry>() {
                         @Override
@@ -62,27 +56,27 @@ public class ListEntriesChartProducerResource extends AbstractResource {
                     for (int i = 0; i < entries.size(); i++) {
                         final TimeEntry entry = entries.get(i);
                         final String tags = entry.getTags() != null ? entry.getTags() : "no tag";
-                        if(!timeByTags.containsKey(tags)) {
-                        	timeByTags.put(tags, new TimeSum(0));
+                        if (!timeByTags.containsKey(tags)) {
+                            timeByTags.put(tags, new TimeSum(0));
                         }
                         final TimeSum sum = timeByTags.get(tags);
                         sum.addDuration(new TimeSum(entry).getDuration());
                     }
-                    
+
                     // write by tag
                     final String[] keys = timeByTags.keySet().toArray(new String[0]);
-                    for (int i = 0;i < keys.length;i++) {
-                    	final String tag = keys[i];
-						final TimeSum sum = timeByTags.get(tag);
-						writer.write("{\"c\":[" +
+                    for (int i = 0; i < keys.length; i++) {
+                        final String tag = keys[i];
+                        final TimeSum sum = timeByTags.get(tag);
+                        writer.write("{\"c\":[" +
                                 "{\"v\":\"" + tag + "\"}," +
                                 "{\"v\":" + sum.getDuration() + "}" +
                                 "]}");
-						// only write "," if NOT last entry
+                        // only write "," if NOT last entry
                         if (i < keys.length - 1) {
                             writer.write(",");
                         }
-					}
+                    }
                 } catch (NotAuthenticatedException e) {
                     LOGGER.severe("Can not load entries: " + e.getMessage());
                 }

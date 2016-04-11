@@ -1,5 +1,11 @@
 package de.kopis.timeclicker.api;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.logging.Logger;
+
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.Named;
@@ -8,12 +14,6 @@ import com.google.appengine.api.users.User;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.logging.Logger;
 
 @Api(name = "timeclicker", version = "v1", scopes = {Constants.EMAIL_SCOPE},
         clientIds = {Constants.WEB_CLIENT_ID, Constants.ANDROID_CLIENT_ID, "292824132082.apps.googleusercontent.com"},
@@ -167,10 +167,10 @@ public class TimeclickerAPI {
     }
 
     @ApiMethod(name = "list", path = "list")
-    public List<TimeEntry> list(User user) throws NotAuthenticatedException {
+    public List<TimeEntry> list(User user, int limit) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();
 
-        final List<Entity> entities = listEntities(user);
+        final List<Entity> entities = listEntities(user, 0, limit);
 
         final List<TimeEntry> l = new ArrayList<>();
         for (Entity timeEntryEntity : entities) {
@@ -286,8 +286,23 @@ public class TimeclickerAPI {
                 .setFilter(propertyFilter)
                 .addSort("start", Query.SortDirection.DESCENDING);
         final PreparedQuery pq = datastore.prepare(q);
-        //TODO remove limit?
-        return pq.asList(FetchOptions.Builder.withLimit(100));
+        final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
+        return pq.asList(fetchOptions);
+    }
+
+    private List<Entity> listEntities(User user, int page, int pageSize) {
+        final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        // load all time entries for this user
+        final Query.Filter propertyFilter =
+                new Query.FilterPredicate("userId",
+                        Query.FilterOperator.EQUAL,
+                        user.getUserId());
+        final Query q = new Query("TimeEntry")
+                .setFilter(propertyFilter)
+                .addSort("start", Query.SortDirection.DESCENDING);
+        final PreparedQuery pq = datastore.prepare(q);
+        final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults().offset(pageSize * page).limit(pageSize);
+        return pq.asList(fetchOptions);
     }
 
     /**

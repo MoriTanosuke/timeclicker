@@ -1,5 +1,11 @@
 package de.kopis.timeclicker.pages;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
 import de.kopis.timeclicker.ListEntriesCsvProducerResource;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
@@ -14,16 +20,12 @@ import org.apache.wicket.markup.html.navigation.paging.PagingNavigator;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import org.apache.wicket.util.string.StringValue;
 
 public class ListEntriesPage extends TemplatePage {
     private static final long serialVersionUID = 1L;
     private DateFormat DATE_FORMAT;
+    private int pageSize = 31;
 
     public ListEntriesPage(PageParameters parameters) {
         super("Time Entries", parameters);
@@ -32,8 +34,11 @@ public class ListEntriesPage extends TemplatePage {
     @Override
     public void onInitialize() {
         super.onInitialize();
-        setStatelessHint(true);
-        setVersioned(false);
+
+        if (getPageParameters().get("pageSize") != null) {
+            final StringValue ps = getPageParameters().get("pageSize");
+            pageSize = ps.toInt(31);
+        }
 
         add(new ResourceLink("csvLink", new ListEntriesCsvProducerResource()));
         add(new Link("addEntryLink") {
@@ -49,7 +54,7 @@ public class ListEntriesPage extends TemplatePage {
         final ListModel<TimeEntry> entries = new ListModel<TimeEntry>(new ArrayList<TimeEntry>());
         if (getCurrentUser() != null) {
             try {
-                entries.getObject().addAll(getApi().list(getCurrentUser()));
+                entries.getObject().addAll(getApi().list(getCurrentUser(), pageSize));
                 Collections.sort(entries.getObject(), new Comparator<TimeEntry>() {
                     @Override
                     public int compare(TimeEntry o1, TimeEntry o2) {
@@ -62,7 +67,7 @@ public class ListEntriesPage extends TemplatePage {
             }
         }
 
-        final PageableListView<TimeEntry> listView = new PageableListView<TimeEntry>("listView", entries, 10) {
+        final PageableListView<TimeEntry> listView = new PageableListView<TimeEntry>("listView", entries, pageSize) {
             @Override
             protected void populateItem(final ListItem<TimeEntry> item) {
                 item.add(new Label("entryKey", item.getModelObject().getKey()));
@@ -105,6 +110,6 @@ public class ListEntriesPage extends TemplatePage {
         };
         final PagingNavigator navigator = new PagingNavigator("paginator", listView);
         add(navigator);
-		add(listView);
+        add(listView);
     }
 }
