@@ -42,7 +42,7 @@ public class ListEntriesChartProducerResource extends AbstractResource {
                         "],\"rows\":[");
 
                 try {
-                    final List<TimeEntry> entries = api.list(currentUser, 99999);
+                    final List<TimeEntry> entries = api.list(99999, currentUser);
                     // sort ascending
                     Collections.sort(entries, new Comparator<TimeEntry>() {
                         @Override

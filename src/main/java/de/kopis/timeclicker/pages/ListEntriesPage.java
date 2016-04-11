@@ -54,7 +54,7 @@ public class ListEntriesPage extends TemplatePage {
         final ListModel<TimeEntry> entries = new ListModel<TimeEntry>(new ArrayList<TimeEntry>());
         if (getCurrentUser() != null) {
             try {
-                entries.getObject().addAll(getApi().list(getCurrentUser(), pageSize));
+                entries.getObject().addAll(getApi().list(pageSize, getCurrentUser()));
                 Collections.sort(entries.getObject(), new Comparator<TimeEntry>() {
                     @Override
                     public int compare(TimeEntry o1, TimeEntry o2) {

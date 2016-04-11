@@ -47,7 +47,7 @@ public class SumChartProducerResource extends AbstractResource {
                         "],\"rows\":[");
 
                 try {
-                    final List<TimeEntry> rawEntries = api.list(currentUser, 99999);
+                    final List<TimeEntry> rawEntries = api.list(99999, currentUser);
                     final List<TimeSumWithDate> entries = new TimeSumUtility().calculateDailyTimeSum(rawEntries);
                     // sort ascending
                     Collections.sort(entries, new Comparator<TimeSumWithDate>() {

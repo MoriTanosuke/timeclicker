@@ -53,7 +53,7 @@ public class ListSumPage extends TemplatePage {
         final ListModel<TimeSumWithDate> entries = new ListModel<TimeSumWithDate>(new ArrayList<TimeSumWithDate>());
         if (getCurrentUser() != null) {
             try {
-                final List<TimeEntry> allEntries = getApi().list(getCurrentUser(), pageSize);
+                final List<TimeEntry> allEntries = getApi().list(pageSize, getCurrentUser());
                 final List<TimeSumWithDate> sortedPerDay = new TimeSumUtility().calculateDailyTimeSum(allEntries);
 
                 entries.setObject(sortedPerDay);

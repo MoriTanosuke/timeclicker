@@ -167,7 +167,7 @@ public class TimeclickerAPI {
     }
 
     @ApiMethod(name = "list", path = "list")
-    public List<TimeEntry> list(User user, int limit) throws NotAuthenticatedException {
+    public List<TimeEntry> list(@Named("limit") int limit, User user) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();
 
         final List<Entity> entities = listEntities(user, 0, limit);
