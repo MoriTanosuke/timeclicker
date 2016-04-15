@@ -1,5 +1,19 @@
 package de.kopis.timeclicker;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+
+import org.apache.wicket.request.resource.AbstractResource;
+import org.apache.wicket.util.string.StringValue;
+
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -7,28 +21,19 @@ import de.kopis.timeclicker.api.TimeclickerAPI;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
-import org.apache.wicket.request.resource.AbstractResource;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
-
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.toList;
 
 public class ListEntriesChartProducerResource extends AbstractResource {
     private static final Logger LOGGER = Logger.getLogger(ListEntriesChartProducerResource.class.getName());
 
     private static final TimeclickerAPI api = new TimeclickerAPI();
+    private int pageSize = 31;
 
     @Override
     protected ResourceResponse newResourceResponse(Attributes attributes) {
+        if (attributes.getParameters().get("pageSize") != null) {
+            final StringValue ps = attributes.getParameters().get("pageSize");
+            pageSize = ps.toInt(31);
+        }
         final ResourceResponse resourceResponse = new ResourceResponse();
         resourceResponse.setContentType("application/json");
         resourceResponse.setTextEncoding("utf-8");
@@ -48,10 +53,15 @@ public class ListEntriesChartProducerResource extends AbstractResource {
                         "],\"rows\":[");
 
                 try {
-                    final List<TimeEntry> entries = api.list(currentUser)
-                            .stream()
-                            .sorted(comparing(TimeEntry::getStart))
-                            .collect(toList());
+                    final List<TimeEntry> entries = api.list(pageSize, currentUser);
+                    // sort ascending
+                    Collections.sort(entries, new Comparator<TimeEntry>() {
+                        @Override
+                        public int compare(TimeEntry o1, TimeEntry o2) {
+                            // sort ASC by start date
+                            return o1.getStart().compareTo(o2.getStart());
+                        }
+                    });
 
                     final Map<String, TimeSum> timeByTags = new HashMap<>();
                     for (int i = 0; i < entries.size(); i++) {
@@ -61,7 +71,7 @@ public class ListEntriesChartProducerResource extends AbstractResource {
                             timeByTags.put(tags, new TimeSum(0));
                         }
                         final TimeSum sum = timeByTags.get(tags);
-                        sum.addDuration(new TimeSum(entry).getDuration());
+                        sum.add(new TimeSum(entry));
                     }
 
                     // write by tag

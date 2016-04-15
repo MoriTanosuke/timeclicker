@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 
 import de.kopis.timeclicker.utils.DurationUtils;
 
-public class TimeSum implements Serializable {
+public class TimeSum implements Serializable, Comparable {
     private static final Logger LOGGER = Logger.getLogger(TimeSum.class.getName());
 
     private static final long serialVersionUID = 1L;
@@ -44,7 +44,9 @@ public class TimeSum implements Serializable {
             stop = new Date();
         }
 
-        return stop.getTime() - start.getTime();
+        long duration = stop.getTime() - start.getTime();
+        LOGGER.info("Calculated duration: " + duration);
+        return duration;
     }
 
     @Override
@@ -64,4 +66,11 @@ public class TimeSum implements Serializable {
         }
     }
 
+    @Override
+    public int compareTo(Object o) {
+        if (!(o instanceof TimeSum)) return -1;
+
+        TimeSum other = (TimeSum) o;
+        return (int) (other.duration -= duration);
+    }
 }

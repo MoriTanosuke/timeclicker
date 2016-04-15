@@ -9,6 +9,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.apache.wicket.request.resource.AbstractResource;
+import org.apache.wicket.util.string.StringValue;
+import org.joda.time.DateTime;
+
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -16,16 +20,20 @@ import de.kopis.timeclicker.api.TimeclickerAPI;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
-import org.apache.wicket.request.resource.AbstractResource;
-import org.joda.time.DateTime;
 
 public class ListEntriesCsvProducerResource extends AbstractResource {
     private static final Logger LOGGER = Logger.getLogger(ListEntriesChartProducerResource.class.getName());
 
     private static final transient TimeclickerAPI api = new TimeclickerAPI();
+    private int pageSize = 31;
 
     @Override
     protected ResourceResponse newResourceResponse(Attributes attributes) {
+        if (attributes.getParameters().get("pageSize") != null) {
+            final StringValue ps = attributes.getParameters().get("pageSize");
+            pageSize = ps.toInt(31);
+        }
+
         final ResourceResponse resourceResponse = new ResourceResponse();
         resourceResponse.setContentType("application/text");
         resourceResponse.setTextEncoding("utf-8");
@@ -42,7 +50,7 @@ public class ListEntriesCsvProducerResource extends AbstractResource {
 
 
                 try {
-                    final List<TimeEntry> entries = api.list(99999, currentUser);
+                    final List<TimeEntry> entries = api.list(pageSize, currentUser);
                     // sort ascending
                     Collections.sort(entries, new Comparator<TimeEntry>() {
                         @Override
