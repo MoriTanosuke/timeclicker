@@ -4,6 +4,15 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.apache.wicket.ajax.AjaxSelfUpdatingTimerBehavior;
+import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.LoadableDetachableModel;
+import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.apache.wicket.util.time.Duration;
+
 import com.google.appengine.api.users.User;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
@@ -11,15 +20,13 @@ import de.kopis.timeclicker.model.TimeSum;
 import de.kopis.timeclicker.panels.ActiveEntryPanel;
 import de.kopis.timeclicker.utils.DurationUtils;
 import de.kopis.timeclicker.utils.WorkdayCalculator;
-import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.link.Link;
-import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.LoadableDetachableModel;
-import org.apache.wicket.model.StringResourceModel;
-import org.apache.wicket.request.mapper.parameter.PageParameters;
 
 public class HomePage extends TemplatePage {
     private static final long serialVersionUID = 1L;
+    /**
+     * Update interval for sums.
+     */
+    public static final Duration UPDATE_INTERVAL = Duration.seconds(30);
 
     //TODO GAppEngine does not have a user locale
     // maybe return all times as timestamps in UNIX format and convert in frontend?
@@ -208,15 +215,23 @@ public class HomePage extends TemplatePage {
             }
         };
 
-        //TODO average sum is not updating on page refresh!
-        add(new Label("averagePerDay", new StringResourceModel("average.sum", null, new Object[]{
+        final Label averagePerDayLabel = new Label("averagePerDay", new StringResourceModel("average.sum", null, new Object[]{
                 readableAveragePerDay.getObject(),
                 workdaysModel.getObject().intValue()
-        })));
-
-        add(new Label("dailySum", new StringResourceModel("daily.sum", dailySum)));
-        add(new Label("weeklySum", new StringResourceModel("weekly.sum", weeklySum)));
-        add(new Label("monthlySum", new StringResourceModel("monthly.sum", monthlySum)));
-        add(new Label("sum", new StringResourceModel("overall.sum", overallSum)));
+        }));
+        averagePerDayLabel.add(new AjaxSelfUpdatingTimerBehavior(UPDATE_INTERVAL));
+        add(averagePerDayLabel);
+        final Label perDayLabel = new Label("dailySum", new StringResourceModel("daily.sum", dailySum));
+        perDayLabel.add(new AjaxSelfUpdatingTimerBehavior(UPDATE_INTERVAL));
+        add(perDayLabel);
+        final Label perWeekLabel = new Label("weeklySum", new StringResourceModel("weekly.sum", weeklySum));
+        perWeekLabel.add(new AjaxSelfUpdatingTimerBehavior(UPDATE_INTERVAL));
+        add(perWeekLabel);
+        final Label perMonthLabel = new Label("monthlySum", new StringResourceModel("monthly.sum", monthlySum));
+        perMonthLabel.add(new AjaxSelfUpdatingTimerBehavior(UPDATE_INTERVAL));
+        add(perMonthLabel);
+        final Label sumLabel = new Label("sum", new StringResourceModel("overall.sum", overallSum));
+        sumLabel.add(new AjaxSelfUpdatingTimerBehavior(UPDATE_INTERVAL));
+        add(sumLabel);
     }
 }
