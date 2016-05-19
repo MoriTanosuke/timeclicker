@@ -4,6 +4,13 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import com.google.appengine.api.users.User;
+import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TimeEntry;
+import de.kopis.timeclicker.model.TimeSum;
+import de.kopis.timeclicker.panels.ActiveEntryPanel;
+import de.kopis.timeclicker.utils.DurationUtils;
+import de.kopis.timeclicker.utils.WorkdayCalculator;
 import org.apache.wicket.ajax.AjaxSelfUpdatingTimerBehavior;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
@@ -13,20 +20,12 @@ import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.time.Duration;
 
-import com.google.appengine.api.users.User;
-import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
-import de.kopis.timeclicker.model.TimeEntry;
-import de.kopis.timeclicker.model.TimeSum;
-import de.kopis.timeclicker.panels.ActiveEntryPanel;
-import de.kopis.timeclicker.utils.DurationUtils;
-import de.kopis.timeclicker.utils.WorkdayCalculator;
-
 public class HomePage extends TemplatePage {
     private static final long serialVersionUID = 1L;
     /**
      * Update interval for sums.
      */
-    public static final Duration UPDATE_INTERVAL = Duration.seconds(30);
+    public static final Duration UPDATE_INTERVAL = Duration.minutes(5);
 
     //TODO GAppEngine does not have a user locale
     // maybe return all times as timestamps in UNIX format and convert in frontend?
