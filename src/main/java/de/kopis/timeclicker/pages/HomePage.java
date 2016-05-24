@@ -25,7 +25,7 @@ public class HomePage extends TemplatePage {
     /**
      * Update interval for sums.
      */
-    public static final Duration UPDATE_INTERVAL = Duration.minutes(5);
+    public static final Duration UPDATE_INTERVAL = Duration.hours(2);
 
     //TODO GAppEngine does not have a user locale
     // maybe return all times as timestamps in UNIX format and convert in frontend?
@@ -218,19 +218,19 @@ public class HomePage extends TemplatePage {
                 readableAveragePerDay.getObject(),
                 workdaysModel.getObject().intValue()
         }));
-        averagePerDayLabel.add(new AjaxSelfUpdatingTimerBehavior(UPDATE_INTERVAL));
+        //averagePerDayLabel.add(new AjaxSelfUpdatingTimerBehavior(UPDATE_INTERVAL));
         add(averagePerDayLabel);
         final Label perDayLabel = new Label("dailySum", new StringResourceModel("daily.sum", dailySum));
         perDayLabel.add(new AjaxSelfUpdatingTimerBehavior(UPDATE_INTERVAL));
         add(perDayLabel);
         final Label perWeekLabel = new Label("weeklySum", new StringResourceModel("weekly.sum", weeklySum));
-        perWeekLabel.add(new AjaxSelfUpdatingTimerBehavior(UPDATE_INTERVAL));
+        //perWeekLabel.add(new AjaxSelfUpdatingTimerBehavior(UPDATE_INTERVAL));
         add(perWeekLabel);
         final Label perMonthLabel = new Label("monthlySum", new StringResourceModel("monthly.sum", monthlySum));
-        perMonthLabel.add(new AjaxSelfUpdatingTimerBehavior(UPDATE_INTERVAL));
+        //perMonthLabel.add(new AjaxSelfUpdatingTimerBehavior(UPDATE_INTERVAL));
         add(perMonthLabel);
         final Label sumLabel = new Label("sum", new StringResourceModel("overall.sum", overallSum));
-        sumLabel.add(new AjaxSelfUpdatingTimerBehavior(UPDATE_INTERVAL));
+        //sumLabel.add(new AjaxSelfUpdatingTimerBehavior(UPDATE_INTERVAL));
         add(sumLabel);
     }
 }
