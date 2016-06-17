@@ -1,18 +1,19 @@
 package de.kopis.timeclicker;
 
+import java.util.logging.Logger;
+
 import de.agilecoders.wicket.webjars.WicketWebjars;
 import de.agilecoders.wicket.webjars.settings.ResourceStreamProvider;
 import de.agilecoders.wicket.webjars.settings.WebjarsSettings;
 import de.kopis.timeclicker.pages.HomePage;
 import de.kopis.timeclicker.pages.ListEntriesPage;
 import de.kopis.timeclicker.pages.ListSumPage;
+import de.kopis.timeclicker.pages.MonthlyListSumPage;
 import de.kopis.timeclicker.pages.TimeEntryPage;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.request.resource.IResource;
 import org.apache.wicket.request.resource.ResourceReference;
-
-import java.util.logging.Logger;
 
 public class WicketApplication extends WebApplication {
     private static final Logger LOGGER = Logger.getLogger(WicketApplication.class.getName());
@@ -35,6 +36,7 @@ public class WicketApplication extends WebApplication {
         mountPage("/home", HomePage.class);
         mountPage("/list", ListEntriesPage.class);
         mountPage("/sum", ListSumPage.class);
+        mountPage("/monthly", MonthlyListSumPage.class);
         mountPage("/edit/${key}", TimeEntryPage.class);
         mountPage("/add", TimeEntryPage.class);
 
