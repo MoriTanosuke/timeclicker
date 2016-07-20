@@ -34,7 +34,7 @@ public class MonthlyListSumPage extends TemplatePage {
 
         if (getPageParameters().get("pageSize") != null) {
             final StringValue ps = getPageParameters().get("pageSize");
-            pageSize = ps.toInt(31);
+            pageSize = ps.toInt(12);
         }
 
         add(new ResourceLink("csvLink", new ListEntriesCsvProducerResource()));
@@ -51,7 +51,7 @@ public class MonthlyListSumPage extends TemplatePage {
         final ListModel<TimeSumWithDate> entries = new ListModel<TimeSumWithDate>(new ArrayList<TimeSumWithDate>());
         if (getCurrentUser() != null) {
             try {
-                final List<TimeEntry> allEntries = getApi().list(pageSize, getCurrentUser());
+                final List<TimeEntry> allEntries = getApi().list(pageSize * 62, getCurrentUser());
                 final List<TimeSumWithDate> sortedPerMonth = new TimeSumUtility().calculateMonthlyTimeSum(allEntries);
 
                 entries.setObject(sortedPerMonth);
