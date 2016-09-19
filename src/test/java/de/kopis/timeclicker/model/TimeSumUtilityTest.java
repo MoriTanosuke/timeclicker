@@ -54,4 +54,30 @@ public class TimeSumUtilityTest {
         assertEquals(42000L, values.get(1).getDuration());
         assertEquals(42000L, values.get(2).getDuration());
     }
+
+    @Test
+    public void aggregateByWeek() {
+        final Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_WEEK, Calendar.WEDNESDAY);
+        // last week
+        cal.add(Calendar.WEEK_OF_YEAR, -1);
+
+        // add entries last week
+        final TimeEntry t1 = new TimeEntry(cal.getTime());
+        t1.setStop(new Date(t1.getStart().getTime() + 42 * 1000));
+        cal.add(Calendar.DAY_OF_WEEK, 1);
+        final TimeEntry t2 = new TimeEntry(cal.getTime());
+        t2.setStop(new Date(t2.getStart().getTime() + 42 * 1000));
+        // add one entry next week
+        cal.add(Calendar.WEEK_OF_YEAR, 1);
+        final TimeEntry t3 = new TimeEntry(cal.getTime());
+        t3.setStop(new Date(t3.getStart().getTime() + 42 * 1000));
+        final List<TimeEntry> entries = Arrays.asList(t1, t2, t3);
+
+        List<TimeSumWithDate> values = new TimeSumUtility().calculateWeeklyTimeSum(entries);
+        assertEquals(2, values.size());
+        // sorted per week
+        assertEquals(42000L, values.get(0).getDuration());
+        assertEquals(84000L, values.get(1).getDuration());
+    }
 }

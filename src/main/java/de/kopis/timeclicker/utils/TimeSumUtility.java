@@ -8,12 +8,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
 import de.kopis.timeclicker.model.TimeSumWithDate;
 
 public class TimeSumUtility {
+    private static final Logger LOGGER = Logger.getLogger(TimeSumUtility.class.getName());
+
     /**
      * Calculates the {@link TimeSum} by summing up all {@link TimeEntry}s with the same date.
      *
@@ -52,6 +55,45 @@ public class TimeSumUtility {
             }
         });
         return sortedPerDay;
+    }
+
+    public List<TimeSumWithDate> calculateWeeklyTimeSum(final List<TimeEntry> allEntries) {
+        final Map<Long, TimeSumWithDate> perWeek = new HashMap<>();
+
+        for (TimeEntry e : allEntries) {
+            // build the key from given TimeEntry
+            final Date entryDate = e.getStart();
+            LOGGER.info("Got entry at " + entryDate);
+            final Calendar cal = Calendar.getInstance();
+            cal.setTime(entryDate);
+            // reset to first of week
+            cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+            // reset to midnight
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            // check if date is already set as key previously
+            final Long key = cal.getTimeInMillis();
+            if (!perWeek.containsKey(key)) {
+                perWeek.put(key, new TimeSumWithDate(cal.getTime(), 0L));
+            }
+            // add sum to existing entry
+            final TimeSumWithDate sum = perWeek.get(key);
+            final TimeSum timeSum = new TimeSum(e);
+            sum.addDuration(timeSum.getDuration());
+            LOGGER.info("Add timesum " + timeSum + " to " + sum.getDate() + " with duration " + sum.getReadableDuration());
+        }
+
+        final List<TimeSumWithDate> sortedPerWeek = Arrays.asList(perWeek.values().toArray(new TimeSumWithDate[0]));
+        Collections.sort(sortedPerWeek, new Comparator<TimeSumWithDate>() {
+            @Override
+            public int compare(TimeSumWithDate o1, TimeSumWithDate o2) {
+                // sort DESC by start date
+                return o2.getDate().compareTo(o1.getDate());
+            }
+        });
+        return sortedPerWeek;
     }
 
     public List<TimeSumWithDate> calculateMonthlyTimeSum(final List<TimeEntry> allEntries) {
