@@ -37,7 +37,7 @@ public class StatisticPage extends TemplatePage {
                 try {
                     sum = getApi().getOverallSum(getCurrentUser());
                 } catch (NotAuthenticatedException e) {
-                    LOGGER.severe("Can not load overall sum: " + e.getMessage());
+                    getLOGGER().severe("Can not load overall sum: " + e.getMessage());
                 }
                 return sum;
             }
@@ -50,7 +50,7 @@ public class StatisticPage extends TemplatePage {
                 try {
                     sum = getApi().getMonthlySum(getCurrentUser());
                 } catch (NotAuthenticatedException e) {
-                    LOGGER.severe("Can not load monthly sum: " + e.getMessage());
+                    getLOGGER().severe("Can not load monthly sum: " + e.getMessage());
                 }
                 return sum;
             }
@@ -63,7 +63,7 @@ public class StatisticPage extends TemplatePage {
                 try {
                     sum = getApi().getWeeklySum(getCurrentUser());
                 } catch (NotAuthenticatedException e) {
-                    LOGGER.severe("Can not load weekly sum: " + e.getMessage());
+                    getLOGGER().severe("Can not load weekly sum: " + e.getMessage());
                 }
                 return sum;
             }
@@ -76,7 +76,7 @@ public class StatisticPage extends TemplatePage {
                 try {
                     sum = getApi().getDailySum(getCurrentUser());
                 } catch (NotAuthenticatedException e) {
-                    LOGGER.severe("Can not load daily sum: " + e.getMessage());
+                    getLOGGER().severe("Can not load daily sum: " + e.getMessage());
                 }
                 return sum;
             }

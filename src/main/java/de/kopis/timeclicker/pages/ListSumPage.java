@@ -58,7 +58,7 @@ public class ListSumPage extends TemplatePage {
 
                 entries.setObject(sortedPerDay);
             } catch (NotAuthenticatedException e) {
-                LOGGER.severe("Can not load entries for user " + getCurrentUser() + ": " + e.getMessage());
+                getLOGGER().severe("Can not load entries for user " + getCurrentUser() + ": " + e.getMessage());
             }
         }
 

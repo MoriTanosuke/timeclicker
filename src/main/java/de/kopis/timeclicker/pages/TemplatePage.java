@@ -1,11 +1,13 @@
 package de.kopis.timeclicker.pages;
 
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
+import java.util.TimeZone;
+import java.util.logging.Logger;
+
 import de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference;
 import de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference;
 import de.kopis.timeclicker.api.TimeclickerAPI;
+import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.UserSettings;
 import de.kopis.timeclicker.panels.CustomFeedbackPanel;
 import de.kopis.timeclicker.panels.FooterPanel;
 import de.kopis.timeclicker.panels.HeaderPanel;
@@ -16,12 +18,15 @@ import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
-import java.util.logging.Logger;
+import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 
 public abstract class TemplatePage extends WebPage {
     private static final long serialVersionUID = 1L;
 
-    protected final transient Logger LOGGER;
+    private transient Logger LOGGER;
 
     private transient TimeclickerAPI api;
 
@@ -65,6 +70,18 @@ public abstract class TemplatePage extends WebPage {
         return userService;
     }
 
+    protected TimeZone getTimeZone(User user) throws NotAuthenticatedException {
+        final UserSettings settings;
+        TimeZone timezone = TimeZone.getDefault();
+        try {
+            settings = getApi().getUserSettings(null, user);
+            timezone = settings.getTimezone();
+        } catch (EntityNotFoundException e) {
+            getLOGGER().warning("Can not load settings for user " + user + ". Using default timezone " + timezone.getID());
+        }
+        return timezone;
+    }
+
     @Override
     public void renderHead(IHeaderResponse response) {
         super.renderHead(response);
@@ -77,4 +94,10 @@ public abstract class TemplatePage extends WebPage {
                 new WebjarsCssResourceReference("bootstrap/3.3.6/css/bootstrap.css")));
     }
 
+    protected Logger getLOGGER() {
+        if (LOGGER == null) {
+            LOGGER = Logger.getLogger(getClass().getName());
+        }
+        return LOGGER;
+    }
 }

@@ -56,7 +56,7 @@ public class WeeklyListSumPage extends TemplatePage {
 
                 entries.setObject(sortedPerMonth);
             } catch (NotAuthenticatedException e) {
-                LOGGER.severe("Can not load entries for user " + getCurrentUser() + ": " + e.getMessage());
+                getLOGGER().severe("Can not load entries for user " + getCurrentUser() + ": " + e.getMessage());
             }
         }
 

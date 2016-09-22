@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.TimeZone;
 
 import de.kopis.timeclicker.ListEntriesCsvProducerResource;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
@@ -50,6 +51,12 @@ public class ListEntriesPage extends TemplatePage {
 
         // use the locale to figure out the dateformat
         DATE_FORMAT = new SimpleDateFormat("HH:mm:ss dd.MM.yyyy Z", getLocale());
+        try {
+            final TimeZone tz = getTimeZone(getCurrentUser());
+            DATE_FORMAT.setTimeZone(tz);
+        } catch (NotAuthenticatedException e) {
+            getLOGGER().fine("Can not load timezone for user " + getCurrentUser() + ": " + e.getMessage());
+        }
 
         final ListModel<TimeEntry> entries = new ListModel<TimeEntry>(new ArrayList<TimeEntry>());
         if (getCurrentUser() != null) {
@@ -63,7 +70,7 @@ public class ListEntriesPage extends TemplatePage {
                     }
                 });
             } catch (NotAuthenticatedException e) {
-                LOGGER.severe("Can not load entries for user " + getCurrentUser() + ": " + e.getMessage());
+                getLOGGER().severe("Can not load entries for user " + getCurrentUser() + ": " + e.getMessage());
             }
         }
 
@@ -101,7 +108,7 @@ public class ListEntriesPage extends TemplatePage {
                             // remove from listmodel
                             entries.getObject().remove(item.getModelObject());
                         } catch (NotAuthenticatedException e) {
-                            LOGGER.severe("Can not delete entry " + item.getModelObject().getKey());
+                            getLOGGER().severe("Can not delete entry " + item.getModelObject().getKey());
                         }
                         setResponsePage(findPage());
                     }

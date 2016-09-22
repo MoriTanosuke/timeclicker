@@ -8,7 +8,6 @@ import java.util.TimeZone;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
-import de.kopis.timeclicker.model.UserSettings;
 import de.kopis.timeclicker.panels.ActiveEntryPanel;
 import org.apache.wicket.ajax.AjaxSelfUpdatingTimerBehavior;
 import org.apache.wicket.markup.html.basic.Label;
@@ -19,7 +18,6 @@ import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.time.Duration;
 
-import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.users.User;
 
 public class HomePage extends TemplatePage {
@@ -54,27 +52,20 @@ public class HomePage extends TemplatePage {
 
                 try {
                     final TimeEntry latest = getApi().latest(user);
-                    final UserSettings settings;
-                    TimeZone timezone = TimeZone.getDefault();
-                    try {
-                        settings = getApi().getUserSettings(null, user);
-                        timezone = settings.getTimezone();
-                    } catch (EntityNotFoundException e) {
-                        LOGGER.warning("Can not load settings for user " + user + ". Using default timezone " + timezone.getID());
-                    }
+                    final TimeZone timezone = getTimeZone(user);
                     if (latest != null) {
                         final Date start = latest.getStart();
 
                         final Calendar cal = Calendar.getInstance();
                         cal.setTime(start);
-                        LOGGER.fine("Using timezone " + timezone);
+                        getLOGGER().fine("Using timezone " + timezone);
                         DATE_FORMAT.setTimeZone(timezone);
                         activeEntry = DATE_FORMAT.format(cal.getTime());
                     } else {
                         activeEntry = null;
                     }
                 } catch (NotAuthenticatedException e) {
-                    LOGGER.severe("Can not load active entry: " + e.getMessage());
+                    getLOGGER().severe("Can not load active entry: " + e.getMessage());
                 }
 
                 return activeEntry;
@@ -96,7 +87,7 @@ public class HomePage extends TemplatePage {
                         final TimeEntry entry = getApi().start(getCurrentUser());
                         success("Entry " + entry.getKey() + " started.");
                     } catch (NotAuthenticatedException e) {
-                        LOGGER.severe("Can not start entry: " + e.getMessage());
+                        getLOGGER().severe("Can not start entry: " + e.getMessage());
                         error(e.getMessage());
                     }
                 }
@@ -121,7 +112,7 @@ public class HomePage extends TemplatePage {
                         activeEntry.modelChanged();
                         success("Latest entry stopped.");
                     } catch (NotAuthenticatedException e) {
-                        LOGGER.severe("Can not stop entry: " + e.getMessage());
+                        getLOGGER().severe("Can not stop entry: " + e.getMessage());
                         error(e.getMessage());
                     }
                 }
@@ -137,7 +128,7 @@ public class HomePage extends TemplatePage {
                 try {
                     sum = getApi().getDailySum(getCurrentUser());
                 } catch (NotAuthenticatedException e) {
-                    LOGGER.severe("Can not load daily sum: " + e.getMessage());
+                    getLOGGER().severe("Can not load daily sum: " + e.getMessage());
                 }
                 return sum;
             }

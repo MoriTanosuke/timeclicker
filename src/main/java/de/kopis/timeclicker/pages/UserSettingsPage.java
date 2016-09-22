@@ -18,7 +18,7 @@ import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.users.User;
 
 public class UserSettingsPage extends TemplatePage {
-    private UserSettings settings;
+    private UserSettings settings = new UserSettings();
 
     public UserSettingsPage(PageParameters parameters) {
         super("Settings", parameters);
@@ -31,9 +31,12 @@ public class UserSettingsPage extends TemplatePage {
         final User user = getCurrentUser();
         try {
             settings = getApi().getUserSettings(null, user);
-            LOGGER.info("Loaded user settings with timezone=" + settings.getTimezone().getID() + " and workingDurationPerDay=" + settings.getWorkingDurationPerDay());
-        } catch (NotAuthenticatedException | EntityNotFoundException e) {
-            LOGGER.severe("Can not load user settings for user " + user + ": " + e.getMessage());
+            getLOGGER().info("Loaded user settings with timezone=" + settings.getTimezone().getID() + " and workingDurationPerDay=" + settings.getWorkingDurationPerDay());
+        } catch (NotAuthenticatedException e) {
+            getLOGGER().severe("Can not load user settings for user " + user + ": " + e.getMessage());
+            error("Can not load user settings for user " + user + ": " + e.getMessage());
+        } catch (EntityNotFoundException e) {
+            getLOGGER().severe("No user settings found for user " + user + ", using defaults");
         }
 
         final IModel<String> selectedTimeZoneId = Model.of(settings.getTimezone().getID());
@@ -46,15 +49,20 @@ public class UserSettingsPage extends TemplatePage {
         entryForm.add(new Button("submit") {
             @Override
             public void onSubmit() {
-                final TimeZone timezone = TimeZone.getTimeZone(timezones.getModelObject());
-                final long duration = workingDuration.getModelObject();
-                LOGGER.info("Updating user settings with timezone=" + timezone.getID() + " and workingDurationPerDay=" + duration);
+                TimeZone timezone = TimeZone.getTimeZone(timezones.getModelObject());
+                if (timezone == null) {
+                    timezone = TimeZone.getDefault();
+                    getLOGGER().fine("No timezone selected, using fallback " + timezone);
+                }
+                long duration = workingDuration.getModelObject();
+                getLOGGER().info("Updating user settings with timezone=" + timezone);
+                getLOGGER().info("Updating user settings with workingDurationPerDay=" + duration);
                 try {
                     settings.setTimezone(timezone);
                     settings.setWorkingDurationPerDay(duration);
                     getApi().setUserSettings(settings, user);
                 } catch (NotAuthenticatedException | EntityNotFoundException e) {
-                    LOGGER.severe("Can not save user settings: " + e.getMessage());
+                    getLOGGER().severe("Can not save user settings: " + e.getMessage());
                 }
             }
         });

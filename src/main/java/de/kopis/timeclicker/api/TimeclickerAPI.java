@@ -316,7 +316,7 @@ public class TimeclickerAPI {
     }
 
     @ApiMethod(name = "settings", path = "settings", httpMethod = "post")
-    public void setUserSettings(@Named("settings") UserSettings settings, User user) throws NotAuthenticatedException, EntityNotFoundException {
+    public void setUserSettings(UserSettings settings, User user) throws NotAuthenticatedException, EntityNotFoundException {
         if (user == null) throw new NotAuthenticatedException();
 
         final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
