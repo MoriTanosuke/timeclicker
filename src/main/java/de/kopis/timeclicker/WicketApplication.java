@@ -10,6 +10,7 @@ import de.kopis.timeclicker.pages.ListEntriesPage;
 import de.kopis.timeclicker.pages.ListSumPage;
 import de.kopis.timeclicker.pages.MonthlyListSumPage;
 import de.kopis.timeclicker.pages.TimeEntryPage;
+import de.kopis.timeclicker.pages.UserSettingsPage;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.request.resource.IResource;
@@ -39,6 +40,7 @@ public class WicketApplication extends WebApplication {
         mountPage("/monthly", MonthlyListSumPage.class);
         mountPage("/edit/${key}", TimeEntryPage.class);
         mountPage("/add", TimeEntryPage.class);
+        mountPage("/settings", UserSettingsPage.class);
 
         mountResource("/chart.json", new ResourceReference("jsonProducer") {
             @Override

@@ -1,12 +1,14 @@
 package de.kopis.timeclicker.pages;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
-import com.google.appengine.api.users.User;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
+import de.kopis.timeclicker.model.UserSettings;
 import de.kopis.timeclicker.panels.ActiveEntryPanel;
 import org.apache.wicket.ajax.AjaxSelfUpdatingTimerBehavior;
 import org.apache.wicket.markup.html.basic.Label;
@@ -17,16 +19,16 @@ import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.time.Duration;
 
+import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.users.User;
+
 public class HomePage extends TemplatePage {
     private static final long serialVersionUID = 1L;
     /**
      * Update interval for sums.
      */
     public static final Duration UPDATE_INTERVAL = Duration.hours(2);
-
-    //TODO GAppEngine does not have a user locale
-    // maybe return all times as timestamps in UNIX format and convert in frontend?
-    private final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", getLocale());
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
 
     private ActiveEntryPanel activeEntry;
     private Link stop;
@@ -52,9 +54,22 @@ public class HomePage extends TemplatePage {
 
                 try {
                     final TimeEntry latest = getApi().latest(user);
+                    final UserSettings settings;
+                    TimeZone timezone = TimeZone.getDefault();
+                    try {
+                        settings = getApi().getUserSettings(null, user);
+                        timezone = settings.getTimezone();
+                    } catch (EntityNotFoundException e) {
+                        LOGGER.warning("Can not load settings for user " + user + ". Using default timezone " + timezone.getID());
+                    }
                     if (latest != null) {
                         final Date start = latest.getStart();
-                        activeEntry = DATE_FORMAT.format(start);
+
+                        final Calendar cal = Calendar.getInstance();
+                        cal.setTime(start);
+                        LOGGER.fine("Using timezone " + timezone);
+                        DATE_FORMAT.setTimeZone(timezone);
+                        activeEntry = DATE_FORMAT.format(cal.getTime());
                     } else {
                         activeEntry = null;
                     }

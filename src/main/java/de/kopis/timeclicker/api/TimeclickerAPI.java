@@ -4,16 +4,26 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.logging.Logger;
+
+import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TimeEntry;
+import de.kopis.timeclicker.model.TimeSum;
+import de.kopis.timeclicker.model.UserSettings;
 
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.Named;
-import com.google.appengine.api.datastore.*;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.users.User;
-import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
-import de.kopis.timeclicker.model.TimeEntry;
-import de.kopis.timeclicker.model.TimeSum;
 
 @Api(name = "timeclicker", version = "v1", scopes = {Constants.EMAIL_SCOPE},
         clientIds = {Constants.WEB_CLIENT_ID, Constants.ANDROID_CLIENT_ID, "292824132082.apps.googleusercontent.com"},
@@ -275,6 +285,69 @@ public class TimeclickerAPI {
         return sum;
     }
 
+    @ApiMethod(name = "settings", path = "settings", httpMethod = "get")
+    public UserSettings getUserSettings(@Named("key") String key, User user) throws NotAuthenticatedException, EntityNotFoundException {
+        if (user == null) throw new NotAuthenticatedException();
+
+        final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        Entity entity;
+        if (key != null) {
+            try {
+                entity = datastore.get(KeyFactory.stringToKey(key));
+                if (!entity.getProperty("userId").equals(user.getUserId())) {
+                    throw new RuntimeException("Referenced entry does not belong to this user!");
+                }
+                datastore.put(entity);
+            } catch (EntityNotFoundException e) {
+                LOGGER.severe("Can not load user settings with key=" + key + " for user " + user);
+                throw e;
+            }
+        } else {
+            final Query.Filter propertyFilter =
+                    new Query.FilterPredicate("userId",
+                            Query.FilterOperator.EQUAL,
+                            user.getUserId());
+            final Query q = new Query("UserSettings")
+                    .setFilter(propertyFilter);
+            final PreparedQuery pq = datastore.prepare(q);
+            entity = pq.asSingleEntity();
+        }
+        return buildUserSettingsFromEntity(entity);
+    }
+
+    @ApiMethod(name = "settings", path = "settings", httpMethod = "post")
+    public void setUserSettings(@Named("settings") UserSettings settings, User user) throws NotAuthenticatedException, EntityNotFoundException {
+        if (user == null) throw new NotAuthenticatedException();
+
+        final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
+        final String key = settings.getKey();
+
+        Entity entity = null;
+        if (key != null) {
+            try {
+                entity = datastore.get(KeyFactory.stringToKey(key));
+                if (!entity.getProperty("userId").equals(user.getUserId())) {
+                    throw new RuntimeException("Referenced entry does not belong to this user!");
+                }
+                LOGGER.fine("Updating entity with key=" + key + ": " + entity);
+                // update existing entity
+                entity.setProperty("timezone", settings.getTimezone().getID());
+                entity.setProperty("workingDurationPerDay", settings.getWorkingDurationPerDay());
+                entity.setProperty("userId", user.getUserId());
+            } catch (EntityNotFoundException e) {
+                LOGGER.severe("Can not load user settings with key=" + key + " for user " + user);
+                throw e;
+            }
+        } else {
+            entity = createUserSettingsEntity(settings, user);
+            LOGGER.fine("Creating entity: " + entity);
+        }
+
+        LOGGER.fine("Updated entity: " + entity);
+        datastore.put(entity);
+    }
+
     private List<Entity> listEntities(User user) {
         final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         // load all time entries for this user
@@ -352,6 +425,28 @@ public class TimeclickerAPI {
             entry.setTags((String) timeEntryEntity.getProperty("tags"));
         }
         return entry;
+    }
+
+    private UserSettings buildUserSettingsFromEntity(Entity userSettingsEntity) {
+        final UserSettings us = new UserSettings();
+        if (userSettingsEntity != null) {
+            us.setKey(KeyFactory.keyToString(userSettingsEntity.getKey()));
+            if (userSettingsEntity.hasProperty("timezone")) {
+                us.setTimezone(TimeZone.getTimeZone((String) userSettingsEntity.getProperty("timezone")));
+            }
+        }
+        return us;
+    }
+
+    private Entity createUserSettingsEntity(UserSettings settings, User user) {
+        final Entity userSettingsEntity = new Entity("UserSettings");
+
+        userSettingsEntity.setProperty("key", settings.getKey());
+        userSettingsEntity.setProperty("timezone", settings.getTimezone().getID());
+        userSettingsEntity.setProperty("workingDurationPerDay", settings.getWorkingDurationPerDay());
+        userSettingsEntity.setProperty("userId", user.getUserId());
+
+        return userSettingsEntity;
     }
 
     /**
