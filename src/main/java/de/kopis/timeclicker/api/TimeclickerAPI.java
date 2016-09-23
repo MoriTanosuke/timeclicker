@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
 import java.util.logging.Logger;
 
@@ -434,6 +435,19 @@ public class TimeclickerAPI {
             if (userSettingsEntity.hasProperty("timezone")) {
                 us.setTimezone(TimeZone.getTimeZone((String) userSettingsEntity.getProperty("timezone")));
             }
+            Locale locale;
+            if (userSettingsEntity.hasProperty("language") && userSettingsEntity.hasProperty("country")) {
+                if (userSettingsEntity.hasProperty("variant")) {
+                    locale = new Locale((String) userSettingsEntity.getProperty("language"),
+                            (String) userSettingsEntity.getProperty("country"),
+                            (String) userSettingsEntity.getProperty("variant"));
+                } else {
+                    locale = new Locale((String) userSettingsEntity.getProperty("language"), (String) userSettingsEntity.getProperty("country"));
+                }
+            } else {
+                locale = Locale.getDefault();
+            }
+            us.setLocale(locale);
         }
         return us;
     }
@@ -444,6 +458,9 @@ public class TimeclickerAPI {
         userSettingsEntity.setProperty("key", settings.getKey());
         userSettingsEntity.setProperty("timezone", settings.getTimezone().getID());
         userSettingsEntity.setProperty("workingDurationPerDay", settings.getWorkingDurationPerDay());
+        userSettingsEntity.setProperty("country", settings.getLocale().getCountry());
+        userSettingsEntity.setProperty("language", settings.getLocale().getLanguage());
+        userSettingsEntity.setProperty("variant", settings.getLocale().getVariant());
         userSettingsEntity.setProperty("userId", user.getUserId());
 
         return userSettingsEntity;

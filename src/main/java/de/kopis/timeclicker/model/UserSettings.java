@@ -1,6 +1,7 @@
 package de.kopis.timeclicker.model;
 
 import java.io.Serializable;
+import java.util.Locale;
 import java.util.TimeZone;
 
 public class UserSettings implements Serializable {
@@ -9,6 +10,7 @@ public class UserSettings implements Serializable {
 
     private long workingDurationPerDay = HOURS_PER_DAY_IN_MILLISECONDS;
     private TimeZone timezone = TimeZone.getDefault();
+    private Locale locale = Locale.getDefault();
     private String key;
 
     public long getWorkingDurationPerDay() {
@@ -33,5 +35,13 @@ public class UserSettings implements Serializable {
 
     public void setKey(String key) {
         this.key = key;
+    }
+
+    public Locale getLocale() {
+        return locale;
+    }
+
+    public void setLocale(Locale locale) {
+        this.locale = locale;
     }
 }

@@ -1,6 +1,8 @@
 package de.kopis.timeclicker.pages;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
@@ -8,6 +10,7 @@ import de.kopis.timeclicker.model.UserSettings;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
@@ -38,13 +41,33 @@ public class UserSettingsPage extends TemplatePage {
         } catch (EntityNotFoundException e) {
             getLOGGER().severe("No user settings found for user " + user + ", using defaults");
         }
+        Locale[] availableLocales = Locale.getAvailableLocales();
+        Arrays.sort(availableLocales, new Comparator<Locale>() {
+            @Override
+            public int compare(Locale o1, Locale o2) {
+                return o1.getDisplayName().compareTo(o2.getDisplayName());
+            }
+        });
 
         final IModel<String> selectedTimeZoneId = Model.of(settings.getTimezone().getID());
+        final IModel<Locale> selectedLocale = Model.of(settings.getLocale());
         final DropDownChoice<String> timezones = new DropDownChoice<>("timezones", selectedTimeZoneId, Arrays.asList(TimeZone.getAvailableIDs()));
+        final DropDownChoice<Locale> locales = new DropDownChoice<>("locales", selectedLocale, Arrays.asList(availableLocales), new IChoiceRenderer<Locale>() {
+            @Override
+            public String getDisplayValue(Locale object) {
+                return object.getDisplayName();
+            }
+
+            @Override
+            public String getIdValue(Locale object, int index) {
+                return object.getDisplayName();
+            }
+        });
         final TextField<Long> workingDuration = new TextField<>("workingDuration", new PropertyModel<Long>(settings, "workingDurationPerDay"));
 
         final Form<Void> entryForm = new Form<>("entryForm");
         entryForm.add(timezones);
+        entryForm.add(locales);
         entryForm.add(workingDuration);
         entryForm.add(new Button("submit") {
             @Override
