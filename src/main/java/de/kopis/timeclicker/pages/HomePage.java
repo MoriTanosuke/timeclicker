@@ -82,8 +82,8 @@ public class HomePage extends TemplatePage {
         });
         add(start = new Link("start") {
             @Override
-            public boolean isVisible() {
-                return !activeEntry.isVisible();
+            protected void onConfigure() {
+                setVisible(!activeEntry.isVisible());
             }
 
             @Override
@@ -106,8 +106,8 @@ public class HomePage extends TemplatePage {
         });
         add(stop = new Link("stop") {
             @Override
-            public boolean isVisible() {
-                return activeEntry.isVisible();
+            protected void onConfigure() {
+                setVisible(activeEntry.isVisible());
             }
 
             @Override
