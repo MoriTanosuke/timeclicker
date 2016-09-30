@@ -9,6 +9,7 @@ import java.util.TimeZone;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
+import de.kopis.timeclicker.panels.ActiveEntryPanel;
 import org.apache.wicket.ajax.AjaxSelfUpdatingTimerBehavior;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
@@ -28,10 +29,9 @@ public class HomePage extends TemplatePage {
      */
     public static final Duration UPDATE_INTERVAL = Duration.hours(2);
 
-    private Label activeEntry;
     private Link stop;
     private Link start;
-    private IModel<Boolean> active = Model.of(Boolean.FALSE);
+    private IModel<String> activeSince;
 
     public HomePage(final PageParameters parameters) {
         super("Home", parameters);
@@ -41,45 +41,33 @@ public class HomePage extends TemplatePage {
     public void onInitialize() {
         super.onInitialize();
 
-        final LoadableDetachableModel<String> activeEntryModel = new LoadableDetachableModel<String>() {
+        activeSince = new LoadableDetachableModel<String>() {
             @Override
             protected String load() {
                 String activeEntry = null;
-
-                final User user = getCurrentUser();
-                if (user == null) {
-                    return null;
-                }
-
                 try {
+                    final User user = getCurrentUser();
                     final TimeEntry latest = getApi().latest(user);
-                    final TimeZone timezone = getTimeZone(user);
-                    final Locale locale = getLocale(user);
                     if (latest != null) {
-                        final Date start = latest.getStart();
-
+                        Date start = latest.getStart();
                         final Calendar cal = Calendar.getInstance();
                         cal.setTime(start);
+                        final TimeZone timezone = getTimeZone(user);
+                        final Locale locale = getLocale(user);
                         getLOGGER().fine("Using timezone " + timezone);
                         final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", locale);
                         DATE_FORMAT.setTimeZone(timezone);
                         activeEntry = DATE_FORMAT.format(cal.getTime());
-                    } else {
-                        activeEntry = null;
                     }
                 } catch (NotAuthenticatedException e) {
                     getLOGGER().severe("Can not load active entry: " + e.getMessage());
                 }
-
-                return getString("tracking.since", null, activeEntry);
+                return activeEntry;
             }
         };
-        add(activeEntry = new Label("activePanel", activeEntryModel) {
-            @Override
-            protected void onConfigure() {
-                setVisible(active.getObject());
-            }
-        });
+
+        final ActiveEntryPanel activeEntry = new ActiveEntryPanel("activePanel", activeSince);
+        add(activeEntry);
         add(start = new Link("start") {
             @Override
             protected void onConfigure() {
@@ -94,7 +82,6 @@ public class HomePage extends TemplatePage {
                 } else {
                     try {
                         final TimeEntry entry = getApi().start(getCurrentUser());
-                        active.setObject(Boolean.TRUE);
                         success(getString("entry.started", Model.of(entry)));
                     } catch (NotAuthenticatedException e) {
                         getLOGGER().severe("Can not start entry: " + e.getMessage());
@@ -118,7 +105,6 @@ public class HomePage extends TemplatePage {
                 } else {
                     try {
                         getApi().stopLatest(getCurrentUser());
-                        active.setObject(Boolean.FALSE);
                         success(getString("latest.stopped"));
                     } catch (NotAuthenticatedException e) {
                         getLOGGER().severe("Can not stop entry: " + e.getMessage());

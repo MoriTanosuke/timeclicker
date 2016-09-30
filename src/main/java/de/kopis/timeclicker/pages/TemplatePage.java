@@ -117,6 +117,8 @@ public abstract class TemplatePage extends WebPage {
 
         response.render(CssHeaderItem.forReference(
                 new WebjarsCssResourceReference("bootstrap/3.3.6/css/bootstrap.css")));
+        //TODO add html5shiv?
+        //TODO add respond?
     }
 
     protected Logger getLOGGER() {

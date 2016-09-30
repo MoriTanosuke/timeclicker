@@ -64,6 +64,16 @@
             <artifactId>bootstrap</artifactId>
             <version>3.3.6</version>
         </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>html5shiv</artifactId>
+            <version>3.7.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>respond</artifactId>
+            <version>1.4.2</version>
+        </dependency>
 
         <dependency>
             <groupId>com.google.appengine</groupId>

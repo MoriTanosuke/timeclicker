@@ -11,8 +11,6 @@ import de.kopis.timeclicker.ListEntriesCsvProducerResource;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
-import de.kopis.timeclicker.model.UserSettings;
-import de.kopis.timeclicker.utils.DurationUtils;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.link.ResourceLink;
@@ -23,9 +21,6 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.string.StringValue;
-
-import com.google.appengine.api.datastore.EntityNotFoundException;
-import com.google.appengine.api.users.User;
 
 public class ListEntriesPage extends TemplatePage {
     private static final long serialVersionUID = 1L;
@@ -62,8 +57,6 @@ public class ListEntriesPage extends TemplatePage {
             getLOGGER().fine("Can not load timezone for user " + getCurrentUser() + ": " + e.getMessage());
         }
 
-        final long dailyDuration = getDailyDuration(getCurrentUser());
-
         final ListModel<TimeEntry> entries = new ListModel<TimeEntry>(new ArrayList<TimeEntry>());
         if (getCurrentUser() != null) {
             try {
@@ -93,9 +86,6 @@ public class ListEntriesPage extends TemplatePage {
                     item.add(new Label("entryStop", "-"));
                     item.add(new Label("entrySum", "-"));
                 }
-
-                final long duration = timeSum.getDuration();
-                item.add(new Label("entryRemaining", DurationUtils.getReadableDuration(dailyDuration - duration)));
 
                 if (item.getModelObject().getTags() != null) {
                     item.add(new Label("tags",item.getModelObject().getTags()));
@@ -129,16 +119,5 @@ public class ListEntriesPage extends TemplatePage {
         final PagingNavigator navigator = new PagingNavigator("paginator", listView);
         add(navigator);
         add(listView);
-    }
-
-    private long getDailyDuration(final User user) {
-        long dailyDuration = 0L;
-        try {
-            final UserSettings settings = getApi().getUserSettings(null, user);
-            dailyDuration = settings.getWorkingDurationPerDay();
-        } catch (NotAuthenticatedException | EntityNotFoundException e) {
-            getLOGGER().warning("Can not load settings for user " + user + ".");
-        }
-        return dailyDuration;
     }
 }
