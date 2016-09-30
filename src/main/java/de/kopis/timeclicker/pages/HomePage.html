@@ -5,7 +5,9 @@
 </head>
 <body>
 <wicket:extend>
-    <wicket:panel wicket:id="activePanel"></wicket:panel>
+    <wicket:enclosure child="activePanel">
+        <div class="alert alert-info" wicket:id="activePanel"></div>
+    </wicket:enclosure>
 
     <div id="sumLog">
         <ul>

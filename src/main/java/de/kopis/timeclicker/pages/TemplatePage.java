@@ -1,5 +1,6 @@
 package de.kopis.timeclicker.pages;
 
+import java.util.Locale;
 import java.util.TimeZone;
 import java.util.logging.Logger;
 
@@ -11,6 +12,7 @@ import de.kopis.timeclicker.model.UserSettings;
 import de.kopis.timeclicker.panels.CustomFeedbackPanel;
 import de.kopis.timeclicker.panels.FooterPanel;
 import de.kopis.timeclicker.panels.HeaderPanel;
+import org.apache.wicket.Session;
 import org.apache.wicket.markup.head.CssHeaderItem;
 import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.head.JavaScriptHeaderItem;
@@ -35,6 +37,17 @@ public abstract class TemplatePage extends WebPage {
     public TemplatePage(final String header, final PageParameters parameters) {
         super(parameters);
         LOGGER = Logger.getLogger(getClass().getName());
+
+        final User user = getCurrentUser();
+        if (user != null) {
+            try {
+                UserSettings settings = new TimeclickerAPI().getUserSettings(null, user);
+                LOGGER.info("Setting locale " + settings.getLocale());
+                Session.get().setLocale(settings.getLocale());
+            } catch (NotAuthenticatedException | EntityNotFoundException e) {
+                LOGGER.fine("Can not load user locale, using default " + Session.get().getLocale());
+            }
+        }
 
         add(new CustomFeedbackPanel("feedbackPanel"));
         // add all the wicket components
@@ -80,6 +93,18 @@ public abstract class TemplatePage extends WebPage {
             getLOGGER().warning("Can not load settings for user " + user + ". Using default timezone " + timezone.getID());
         }
         return timezone;
+    }
+
+    protected Locale getLocale(User user) throws NotAuthenticatedException {
+        final UserSettings settings;
+        Locale locale = Locale.getDefault();
+        try {
+            settings = getApi().getUserSettings(null, user);
+            locale = settings.getLocale();
+        } catch (EntityNotFoundException e) {
+            getLOGGER().warning("Can not load settings for user " + user + ". Using default locale " + locale.getDisplayName());
+        }
+        return locale;
     }
 
     @Override

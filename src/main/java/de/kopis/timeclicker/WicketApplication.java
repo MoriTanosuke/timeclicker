@@ -17,11 +17,14 @@ import org.apache.wicket.request.resource.IResource;
 import org.apache.wicket.request.resource.ResourceReference;
 
 public class WicketApplication extends WebApplication {
+    public static final int HOURS_PER_DAY = 8;
+    public static final int HOURS_PER_DAY_IN_MILLISECONDS = HOURS_PER_DAY * 60 * 60 * 1000;
+
     private static final Logger LOGGER = Logger.getLogger(WicketApplication.class.getName());
 
     @Override
     public Class<? extends WebPage> getHomePage() {
-        LOGGER.fine("Returning application.");
+        LOGGER.finer("Returning application.");
         return HomePage.class;
     }
 

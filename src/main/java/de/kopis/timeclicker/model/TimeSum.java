@@ -33,7 +33,7 @@ public class TimeSum implements Serializable, Comparable {
     }
 
     public void add(final TimeSum sum) {
-        this.duration = sum.getDuration();
+        this.duration += sum.getDuration();
     }
 
     private long calculateDuration(TimeEntry entry) {
@@ -45,7 +45,7 @@ public class TimeSum implements Serializable, Comparable {
         }
 
         long duration = stop.getTime() - start.getTime();
-        LOGGER.info("Calculated duration: " + duration);
+        LOGGER.finer("Calculated duration: " + duration);
         return duration;
     }
 

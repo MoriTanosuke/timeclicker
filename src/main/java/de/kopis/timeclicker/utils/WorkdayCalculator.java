@@ -2,9 +2,14 @@ package de.kopis.timeclicker.utils;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.logging.Logger;
 
 public class WorkdayCalculator {
+    private static final Logger LOGGER = Logger.getLogger(WorkdayCalculator.class.getName());
+
     public static int getWorkingDays(final Date startDate, final Date endDate) {
+        LOGGER.fine("Calculating work days from " + startDate + " to " + endDate);
+
         final Calendar startCal = Calendar.getInstance();
         startCal.setTime(startDate);
         startCal.set(Calendar.HOUR_OF_DAY, 0);
@@ -43,6 +48,7 @@ public class WorkdayCalculator {
             workDays = 1;
         }
 
+        LOGGER.fine("Workdays: " + workDays);
         return workDays;
     }
 }
