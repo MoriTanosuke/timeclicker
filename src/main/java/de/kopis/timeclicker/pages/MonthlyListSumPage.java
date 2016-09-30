@@ -10,6 +10,7 @@ import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSumWithDate;
 import de.kopis.timeclicker.utils.DurationUtils;
 import de.kopis.timeclicker.utils.TimeSumUtility;
+import de.kopis.timeclicker.utils.WorkdayCalculator;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.link.ResourceLink;
@@ -65,6 +66,13 @@ public class MonthlyListSumPage extends TemplatePage {
             protected void populateItem(final ListItem<TimeSumWithDate> item) {
                 item.add(new Label("entryDate", DATE_FORMAT.format(item.getModelObject().getDate())));
                 item.add(new Label("entrySum", DurationUtils.getReadableDuration(item.getModelObject().getDuration())));
+
+                final long dailyDuration = getDailyDuration(getCurrentUser());
+                final int workingDays = WorkdayCalculator.getWorkingDaysForCurrentMonth();
+                getLOGGER().fine("Current month has " + workingDays + " working days");
+                final long monthlyDuration = dailyDuration * workingDays;
+                final long duration = item.getModelObject().getDuration();
+                item.add(new Label("entryRemaining", DurationUtils.getReadableDuration(monthlyDuration - duration)));
             }
         };
         final PagingNavigator navigator = new PagingNavigator("paginator", listView);

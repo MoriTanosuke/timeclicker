@@ -51,4 +51,13 @@ public class WorkdayCalculator {
         LOGGER.fine("Workdays: " + workDays);
         return workDays;
     }
+
+    public static int getWorkingDaysForCurrentMonth() {
+        final Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        final Date startOfMonth = cal.getTime();
+        cal.roll(Calendar.DAY_OF_MONTH, false);
+        final Date endOfMonth = cal.getTime();
+        return WorkdayCalculator.getWorkingDays(startOfMonth, endOfMonth);
+    }
 }
