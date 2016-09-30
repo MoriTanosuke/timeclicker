@@ -9,7 +9,6 @@ import de.kopis.timeclicker.ListEntriesCsvProducerResource;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSumWithDate;
-import de.kopis.timeclicker.model.UserSettings;
 import de.kopis.timeclicker.utils.DurationUtils;
 import de.kopis.timeclicker.utils.TimeSumUtility;
 import org.apache.wicket.markup.html.basic.Label;
@@ -21,9 +20,6 @@ import org.apache.wicket.markup.html.navigation.paging.PagingNavigator;
 import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.string.StringValue;
-
-import com.google.appengine.api.datastore.EntityNotFoundException;
-import com.google.appengine.api.users.User;
 
 public class ListSumPage extends TemplatePage {
     private static final long serialVersionUID = 1L;
@@ -80,17 +76,5 @@ public class ListSumPage extends TemplatePage {
         final PagingNavigator navigator = new PagingNavigator("paginator", listView);
         add(navigator);
         add(listView);
-    }
-
-
-    private long getDailyDuration(final User user) {
-        long dailyDuration = 0L;
-        try {
-            final UserSettings settings = getApi().getUserSettings(null, user);
-            dailyDuration = settings.getWorkingDurationPerDay();
-        } catch (NotAuthenticatedException | EntityNotFoundException e) {
-            getLOGGER().warning("Can not load settings for user " + user + ".");
-        }
-        return dailyDuration;
     }
 }

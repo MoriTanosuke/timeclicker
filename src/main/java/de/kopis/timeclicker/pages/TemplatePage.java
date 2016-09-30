@@ -107,6 +107,17 @@ public abstract class TemplatePage extends WebPage {
         return locale;
     }
 
+    protected long getDailyDuration(final User user) {
+        long dailyDuration = 0L;
+        try {
+            final UserSettings settings = getApi().getUserSettings(null, user);
+            dailyDuration = settings.getWorkingDurationPerDay();
+        } catch (NotAuthenticatedException | EntityNotFoundException e) {
+            getLOGGER().warning("Can not load settings for user " + user + ".");
+        }
+        return dailyDuration;
+    }
+
     @Override
     public void renderHead(IHeaderResponse response) {
         super.renderHead(response);

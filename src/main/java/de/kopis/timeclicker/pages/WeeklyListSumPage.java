@@ -21,6 +21,7 @@ import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.string.StringValue;
 
 public class WeeklyListSumPage extends TemplatePage {
+    public static final int WEEKLY_WORK_DAYS = 5;
     private int pageSize = 12;
     private SimpleDateFormat DATE_FORMAT;
 
@@ -65,6 +66,12 @@ public class WeeklyListSumPage extends TemplatePage {
             protected void populateItem(final ListItem<TimeSumWithDate> item) {
                 item.add(new Label("entryDate", DATE_FORMAT.format(item.getModelObject().getDate())));
                 item.add(new Label("entrySum", DurationUtils.getReadableDuration(item.getModelObject().getDuration())));
+
+                final long dailyDuration = getDailyDuration(getCurrentUser());
+                //TODO move WEEKLY_WORK_DAYS to a central place? DurationUtil?
+                final long weeklyDuration = dailyDuration * WEEKLY_WORK_DAYS;
+                final long duration = item.getModelObject().getDuration();
+                item.add(new Label("entryRemaining", DurationUtils.getReadableDuration(weeklyDuration - duration)));
             }
         };
         final PagingNavigator navigator = new PagingNavigator("paginator", listView);
