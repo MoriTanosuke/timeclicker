@@ -14,11 +14,13 @@ import de.kopis.timeclicker.panels.FooterPanel;
 import de.kopis.timeclicker.panels.HeaderPanel;
 import org.apache.wicket.Session;
 import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.CssReferenceHeaderItem;
 import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.head.JavaScriptHeaderItem;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.apache.wicket.request.resource.CssResourceReference;
 
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.users.User;
@@ -121,6 +123,13 @@ public abstract class TemplatePage extends WebPage {
     @Override
     public void renderHead(IHeaderResponse response) {
         super.renderHead(response);
+
+        // add custom css and js to override from each class
+        response.render(CssReferenceHeaderItem.forReference(new CssResourceReference(getClass(), "custom.css")));
+
+        //TODO add general custom css and js to include for all the pages
+
+        // add webjars
         response.render(JavaScriptHeaderItem.forReference(
                 new WebjarsJavaScriptResourceReference("jquery/1.11.3/jquery.js")));
         response.render(JavaScriptHeaderItem.forReference(

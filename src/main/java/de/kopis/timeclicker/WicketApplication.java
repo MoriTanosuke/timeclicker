@@ -11,10 +11,12 @@ import de.kopis.timeclicker.pages.ListSumPage;
 import de.kopis.timeclicker.pages.MonthlyListSumPage;
 import de.kopis.timeclicker.pages.TimeEntryPage;
 import de.kopis.timeclicker.pages.UserSettingsPage;
+import org.apache.wicket.javascript.DefaultJavaScriptCompressor;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.request.resource.IResource;
 import org.apache.wicket.request.resource.ResourceReference;
+import org.apache.wicket.resource.CssUrlReplacer;
 
 public class WicketApplication extends WebApplication {
     public static final int HOURS_PER_DAY = 8;
@@ -63,5 +65,8 @@ public class WicketApplication extends WebApplication {
                 return new ListEntriesCsvProducerResource();
             }
         });
+
+        getResourceSettings().setCssCompressor(new CssUrlReplacer());
+        getResourceSettings().setJavaScriptCompressor(new DefaultJavaScriptCompressor());
     }
 }
