@@ -60,4 +60,13 @@ public class WorkdayCalculator {
         final Date endOfMonth = cal.getTime();
         return WorkdayCalculator.getWorkingDays(startOfMonth, endOfMonth);
     }
+
+    public static int getWorkingDaysForCurrentWeek() {
+        final Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+        final Date start = cal.getTime();
+        cal.add(Calendar.DAY_OF_WEEK, 7);
+        final Date end = cal.getTime();
+        return WorkdayCalculator.getWorkingDays(start, end);
+    }
 }

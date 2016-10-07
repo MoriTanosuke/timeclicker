@@ -1,30 +1,17 @@
 package de.kopis.timeclicker.api;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
-import java.util.logging.Logger;
-
+import com.google.api.server.spi.config.Api;
+import com.google.api.server.spi.config.ApiMethod;
+import com.google.api.server.spi.config.Named;
+import com.google.appengine.api.datastore.*;
+import com.google.appengine.api.users.User;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
 import de.kopis.timeclicker.model.UserSettings;
 
-import com.google.api.server.spi.config.Api;
-import com.google.api.server.spi.config.ApiMethod;
-import com.google.api.server.spi.config.Named;
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.EntityNotFoundException;
-import com.google.appengine.api.datastore.FetchOptions;
-import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.api.datastore.PreparedQuery;
-import com.google.appengine.api.datastore.Query;
-import com.google.appengine.api.users.User;
+import java.util.*;
+import java.util.logging.Logger;
 
 @Api(name = "timeclicker", version = "v1", scopes = {Constants.EMAIL_SCOPE},
         clientIds = {Constants.WEB_CLIENT_ID, Constants.ANDROID_CLIENT_ID, "292824132082.apps.googleusercontent.com"},
@@ -298,7 +285,6 @@ public class TimeclickerAPI {
                 if (!entity.getProperty("userId").equals(user.getUserId())) {
                     throw new RuntimeException("Referenced entry does not belong to this user!");
                 }
-                datastore.put(entity);
             } catch (EntityNotFoundException e) {
                 LOGGER.severe("Can not load user settings with key=" + key + " for user " + user);
                 throw e;
@@ -336,6 +322,9 @@ public class TimeclickerAPI {
                 entity.setProperty("timezone", settings.getTimezone().getID());
                 entity.setProperty("workingDurationPerDay", settings.getWorkingDurationPerDay());
                 entity.setProperty("userId", user.getUserId());
+                entity.setProperty("language", settings.getLocale().getLanguage());
+                entity.setProperty("country", settings.getLocale().getCountry());
+                entity.setProperty("variant", settings.getLocale().getVariant());
             } catch (EntityNotFoundException e) {
                 LOGGER.severe("Can not load user settings with key=" + key + " for user " + user);
                 throw e;

@@ -1,24 +1,19 @@
 package de.kopis.timeclicker.pages;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Locale;
-import java.util.TimeZone;
-
+import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.users.User;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.UserSettings;
-import org.apache.wicket.markup.html.form.Button;
-import org.apache.wicket.markup.html.form.DropDownChoice;
-import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.IChoiceRenderer;
-import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.form.*;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
-import com.google.appengine.api.datastore.EntityNotFoundException;
-import com.google.appengine.api.users.User;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class UserSettingsPage extends TemplatePage {
     private UserSettings settings = new UserSettings();
@@ -34,7 +29,9 @@ public class UserSettingsPage extends TemplatePage {
         final User user = getCurrentUser();
         try {
             settings = getApi().getUserSettings(null, user);
-            getLOGGER().info("Loaded user settings with timezone=" + settings.getTimezone().getID() + " and workingDurationPerDay=" + settings.getWorkingDurationPerDay());
+            getLOGGER().info("Loaded user settings with timezone=" + settings.getTimezone().getID()
+                    + " locale=" + settings.getLocale().getDisplayName()
+                    + " workingDurationPerDay=" + settings.getWorkingDurationPerDay());
         } catch (NotAuthenticatedException e) {
             getLOGGER().severe("Can not load user settings for user " + user + ": " + e.getMessage());
             error("Can not load user settings for user " + user + ": " + e.getMessage());
@@ -77,11 +74,17 @@ public class UserSettingsPage extends TemplatePage {
                     timezone = TimeZone.getDefault();
                     getLOGGER().fine("No timezone selected, using fallback " + timezone);
                 }
+                Locale locale = locales.getModelObject();
+                if (locale == null) {
+                    locale = Locale.getDefault();
+                }
                 long duration = workingDuration.getModelObject();
-                getLOGGER().info("Updating user settings with timezone=" + timezone);
-                getLOGGER().info("Updating user settings with workingDurationPerDay=" + duration);
+                getLOGGER().info("Updating user settings with timezone=" + timezone
+                        + " locale=" + locale
+                        + " workingDurationPerDay=" + duration);
                 try {
                     settings.setTimezone(timezone);
+                    settings.setLocale(locale);
                     settings.setWorkingDurationPerDay(duration);
                     getApi().setUserSettings(settings, user);
                 } catch (NotAuthenticatedException | EntityNotFoundException e) {

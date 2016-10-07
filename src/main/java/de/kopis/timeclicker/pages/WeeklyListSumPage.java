@@ -1,15 +1,12 @@
 package de.kopis.timeclicker.pages;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-
 import de.kopis.timeclicker.ListEntriesCsvProducerResource;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSumWithDate;
 import de.kopis.timeclicker.utils.DurationUtils;
 import de.kopis.timeclicker.utils.TimeSumUtility;
+import de.kopis.timeclicker.utils.WorkdayCalculator;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.link.ResourceLink;
@@ -20,8 +17,11 @@ import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.string.StringValue;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+
 public class WeeklyListSumPage extends TemplatePage {
-    public static final int WEEKLY_WORK_DAYS = 5;
     private int pageSize = 12;
     private SimpleDateFormat DATE_FORMAT;
 
@@ -68,8 +68,8 @@ public class WeeklyListSumPage extends TemplatePage {
                 item.add(new Label("entrySum", DurationUtils.getReadableDuration(item.getModelObject().getDuration())));
 
                 final long dailyDuration = getDailyDuration(getCurrentUser());
-                //TODO move WEEKLY_WORK_DAYS to a central place? DurationUtil?
-                final long weeklyDuration = dailyDuration * WEEKLY_WORK_DAYS;
+                final int workingDays = WorkdayCalculator.getWorkingDaysForCurrentWeek();
+                final long weeklyDuration = dailyDuration * workingDays;
                 final long duration = item.getModelObject().getDuration();
                 item.add(new Label("entryRemaining", DurationUtils.getReadableDuration(weeklyDuration - duration)));
             }
