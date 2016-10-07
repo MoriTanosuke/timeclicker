@@ -4,6 +4,7 @@ import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.users.User;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.UserSettings;
+import org.apache.wicket.Session;
 import org.apache.wicket.markup.html.form.*;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
@@ -87,6 +88,12 @@ public class UserSettingsPage extends TemplatePage {
                     settings.setLocale(locale);
                     settings.setWorkingDurationPerDay(duration);
                     getApi().setUserSettings(settings, user);
+
+                    // update sessions locale after saving
+                    if (locale != null) {
+                        getLOGGER().fine("Updating locale with user locale=" + locale);
+                        Session.get().setLocale(locale);
+                    }
                 } catch (NotAuthenticatedException | EntityNotFoundException e) {
                     getLOGGER().severe("Can not save user settings: " + e.getMessage());
                 }
