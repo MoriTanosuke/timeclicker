@@ -1,10 +1,9 @@
 package de.kopis.timeclicker.utils;
 
-import java.util.logging.Logger;
-
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
+import java.util.logging.Logger;
 
 public class DurationUtils {
     private static final Logger LOGGER = Logger.getLogger(DurationUtils.class.getName());

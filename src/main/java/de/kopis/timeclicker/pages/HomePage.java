@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import com.google.appengine.api.users.User;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
@@ -19,8 +20,6 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.time.Duration;
-
-import com.google.appengine.api.users.User;
 
 public class HomePage extends TemplatePage {
     private static final long serialVersionUID = 1L;
@@ -40,6 +39,9 @@ public class HomePage extends TemplatePage {
     @Override
     public void onInitialize() {
         super.onInitialize();
+
+        final User user = getCurrentUser();
+        //TODO check if someone is logged in, else display signin.hint
 
         activeSince = new LoadableDetachableModel<String>() {
             @Override

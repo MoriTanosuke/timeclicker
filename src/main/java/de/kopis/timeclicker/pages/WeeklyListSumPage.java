@@ -1,5 +1,9 @@
 package de.kopis.timeclicker.pages;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+
 import de.kopis.timeclicker.ListEntriesCsvProducerResource;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
@@ -17,11 +21,7 @@ import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.string.StringValue;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-
-public class WeeklyListSumPage extends TemplatePage {
+public class WeeklyListSumPage extends SecuredPage {
     private int pageSize = 12;
     private SimpleDateFormat DATE_FORMAT;
 

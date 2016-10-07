@@ -21,7 +21,7 @@ import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.string.StringValue;
 
-public class ListSumPage extends TemplatePage {
+public class ListSumPage extends SecuredPage {
     private static final long serialVersionUID = 1L;
     private DateFormat DATE_FORMAT;
     private int pageSize = 31;

@@ -7,11 +7,13 @@
     <ul>
         <wicket:link>
             <li><a href="/de/kopis/timeclicker/pages/HomePage.html">Home</a></li>
-            <li><a href="/de/kopis/timeclicker/pages/ListEntriesPage.html">List</a></li>
-            <li><a href="/de/kopis/timeclicker/pages/ListSumPage.html">Daily</a></li>
-            <li><a href="/de/kopis/timeclicker/pages/WeeklyListSumPage.html">Weekly</a></li>
-            <li><a href="/de/kopis/timeclicker/pages/MonthlyListSumPage.html">Monthly</a></li>
-            <li><a href="/de/kopis/timeclicker/pages/StatisticPage.html">Statistics</a></li>
+            <wicket:enclosure child="signoutButton">
+                <li><a href="/de/kopis/timeclicker/pages/ListEntriesPage.html">List</a></li>
+                <li><a href="/de/kopis/timeclicker/pages/ListSumPage.html">Daily</a></li>
+                <li><a href="/de/kopis/timeclicker/pages/WeeklyListSumPage.html">Weekly</a></li>
+                <li><a href="/de/kopis/timeclicker/pages/MonthlyListSumPage.html">Monthly</a></li>
+                <li><a href="/de/kopis/timeclicker/pages/StatisticPage.html">Statistics</a></li>
+            </wicket:enclosure>
         </wicket:link>
         <wicket:enclosure child="signinButton">
         <li><a wicket:id="signinButton">

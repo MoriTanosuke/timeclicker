@@ -14,7 +14,7 @@ import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
-public class StatisticPage extends TemplatePage {
+public class StatisticPage extends SecuredPage {
     private static final long serialVersionUID = 1L;
 
     //TODO GAppEngine does not have a user locale

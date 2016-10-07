@@ -22,7 +22,7 @@ import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.string.StringValue;
 
-public class ListEntriesPage extends TemplatePage {
+public class ListEntriesPage extends SecuredPage {
     private static final long serialVersionUID = 1L;
     private DateFormat DATE_FORMAT;
     private int pageSize = 31;

@@ -8,28 +8,25 @@ import org.apache.wicket.util.tester.WicketTester;
 import org.junit.After;
 import org.junit.Before;
 
-public class AbstractWicketTestCase {
+public abstract class AbstractWicketTestCase {
     private final LocalServiceTestHelper userHelper =
-            new LocalServiceTestHelper(new LocalUserServiceTestConfig())
+            new LocalServiceTestHelper(new LocalUserServiceTestConfig(), new LocalDatastoreServiceTestConfig())
                     .setEnvEmail("tester@test.org")
                     .setEnvAuthDomain("test.org")
-                    .setEnvIsAdmin(true).setEnvIsLoggedIn(true);
-
-    private final LocalServiceTestHelper datastoreHelper = new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
+                    .setEnvIsAdmin(true)
+                    .setEnvIsLoggedIn(true);
 
     protected WicketTester tester;
 
     @Before
     public void setUp() {
         userHelper.setUp();
-        datastoreHelper.setUp();
 
         tester = new WicketTester(new WicketApplication());
     }
 
     @After
     public void tearDown() {
-        //datastoreHelper.tearDown();
         userHelper.tearDown();
     }
 }

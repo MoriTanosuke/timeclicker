@@ -1,11 +1,11 @@
 package de.kopis.timeclicker.utils;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Calendar;
 import java.util.Date;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 public class WorkdayCalculatorTest {
 

@@ -2,15 +2,12 @@ package de.kopis.timeclicker;
 
 import java.util.logging.Logger;
 
+import com.google.appengine.api.users.UserServiceFactory;
 import de.agilecoders.wicket.webjars.WicketWebjars;
 import de.agilecoders.wicket.webjars.settings.ResourceStreamProvider;
 import de.agilecoders.wicket.webjars.settings.WebjarsSettings;
-import de.kopis.timeclicker.pages.HomePage;
-import de.kopis.timeclicker.pages.ListEntriesPage;
-import de.kopis.timeclicker.pages.ListSumPage;
-import de.kopis.timeclicker.pages.MonthlyListSumPage;
-import de.kopis.timeclicker.pages.TimeEntryPage;
-import de.kopis.timeclicker.pages.UserSettingsPage;
+import de.kopis.timeclicker.pages.*;
+import org.apache.wicket.authorization.strategies.page.SimplePageAuthorizationStrategy;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.request.resource.IResource;
@@ -63,5 +60,14 @@ public class WicketApplication extends WebApplication {
                 return new ListEntriesCsvProducerResource();
             }
         });
+
+        // set up auth strategy
+        final SimplePageAuthorizationStrategy authorizationStrategy = new SimplePageAuthorizationStrategy(
+                SecuredPage.class, HomePage.class) {
+            protected boolean isAuthorized() {
+                return UserServiceFactory.getUserService().isUserLoggedIn();
+            }
+        };
+        getSecuritySettings().setAuthorizationStrategy(authorizationStrategy);
     }
 }

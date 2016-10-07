@@ -3,6 +3,9 @@ package de.kopis.timeclicker.pages;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import org.apache.wicket.Session;
@@ -16,11 +19,7 @@ import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.protocol.http.request.WebClientInfo;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
-
-public class TimeEntryPage extends TemplatePage {
+public class TimeEntryPage extends SecuredPage {
 
     public TimeEntryPage(PageParameters parameters) {
         super("Edit entry", parameters);
