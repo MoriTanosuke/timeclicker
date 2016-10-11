@@ -1,16 +1,15 @@
 package de.kopis.timeclicker.pages;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
-
 import com.google.appengine.api.users.User;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
 import de.kopis.timeclicker.panels.ActiveEntryPanel;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 import org.apache.wicket.ajax.AjaxSelfUpdatingTimerBehavior;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
@@ -40,7 +39,6 @@ public class HomePage extends TemplatePage {
     public void onInitialize() {
         super.onInitialize();
 
-        final User user = getCurrentUser();
         //TODO check if someone is logged in, else display signin.hint
 
         activeSince = new LoadableDetachableModel<String>() {
@@ -78,12 +76,13 @@ public class HomePage extends TemplatePage {
 
             @Override
             public void onClick() {
+                final User user = getCurrentUser();
                 // start a new entry
-                if (getCurrentUser() == null) {
+                if (user == null) {
                     error("You are not logged in.");
                 } else {
                     try {
-                        final TimeEntry entry = getApi().start(getCurrentUser());
+                        final TimeEntry entry = getApi().start(user);
                         success(getString("entry.started", Model.of(entry)));
                     } catch (NotAuthenticatedException e) {
                         getLOGGER().severe("Can not start entry: " + e.getMessage());
@@ -101,12 +100,13 @@ public class HomePage extends TemplatePage {
 
             @Override
             public void onClick() {
+                final User user = getCurrentUser();
                 // stop latest entry
-                if (getCurrentUser() == null) {
+                if (user == null) {
                     error("You are not logged in.");
                 } else {
                     try {
-                        getApi().stopLatest(getCurrentUser());
+                        getApi().stopLatest(user);
                         success(getString("latest.stopped"));
                     } catch (NotAuthenticatedException e) {
                         getLOGGER().severe("Can not stop entry: " + e.getMessage());
