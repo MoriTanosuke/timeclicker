@@ -1,5 +1,17 @@
 package de.kopis.timeclicker;
 
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
+import de.kopis.timeclicker.api.TimeclickerAPI;
+import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TimeEntry;
+import de.kopis.timeclicker.model.TimeSum;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.apache.wicket.request.resource.AbstractResource;
+import org.apache.wicket.util.string.StringValue;
+import org.joda.time.DateTime;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -9,18 +21,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.apache.wicket.request.resource.AbstractResource;
-import org.apache.wicket.util.string.StringValue;
-import org.joda.time.DateTime;
-
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
-import de.kopis.timeclicker.api.TimeclickerAPI;
-import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
-import de.kopis.timeclicker.model.TimeEntry;
-import de.kopis.timeclicker.model.TimeSum;
-
 public class ListEntriesCsvProducerResource extends AbstractResource {
     private static final Logger LOGGER = Logger.getLogger(ListEntriesChartProducerResource.class.getName());
 
@@ -29,8 +29,9 @@ public class ListEntriesCsvProducerResource extends AbstractResource {
 
     @Override
     protected ResourceResponse newResourceResponse(Attributes attributes) {
-        if (attributes.getParameters().get("pageSize") != null) {
-            final StringValue ps = attributes.getParameters().get("pageSize");
+        final PageParameters parameters = attributes.getParameters();
+        if (parameters != null && parameters.get("pageSize") != null) {
+            final StringValue ps = parameters.get("pageSize");
             pageSize = ps.toInt(31);
         }
 
