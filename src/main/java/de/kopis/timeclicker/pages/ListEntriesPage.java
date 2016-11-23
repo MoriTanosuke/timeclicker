@@ -1,12 +1,5 @@
 package de.kopis.timeclicker.pages;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.TimeZone;
-
 import de.kopis.timeclicker.ListEntriesCsvProducerResource;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
@@ -21,6 +14,13 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.string.StringValue;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.TimeZone;
 
 public class ListEntriesPage extends SecuredPage {
     private static final long serialVersionUID = 1L;
@@ -40,7 +40,7 @@ public class ListEntriesPage extends SecuredPage {
             pageSize = ps.toInt(31);
         }
 
-        add(new ResourceLink("csvLink", new ListEntriesCsvProducerResource()));
+        add(new ResourceLink("csvLink", new ListEntriesCsvProducerResource(pageSize)));
         add(new Link("addEntryLink") {
             @Override
             public void onClick() {

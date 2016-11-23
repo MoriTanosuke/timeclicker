@@ -25,7 +25,15 @@ public class ListEntriesCsvProducerResource extends AbstractResource {
     private static final Logger LOGGER = Logger.getLogger(ListEntriesChartProducerResource.class.getName());
 
     private static final transient TimeclickerAPI api = new TimeclickerAPI();
-    private int pageSize = 31;
+    private int pageSize;
+
+    public ListEntriesCsvProducerResource() {
+        this(31);
+    }
+
+    public ListEntriesCsvProducerResource(int pageSize) {
+        this.pageSize = pageSize;
+    }
 
     @Override
     protected ResourceResponse newResourceResponse(Attributes attributes) {
