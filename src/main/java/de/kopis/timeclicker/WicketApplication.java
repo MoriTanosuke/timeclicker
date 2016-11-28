@@ -1,7 +1,5 @@
 package de.kopis.timeclicker;
 
-import java.util.logging.Logger;
-
 import com.google.appengine.api.users.UserServiceFactory;
 import de.agilecoders.wicket.webjars.WicketWebjars;
 import de.agilecoders.wicket.webjars.settings.ResourceStreamProvider;
@@ -12,6 +10,8 @@ import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.request.resource.IResource;
 import org.apache.wicket.request.resource.ResourceReference;
+
+import java.util.logging.Logger;
 
 public class WicketApplication extends WebApplication {
     public static final int HOURS_PER_DAY = 8;
@@ -41,17 +41,25 @@ public class WicketApplication extends WebApplication {
         mountPage("/edit/${key}", TimeEntryPage.class);
         mountPage("/add", TimeEntryPage.class);
         mountPage("/settings", UserSettingsPage.class);
+        mountPage("/statistics", StatisticPage.class);
+        mountPage("/dashboard", DashboardPage.class);
 
-        mountResource("/chart.json", new ResourceReference("jsonProducer") {
+        mountResource("/chart.json", new ResourceReference("jsonProducer-chart") {
             @Override
             public IResource getResource() {
                 return new ListEntriesChartProducerResource();
             }
         });
-        mountResource("/sumchart.json", new ResourceReference("jsonProducer") {
+        mountResource("/sumchart.json", new ResourceReference("jsonProducer-sum") {
             @Override
             public IResource getResource() {
                 return new SumChartProducerResource();
+            }
+        });
+        mountResource("/startchart.json", new ResourceReference("jsonProducer-starttime") {
+            @Override
+            public IResource getResource() {
+                return new StartTimeCandlestickChartProducerResource();
             }
         });
         mountResource("/list.csv", new ResourceReference("csvProducer") {

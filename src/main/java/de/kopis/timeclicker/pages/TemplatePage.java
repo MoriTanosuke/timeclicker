@@ -1,9 +1,5 @@
 package de.kopis.timeclicker.pages;
 
-import java.util.Locale;
-import java.util.TimeZone;
-import java.util.logging.Logger;
-
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
@@ -23,6 +19,10 @@ import org.apache.wicket.markup.head.JavaScriptHeaderItem;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.logging.Logger;
 
 public abstract class TemplatePage extends WebPage {
     private static final long serialVersionUID = 1L;
@@ -124,6 +124,10 @@ public abstract class TemplatePage extends WebPage {
                 new WebjarsJavaScriptResourceReference("jquery/1.11.3/jquery.js")));
         response.render(JavaScriptHeaderItem.forReference(
                 new WebjarsJavaScriptResourceReference("bootstrap/3.3.6/js/bootstrap.js")));
+        response.render(JavaScriptHeaderItem.forReference(
+                new WebjarsJavaScriptResourceReference("highcharts/5.0.4/highcharts.js")));
+        response.render(JavaScriptHeaderItem.forReference(
+                new WebjarsJavaScriptResourceReference("highcharts/5.0.4/highcharts-more.js")));
 
         response.render(CssHeaderItem.forReference(
                 new WebjarsCssResourceReference("bootstrap/3.3.6/css/bootstrap.css")));

@@ -74,6 +74,11 @@
             <artifactId>respond</artifactId>
             <version>1.4.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>highcharts</artifactId>
+            <version>5.0.4</version>
+        </dependency>
 
         <dependency>
             <groupId>com.google.appengine</groupId>
