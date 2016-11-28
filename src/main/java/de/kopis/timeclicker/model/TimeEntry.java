@@ -15,6 +15,11 @@ public class TimeEntry implements Serializable {
         this(new Date());
     }
 
+    public TimeEntry(Date start, Date stop) {
+        this.start = start;
+        this.stop = stop;
+    }
+
     public TimeEntry(Date start) {
         this.start = start;
     }

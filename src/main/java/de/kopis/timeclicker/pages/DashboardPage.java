@@ -4,7 +4,7 @@ import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.head.JavaScriptContentHeaderItem;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
-public class DashboardPage extends TemplatePage {
+public class DashboardPage extends SecuredPage {
     public DashboardPage(PageParameters parameters) {
         super("Dashboard", parameters);
     }
@@ -20,6 +20,12 @@ public class DashboardPage extends TemplatePage {
         final String highcharts = "$(function () {\n" +
                 "            $.getJSON('/startchart.json', callback);\n" +
                 "});\n\n" +
+                "function round(number, precision) {\n" +
+                "    var factor = Math.pow(10, precision);\n" +
+                "    var tempNumber = number * factor;\n" +
+                "    var roundedTempNumber = Math.round(tempNumber);\n" +
+                "    return roundedTempNumber / factor;\n" +
+                "};" +
                 "function callback(data) {\n" +
                 "           Highcharts.chart('container', {\n" +
                 "                    chart: {\n" +
@@ -30,10 +36,11 @@ public class DashboardPage extends TemplatePage {
                 "                        text: 'Work'\n" +
                 "                    },\n" +
                 "                    xAxis: {\n" +
-                "                        type: 'datetime'\n" +
+                "                        type: 'datetime'\n," +
+                "                        tickInterval: 24 * 3600 * 1000,\n" +
                 "                    },\n" +
                 "                    yAxis: {\n" +
-                "                        type: 'datetime'\n," +
+                "                        type: 'time'\n," +
                 "                        title: 'Working Hours'\n" +
                 "                    },\n" +
                 "                    legend: {\n" +
