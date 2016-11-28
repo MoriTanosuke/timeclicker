@@ -46,12 +46,11 @@ public class StartTimeCandlestickChartProducerResource extends AbstractResource 
                 writer.write("[\n");
 
                 try {
-                    final Map<Long, TimeEntry> entryByDate = reduceToDay(api.list(99999, currentUser));
+                    final Set<DateTuple> entryByDate = reduceToDay(api.list(99999, currentUser));
 
                     LOGGER.info("Found " + entryByDate.size() + " entries...");
                     int count = 0;
-                    for (Long key : entryByDate.keySet()) {
-                        final TimeEntry entry = entryByDate.get(key);
+                    for (DateTuple entry : entryByDate) {
                         // need to convert to ISO8601 for javascript
                         writer.write("[" + entry.getStart().getTime() +
                                 "," + ((float) entry.getStart().getTime() % TWENTY_FOUR_HOURS_IN_MILLISECONDS / TWENTY_FOUR_HOURS_IN_MILLISECONDS) * 24.0 +
@@ -74,8 +73,51 @@ public class StartTimeCandlestickChartProducerResource extends AbstractResource 
         return resourceResponse;
     }
 
-    private Map<Long, TimeEntry> reduceToDay(final List<TimeEntry> entries) {
-        final Map<Long, TimeEntry> perDay = new HashMap<>();
+    class DateTuple implements Comparable<DateTuple> {
+        private Date start;
+        private Date stop;
+
+        public DateTuple(Date start, Date stop) {
+            this.start = start;
+            this.stop = stop;
+        }
+
+        public Date getStart() {
+            return start;
+        }
+
+        public Date getStop() {
+            return stop;
+        }
+
+        public void setStart(Date start) {
+            this.start = start;
+        }
+
+        public void setStop(Date stop) {
+            this.stop = stop;
+        }
+
+        @Override
+        public int hashCode() {
+            return start.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof DateTuple)) return false;
+
+            return start.equals(((DateTuple) obj).getStart());
+        }
+
+        @Override
+        public int compareTo(DateTuple o) {
+            return start.compareTo(o.getStart());
+        }
+    }
+
+    private Set<DateTuple> reduceToDay(final List<TimeEntry> entries) {
+        final Map<Long, DateTuple> perDay = new HashMap<>();
 
         Collections.sort(entries, new Comparator<TimeEntry>() {
             @Override
@@ -98,15 +140,15 @@ public class StartTimeCandlestickChartProducerResource extends AbstractResource 
             // check if date is already set as key previously
             final Long key = cal.getTimeInMillis();
             if (!perDay.containsKey(key)) {
-                perDay.put(key, new TimeEntry(e.getStart(), e.getStop()));
+                perDay.put(key, new DateTuple(e.getStart(), e.getStop()));
             }
             // set end date if later then previous end date
-            final TimeEntry existingEntry = perDay.get(key);
+            final DateTuple existingEntry = perDay.get(key);
             if (e.getStop().after(existingEntry.getStop())) {
                 existingEntry.setStop(e.getStop());
             }
         }
 
-        return perDay;
+        return new TreeSet<>(perDay.values());
     }
 }
