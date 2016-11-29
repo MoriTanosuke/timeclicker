@@ -39,9 +39,11 @@ public class DashboardPage extends SecuredPage {
                 "                    },\n" +
                 "                    tooltip: {\n" +
                 "                        formatter: function () {\n" +
-                "                             var hours = Math.floor(this.y);\n" +
-                "                             var minutes = ('000' + Math.floor((this.y - hours) * 60)).slice(-2);\n" +
-                "                             return hours + ':' + minutes;\n" +
+                "                             var hours1 = Math.floor(this.point.low);\n" +
+                "                             var minutes1 = ('000' + Math.floor((this.point.low - hours1) * 60)).slice(-2);\n" +
+                "                             var hours2 = Math.floor(this.point.high);\n" +
+                "                             var minutes2 = ('000' + Math.floor((this.point.high - hours2) * 60)).slice(-2);\n" +
+                "                             return hours1 + ':' + minutes1 + ' - ' + hours2 + ':' + minutes2;\n" +
                 "                        }\n" +
                 "                    }," +
                 "                    legend: {\n" +
