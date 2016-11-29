@@ -144,7 +144,7 @@ public class StartTimeCandlestickChartProducerResource extends AbstractResource 
             }
             // set end date if later then previous end date
             final DateTuple existingEntry = perDay.get(key);
-            if (e.getStop().after(existingEntry.getStop())) {
+            if (e.getStop() != null && e.getStop().after(existingEntry.getStop())) {
                 existingEntry.setStop(e.getStop());
             }
         }
