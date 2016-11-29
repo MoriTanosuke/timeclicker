@@ -20,12 +20,6 @@ public class DashboardPage extends SecuredPage {
         final String highcharts = "$(function () {\n" +
                 "            $.getJSON('/startchart.json', callback);\n" +
                 "});\n\n" +
-                "function round(number, precision) {\n" +
-                "    var factor = Math.pow(10, precision);\n" +
-                "    var tempNumber = number * factor;\n" +
-                "    var roundedTempNumber = Math.round(tempNumber);\n" +
-                "    return roundedTempNumber / factor;\n" +
-                "};" +
                 "function callback(data) {\n" +
                 "           Highcharts.chart('container', {\n" +
                 "                    chart: {\n" +
@@ -41,8 +35,15 @@ public class DashboardPage extends SecuredPage {
                 "                    },\n" +
                 "                    yAxis: {\n" +
                 "                        type: 'time'\n," +
-                "                        title: 'Working Hours'\n" +
+                "                        title: 'Working Hours'\n," +
                 "                    },\n" +
+                "                    tooltip: {\n" +
+                "                        formatter: function () {\n" +
+                "                             var hours = Math.floor(this.y);\n" +
+                "                             var minutes = ('000' + Math.floor((this.y - hours) * 60)).slice(-2);\n" +
+                "                             return hours + ':' + minutes;\n" +
+                "                        }\n" +
+                "                    }," +
                 "                    legend: {\n" +
                 "                        enabled: false\n" +
                 "                    },\n" +
