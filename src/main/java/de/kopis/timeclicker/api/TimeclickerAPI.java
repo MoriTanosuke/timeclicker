@@ -1,17 +1,31 @@
 package de.kopis.timeclicker.api;
 
-import com.google.api.server.spi.config.Api;
-import com.google.api.server.spi.config.ApiMethod;
-import com.google.api.server.spi.config.Named;
-import com.google.appengine.api.datastore.*;
-import com.google.appengine.api.users.User;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.logging.Logger;
+
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
 import de.kopis.timeclicker.model.UserSettings;
 
-import java.util.*;
-import java.util.logging.Logger;
+import com.google.api.server.spi.config.Api;
+import com.google.api.server.spi.config.ApiMethod;
+import com.google.api.server.spi.config.DefaultValue;
+import com.google.api.server.spi.config.Named;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.users.User;
 
 @Api(name = "timeclicker", version = "v1", scopes = {Constants.EMAIL_SCOPE},
         clientIds = {Constants.WEB_CLIENT_ID, Constants.ANDROID_CLIENT_ID, "292824132082.apps.googleusercontent.com"},
@@ -165,10 +179,10 @@ public class TimeclickerAPI {
     }
 
     @ApiMethod(name = "list", path = "list")
-    public List<TimeEntry> list(@Named("limit") int limit, User user) throws NotAuthenticatedException {
+    public List<TimeEntry> list(@Named("limit") @DefaultValue("31") int limit, @Named("page") @DefaultValue("0") int page, User user) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();
 
-        final List<Entity> entities = listEntities(user, 0, limit);
+        final List<Entity> entities = listEntities(user, page, limit);
 
         final List<TimeEntry> l = new ArrayList<>();
         for (Entity timeEntryEntity : entities) {
@@ -177,6 +191,13 @@ public class TimeclickerAPI {
         }
         LOGGER.info("User " + user.getUserId() + " listed all entries");
         return l;
+    }
+
+    @ApiMethod(name = "count", path = "count")
+    public int countAvailableEntries(User user) throws NotAuthenticatedException {
+        if (user == null) throw new NotAuthenticatedException();
+
+        return countEntities(user);
     }
 
     @ApiMethod(name = "overallSum", path = "sum/overall")
@@ -338,22 +359,26 @@ public class TimeclickerAPI {
         datastore.put(entity);
     }
 
+    private int countEntities(User user) {
+        final PreparedQuery pq = buildQuery(user);
+        final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
+        return pq.countEntities(fetchOptions);
+    }
+
     private List<Entity> listEntities(User user) {
-        final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        // load all time entries for this user
-        final Query.Filter propertyFilter =
-                new Query.FilterPredicate("userId",
-                        Query.FilterOperator.EQUAL,
-                        user.getUserId());
-        final Query q = new Query("TimeEntry")
-                .setFilter(propertyFilter)
-                .addSort("start", Query.SortDirection.DESCENDING);
-        final PreparedQuery pq = datastore.prepare(q);
+        final PreparedQuery pq = buildQuery(user);
         final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
         return pq.asList(fetchOptions);
     }
 
     private List<Entity> listEntities(User user, int page, int pageSize) {
+        LOGGER.finer("Listing page=" + page + " size=" + pageSize);
+        final PreparedQuery pq = buildQuery(user);
+        final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults().offset(pageSize * page).limit(pageSize);
+        return pq.asList(fetchOptions);
+    }
+
+    private PreparedQuery buildQuery(final User user) {
         final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         // load all time entries for this user
         final Query.Filter propertyFilter =
@@ -363,9 +388,7 @@ public class TimeclickerAPI {
         final Query q = new Query("TimeEntry")
                 .setFilter(propertyFilter)
                 .addSort("start", Query.SortDirection.DESCENDING);
-        final PreparedQuery pq = datastore.prepare(q);
-        final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults().offset(pageSize * page).limit(pageSize);
-        return pq.asList(fetchOptions);
+        return datastore.prepare(q);
     }
 
     /**

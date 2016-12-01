@@ -52,7 +52,7 @@ public class MonthlyListSumPage extends SecuredPage {
         final ListModel<TimeSumWithDate> entries = new ListModel<TimeSumWithDate>(new ArrayList<TimeSumWithDate>());
         if (getCurrentUser() != null) {
             try {
-                final List<TimeEntry> allEntries = getApi().list(pageSize * 62, getCurrentUser());
+                final List<TimeEntry> allEntries = getApi().list(pageSize * 62, 0, getCurrentUser());
                 final List<TimeSumWithDate> sortedPerMonth = new TimeSumUtility().calculateMonthlyTimeSum(allEntries);
 
                 entries.setObject(sortedPerMonth);

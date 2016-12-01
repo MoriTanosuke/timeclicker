@@ -1,20 +1,29 @@
 package de.kopis.timeclicker;
 
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.logging.Logger;
+
 import de.kopis.timeclicker.api.TimeclickerAPI;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import org.apache.wicket.request.resource.AbstractResource;
 import org.apache.wicket.util.string.StringValue;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.*;
-import java.util.logging.Logger;
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 
 public class StartTimeCandlestickChartProducerResource extends AbstractResource {
     private static final Logger LOGGER = Logger.getLogger(StartTimeCandlestickChartProducerResource.class.getName());
@@ -46,7 +55,7 @@ public class StartTimeCandlestickChartProducerResource extends AbstractResource 
                 writer.write("[\n");
 
                 try {
-                    final Set<DateTuple> entryByDate = reduceToDay(api.list(99999, currentUser));
+                    final Set<DateTuple> entryByDate = reduceToDay(api.list(99999, 0, currentUser));
 
                     LOGGER.info("Found " + entryByDate.size() + " entries...");
                     int count = 0;

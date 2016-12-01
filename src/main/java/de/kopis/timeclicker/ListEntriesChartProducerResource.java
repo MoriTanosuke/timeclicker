@@ -11,16 +11,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import de.kopis.timeclicker.api.TimeclickerAPI;
+import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TimeEntry;
+import de.kopis.timeclicker.model.TimeSum;
 import org.apache.wicket.request.resource.AbstractResource;
 import org.apache.wicket.util.string.StringValue;
 
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
-import de.kopis.timeclicker.api.TimeclickerAPI;
-import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
-import de.kopis.timeclicker.model.TimeEntry;
-import de.kopis.timeclicker.model.TimeSum;
 
 public class ListEntriesChartProducerResource extends AbstractResource {
     private static final Logger LOGGER = Logger.getLogger(ListEntriesChartProducerResource.class.getName());
@@ -53,7 +53,7 @@ public class ListEntriesChartProducerResource extends AbstractResource {
                         "],\"rows\":[");
 
                 try {
-                    final List<TimeEntry> entries = api.list(pageSize, currentUser);
+                    final List<TimeEntry> entries = api.list(pageSize, 0, currentUser);
                     // sort ascending
                     Collections.sort(entries, new Comparator<TimeEntry>() {
                         @Override

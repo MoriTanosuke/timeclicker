@@ -9,9 +9,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
 import de.kopis.timeclicker.api.TimeclickerAPI;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
@@ -19,6 +16,10 @@ import de.kopis.timeclicker.model.TimeSumWithDate;
 import de.kopis.timeclicker.utils.FormattedDurationPrinter;
 import de.kopis.timeclicker.utils.TimeSumUtility;
 import org.apache.wicket.request.resource.AbstractResource;
+
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 
 public class SumChartProducerResource extends AbstractResource {
     private static final Logger LOGGER = Logger.getLogger(ListEntriesChartProducerResource.class.getName());
@@ -47,7 +48,7 @@ public class SumChartProducerResource extends AbstractResource {
                         "],\"rows\":[");
 
                 try {
-                    final List<TimeEntry> rawEntries = api.list(99999, currentUser);
+                    final List<TimeEntry> rawEntries = api.list(99999, 0, currentUser);
                     final List<TimeSumWithDate> entries = new TimeSumUtility().calculateDailyTimeSum(rawEntries);
                     // sort ascending
                     Collections.sort(entries, new Comparator<TimeSumWithDate>() {

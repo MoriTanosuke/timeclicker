@@ -1,31 +1,41 @@
 package de.kopis.timeclicker.pages;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.TimeZone;
+
 import de.kopis.timeclicker.ListEntriesCsvProducerResource;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.link.ResourceLink;
-import org.apache.wicket.markup.html.list.ListItem;
-import org.apache.wicket.markup.html.list.PageableListView;
 import org.apache.wicket.markup.html.navigation.paging.PagingNavigator;
+import org.apache.wicket.markup.repeater.Item;
+import org.apache.wicket.markup.repeater.data.DataView;
+import org.apache.wicket.markup.repeater.data.IDataProvider;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.util.ListModel;
+import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.string.StringValue;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.TimeZone;
 
 public class ListEntriesPage extends SecuredPage {
     private static final long serialVersionUID = 1L;
     private DateFormat DATE_FORMAT;
+
     private int pageSize = 31;
+    private IModel<Integer> pageSizeModel = new PropertyModel<>(this, "pageSize");
+    ;
+    private IModel<Long> entriesCountModel;
+    private DataView<TimeEntry> listView;
 
     public ListEntriesPage(PageParameters parameters) {
         super("Time Entries", parameters);
@@ -40,13 +50,18 @@ public class ListEntriesPage extends SecuredPage {
             pageSize = ps.toInt(31);
         }
 
-        add(new ResourceLink("csvLink", new ListEntriesCsvProducerResource(pageSize)));
-        add(new Link("addEntryLink") {
+        entriesCountModel = new LoadableDetachableModel<Long>() {
             @Override
-            public void onClick() {
-                setResponsePage(TimeEntryPage.class);
+            protected Long load() {
+                long count = 0L;
+                try {
+                    count = (long) getApi().countAvailableEntries(getCurrentUser());
+                } catch (NotAuthenticatedException e) {
+                    getLOGGER().severe("Can not count entries for user " + getCurrentUser() + ": " + e.getMessage());
+                }
+                return count;
             }
-        });
+        };
 
         // use the locale to figure out the dateformat
         DATE_FORMAT = new SimpleDateFormat("HH:mm:ss dd.MM.yyyy Z", getLocale());
@@ -57,25 +72,68 @@ public class ListEntriesPage extends SecuredPage {
             getLOGGER().fine("Can not load timezone for user " + getCurrentUser() + ": " + e.getMessage());
         }
 
-        final ListModel<TimeEntry> entries = new ListModel<TimeEntry>(new ArrayList<TimeEntry>());
-        if (getCurrentUser() != null) {
-            try {
-                entries.getObject().addAll(getApi().list(pageSize, getCurrentUser()));
-                Collections.sort(entries.getObject(), new Comparator<TimeEntry>() {
-                    @Override
-                    public int compare(TimeEntry o1, TimeEntry o2) {
-                        // sort DESC by start date
-                        return o2.getStart().compareTo(o1.getStart());
-                    }
-                });
-            } catch (NotAuthenticatedException e) {
-                getLOGGER().severe("Can not load entries for user " + getCurrentUser() + ": " + e.getMessage());
-            }
-        }
-
-        final PageableListView<TimeEntry> listView = new PageableListView<TimeEntry>("listView", entries, pageSize) {
+        add(new ResourceLink("csvLink", new ListEntriesCsvProducerResource(pageSizeModel.getObject())));
+        add(new Link("addEntryLink") {
             @Override
-            protected void populateItem(final ListItem<TimeEntry> item) {
+            public void onClick() {
+                setResponsePage(TimeEntryPage.class);
+            }
+        });
+
+        final DropDownChoice<Integer> pageSizeInput = new DropDownChoice<Integer>("pageSizeInput", pageSizeModel, Arrays.asList(7, 14, 31, 90, 180)) {
+            @Override
+            protected void onSelectionChanged(final Integer newSelection) {
+                super.onSelectionChanged(newSelection);
+                //TODO update datatable?
+            }
+        };
+        pageSizeInput.setVisible(false);
+        add(pageSizeInput);
+
+        final IDataProvider<TimeEntry> entries = new IDataProvider<TimeEntry>() {
+            final List<TimeEntry> entriesOnPage = new ArrayList<>();
+
+            @Override
+            public void detach() {
+                // TODO do nothing or clear entriesOnPage?
+            }
+
+            @Override
+            public Iterator iterator(final long first, final long count) {
+                entriesOnPage.clear();
+                getLOGGER().finer("Showing " + count + " entries for page " + (first / pageSizeModel.getObject()) + ", first=" + first + " pageSize=" + pageSizeModel.getObject());
+                try {
+                    entriesOnPage.addAll(getApi().list((int) count, (int) (first / pageSizeModel.getObject()), getCurrentUser()));
+                } catch (NotAuthenticatedException e) {
+                    getLOGGER().severe("Can not load entries for user " + getCurrentUser() + ": " + e.getMessage());
+                }
+                return entriesOnPage.iterator();
+            }
+
+            @Override
+            public long size() {
+                return entriesCountModel.getObject();
+            }
+
+            @Override
+            public IModel<TimeEntry> model(final TimeEntry object) {
+                return Model.of(object);
+            }
+        };
+        listView = new DataView<TimeEntry>("listView", entries) {
+            @Override
+            public long getPageCount() {
+                long pageCount = entriesCountModel.getObject() / pageSizeModel.getObject();
+                return pageCount + 1;
+            }
+
+            @Override
+            public long getItemsPerPage() {
+                return pageSizeModel.getObject();
+            }
+
+            @Override
+            protected void populateItem(final Item<TimeEntry> item) {
                 item.add(new Label("entryKey", item.getModelObject().getKey()));
                 item.add(new Label("entryStart", DATE_FORMAT.format(item.getModelObject().getStart())));
                 final TimeSum timeSum = new TimeSum(item.getModelObject());
@@ -106,8 +164,7 @@ public class ListEntriesPage extends SecuredPage {
                         try {
                             // remove from API
                             getApi().delete(item.getModelObject().getKey(), getCurrentUser());
-                            // remove from listmodel
-                            entries.getObject().remove(item.getModelObject());
+                            // TODO update datatable
                         } catch (NotAuthenticatedException e) {
                             getLOGGER().severe("Can not delete entry " + item.getModelObject().getKey());
                         }

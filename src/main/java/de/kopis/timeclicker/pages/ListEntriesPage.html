@@ -32,6 +32,10 @@
     </ul>
 
     <div wicket:id="paginator"></div>
+    <wicket:enclosure child="pageSizeInput">
+        <div><label for="pageSizeInput">Page Size:</label><select id="pageSizeInput" wicket:id="pageSizeInput"></select>
+        </div>
+    </wicket:enclosure>
 
     <table class="table">
         <thead>
