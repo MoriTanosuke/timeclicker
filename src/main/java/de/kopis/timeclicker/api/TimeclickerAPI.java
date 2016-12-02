@@ -1,18 +1,5 @@
 package de.kopis.timeclicker.api;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
-import java.util.logging.Logger;
-
-import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
-import de.kopis.timeclicker.model.TimeEntry;
-import de.kopis.timeclicker.model.TimeSum;
-import de.kopis.timeclicker.model.UserSettings;
-
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.DefaultValue;
@@ -26,6 +13,18 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.users.User;
+import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TimeEntry;
+import de.kopis.timeclicker.model.TimeSum;
+import de.kopis.timeclicker.model.UserSettings;
+import de.kopis.timeclicker.utils.TimeSumUtility;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.logging.Logger;
 
 @Api(name = "timeclicker", version = "v1", scopes = {Constants.EMAIL_SCOPE},
         clientIds = {Constants.WEB_CLIENT_ID, Constants.ANDROID_CLIENT_ID, "292824132082.apps.googleusercontent.com"},
@@ -200,6 +199,13 @@ public class TimeclickerAPI {
         return countEntities(user);
     }
 
+    @ApiMethod(name = "countDates", path = "count/dates")
+    public int countAvailableDates(User user) throws NotAuthenticatedException {
+        if (user == null) throw new NotAuthenticatedException();
+
+        return countDates(user);
+    }
+
     @ApiMethod(name = "overallSum", path = "sum/overall")
     public TimeSum getOverallSum(User user) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();
@@ -357,6 +363,11 @@ public class TimeclickerAPI {
 
         LOGGER.fine("Updated entity: " + entity);
         datastore.put(entity);
+    }
+
+    private int countDates(User user) throws NotAuthenticatedException {
+        final List<TimeEntry> entities = list(9999, 0, user);
+        return new TimeSumUtility().calculateDailyTimeSum(entities).size();
     }
 
     private int countEntities(User user) {

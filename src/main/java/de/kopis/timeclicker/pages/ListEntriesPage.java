@@ -1,5 +1,9 @@
 package de.kopis.timeclicker.pages;
 
+import de.kopis.timeclicker.ListEntriesCsvProducerResource;
+import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TimeEntry;
+import de.kopis.timeclicker.model.TimeSum;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -7,11 +11,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TimeZone;
-
-import de.kopis.timeclicker.ListEntriesCsvProducerResource;
-import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
-import de.kopis.timeclicker.model.TimeEntry;
-import de.kopis.timeclicker.model.TimeSum;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.link.Link;
@@ -33,7 +32,6 @@ public class ListEntriesPage extends SecuredPage {
 
     private int pageSize = 31;
     private IModel<Integer> pageSizeModel = new PropertyModel<>(this, "pageSize");
-    ;
     private IModel<Long> entriesCountModel;
     private DataView<TimeEntry> listView;
 
