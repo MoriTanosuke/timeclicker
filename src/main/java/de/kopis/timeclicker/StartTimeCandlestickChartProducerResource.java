@@ -31,9 +31,14 @@ public class StartTimeCandlestickChartProducerResource extends AbstractResource 
 
     private static final TimeclickerAPI api = new TimeclickerAPI();
     private int pageSize = 31;
+    private int page = 0;
 
     @Override
     protected ResourceResponse newResourceResponse(Attributes attributes) {
+        if (attributes.getParameters().get("page") != null) {
+            final StringValue ps = attributes.getParameters().get("page");
+            page = ps.toInt(page);
+        }
         if (attributes.getParameters().get("pageSize") != null) {
             final StringValue ps = attributes.getParameters().get("pageSize");
             pageSize = ps.toInt(pageSize);
@@ -55,7 +60,7 @@ public class StartTimeCandlestickChartProducerResource extends AbstractResource 
                 writer.write("[\n");
 
                 try {
-                    final Set<DateTuple> entryByDate = reduceToDay(api.list(99999, 0, currentUser));
+                    final Set<DateTuple> entryByDate = reduceToDay(api.list(pageSize, page, currentUser));
 
                     LOGGER.info("Found " + entryByDate.size() + " entries...");
                     int count = 0;

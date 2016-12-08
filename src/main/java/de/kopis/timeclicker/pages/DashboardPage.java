@@ -3,10 +3,23 @@ package de.kopis.timeclicker.pages;
 import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.head.JavaScriptContentHeaderItem;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.apache.wicket.util.string.StringValue;
 
 public class DashboardPage extends SecuredPage {
+    private int pageSize = 31;
+    private int page = 0;
+
     public DashboardPage(PageParameters parameters) {
         super("Dashboard", parameters);
+
+        if (parameters.get("page") != null) {
+            final StringValue ps = parameters.get("page");
+            page = ps.toInt(page);
+        }
+        if (parameters.get("pageSize") != null) {
+            final StringValue ps = parameters.get("pageSize");
+            pageSize = ps.toInt(pageSize);
+        }
     }
 
     @Override
@@ -18,7 +31,7 @@ public class DashboardPage extends SecuredPage {
     public void renderHead(IHeaderResponse response) {
         super.renderHead(response);
         final String highcharts = "$(function () {\n" +
-                "            $.getJSON('/startchart.json', callback);\n" +
+                "            $.getJSON('/startchart.json?page=" + page + "&pageSize=" + pageSize + "', callback);\n" +
                 "});\n\n" +
                 "function callback(data) {\n" +
                 "           Highcharts.chart('container', {\n" +
