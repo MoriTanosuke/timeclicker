@@ -68,10 +68,11 @@ public class HomePage extends TemplatePage {
 
         final ActiveEntryPanel activeEntry = new ActiveEntryPanel("activePanel", activeSince);
         add(activeEntry);
+
         add(start = new Link("start") {
             @Override
             protected void onConfigure() {
-                setVisible(!activeEntry.isVisible());
+                setVisible(getCurrentUser() != null && !activeEntry.isVisible());
             }
 
             @Override
@@ -95,7 +96,7 @@ public class HomePage extends TemplatePage {
         add(stop = new Link("stop") {
             @Override
             protected void onConfigure() {
-                setVisible(activeEntry.isVisible());
+                setVisible(getCurrentUser() != null && activeEntry.isVisible());
             }
 
             @Override
@@ -130,8 +131,21 @@ public class HomePage extends TemplatePage {
                 return sum;
             }
         };
-        final Label perDayLabel = new Label("dailySum", new StringResourceModel("daily.sum", dailySum));
+        final Label perDayLabel = new Label("dailySum", new StringResourceModel("daily.sum", dailySum)) {
+            @Override
+            protected void onConfigure() {
+                super.onConfigure();
+                setVisible(getCurrentUser() != null);
+            }
+        };
         perDayLabel.add(new AjaxSelfUpdatingTimerBehavior(UPDATE_INTERVAL));
         add(perDayLabel);
+
+        add(new Label("loginHint", "To use this application, please sign in.") {
+            @Override
+            protected void onConfigure() {
+                setVisible(getCurrentUser() == null);
+            }
+        });
     }
 }

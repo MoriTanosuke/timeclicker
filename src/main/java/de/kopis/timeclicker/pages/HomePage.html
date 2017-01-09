@@ -9,15 +9,19 @@
         <div wicket:id="activePanel"></div>
     </wicket:enclosure>
 
-    <div id="sumLog">
-        <ul>
-            <li wicket:id="dailySum">0</li>
-        </ul>
-    </div>
-    <form onsubmit="return false;">
-        <div><a class="btn btn-default" wicket:id="start">Start</a></div>
-        <div><a class="btn btn-default" wicket:id="stop">Stop</a></div>
-    </form>
+    <wicket:enclosure child="start">
+        <div id="sumLog">
+            <ul>
+                <li wicket:id="dailySum">0</li>
+            </ul>
+        </div>
+        <form onsubmit="return false;">
+            <div><a class="btn btn-default" wicket:id="start">Start</a></div>
+            <div><a class="btn btn-default" wicket:id="stop">Stop</a></div>
+        </form>
+    </wicket:enclosure>
+
+    <div><p wicket:id="loginHint"></p></div>
 </wicket:extend>
 </body>
 </html>
