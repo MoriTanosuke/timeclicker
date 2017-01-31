@@ -1,15 +1,15 @@
 package de.kopis.timeclicker.pages;
 
-import com.google.appengine.api.users.User;
-import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
-import de.kopis.timeclicker.model.TimeEntry;
-import de.kopis.timeclicker.model.TimeSum;
-import de.kopis.timeclicker.panels.ActiveEntryPanel;
-import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+
+import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TimeEntry;
+import de.kopis.timeclicker.model.TimeSum;
+import de.kopis.timeclicker.panels.ActiveEntryPanel;
 import org.apache.wicket.ajax.AjaxSelfUpdatingTimerBehavior;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
@@ -20,6 +20,8 @@ import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.time.Duration;
 
+import com.google.appengine.api.users.User;
+
 public class HomePage extends TemplatePage {
     private static final long serialVersionUID = 1L;
     /**
@@ -29,7 +31,7 @@ public class HomePage extends TemplatePage {
 
     private Link stop;
     private Link start;
-    private IModel<String> activeSince;
+    private Link editLink;
 
     public HomePage(final PageParameters parameters) {
         super("Home", parameters);
@@ -40,14 +42,26 @@ public class HomePage extends TemplatePage {
         super.onInitialize();
 
         //TODO check if someone is logged in, else display signin.hint
-
-        activeSince = new LoadableDetachableModel<String>() {
+        final IModel<TimeEntry> activeEntryModel = new LoadableDetachableModel<TimeEntry>() {
+            @Override
+            protected TimeEntry load() {
+                final User user = getCurrentUser();
+                TimeEntry latest = null;
+                try {
+                    latest = getApi().latest(user);
+                } catch (NotAuthenticatedException e) {
+                    getLOGGER().severe("Can not load active entry: " + e.getMessage());
+                }
+                return latest;
+            }
+        };
+        final IModel<String> activeSince = new LoadableDetachableModel<String>() {
             @Override
             protected String load() {
                 String activeEntry = null;
                 try {
                     final User user = getCurrentUser();
-                    final TimeEntry latest = getApi().latest(user);
+                    final TimeEntry latest = activeEntryModel.getObject();
                     if (latest != null) {
                         Date start = latest.getStart();
                         final Calendar cal = Calendar.getInstance();
@@ -55,18 +69,18 @@ public class HomePage extends TemplatePage {
                         final TimeZone timezone = getTimeZone(user);
                         final Locale locale = getLocale(user);
                         getLOGGER().fine("Using timezone " + timezone);
-                        final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", locale);
-                        DATE_FORMAT.setTimeZone(timezone);
-                        activeEntry = DATE_FORMAT.format(cal.getTime());
+                        final DateFormat localeDateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
+                        localeDateFormat.setTimeZone(timezone);
+                        activeEntry = localeDateFormat.format(cal.getTime());
                     }
                 } catch (NotAuthenticatedException e) {
-                    getLOGGER().severe("Can not load active entry: " + e.getMessage());
+                    getLOGGER().severe("Can not load active since date: " + e.getMessage());
                 }
                 return activeEntry;
             }
         };
 
-        final ActiveEntryPanel activeEntry = new ActiveEntryPanel("activePanel", activeSince);
+        final ActiveEntryPanel activeEntry = new ActiveEntryPanel("activePanel", activeEntryModel, activeSince);
         add(activeEntry);
 
         add(start = new Link("start") {

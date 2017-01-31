@@ -12,6 +12,7 @@ import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.HiddenField;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.protocol.http.request.WebClientInfo;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
@@ -73,6 +74,18 @@ public class TimeEntryPage extends SecuredPage {
                     }
                 }
             });
+
+            form.add(new Link("back") {
+                @Override
+                public void onClick() {
+                    if (getBackPage() != null) {
+                        setResponsePage(getBackPage());
+                    } else {
+                        setResponsePage(ListEntriesPage.class);
+                    }
+                }
+            });
+
             add(form);
         } catch (NotAuthenticatedException e) {
             error("Can not load entry, you're not authenticated");

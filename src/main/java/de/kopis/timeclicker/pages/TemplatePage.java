@@ -1,9 +1,9 @@
 package de.kopis.timeclicker.pages;
 
-import com.google.appengine.api.datastore.EntityNotFoundException;
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.logging.Logger;
+
 import de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference;
 import de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference;
 import de.kopis.timeclicker.api.TimeclickerAPI;
@@ -12,6 +12,7 @@ import de.kopis.timeclicker.model.UserSettings;
 import de.kopis.timeclicker.panels.CustomFeedbackPanel;
 import de.kopis.timeclicker.panels.FooterPanel;
 import de.kopis.timeclicker.panels.HeaderPanel;
+import org.apache.wicket.Page;
 import org.apache.wicket.Session;
 import org.apache.wicket.markup.head.CssHeaderItem;
 import org.apache.wicket.markup.head.IHeaderResponse;
@@ -20,9 +21,10 @@ import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
-import java.util.Locale;
-import java.util.TimeZone;
-import java.util.logging.Logger;
+import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 
 public abstract class TemplatePage extends WebPage {
     private static final long serialVersionUID = 1L;
@@ -32,6 +34,7 @@ public abstract class TemplatePage extends WebPage {
     private transient TimeclickerAPI api;
 
     private transient UserService userService;
+    private Page backPage;
 
     public TemplatePage(final String header, final PageParameters parameters) {
         super(parameters);
@@ -133,6 +136,14 @@ public abstract class TemplatePage extends WebPage {
                 new WebjarsCssResourceReference("bootstrap/3.3.6/css/bootstrap.css")));
         //TODO add html5shiv?
         //TODO add respond?
+    }
+
+    public void setBackPage(Page backPage) {
+        this.backPage = backPage;
+    }
+
+    public Page getBackPage() {
+        return backPage;
     }
 
     protected Logger getLOGGER() {
