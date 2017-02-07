@@ -1,16 +1,16 @@
 package de.kopis.timeclicker.pages;
 
-import de.kopis.timeclicker.ListEntriesCsvProducerResource;
-import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
-import de.kopis.timeclicker.model.TimeEntry;
-import de.kopis.timeclicker.model.TimeSumWithDate;
-import de.kopis.timeclicker.utils.DurationUtils;
-import de.kopis.timeclicker.utils.TimeSumUtility;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.link.ResourceLink;
@@ -24,11 +24,25 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.string.StringValue;
+import com.googlecode.wickedcharts.highcharts.options.Axis;
+import com.googlecode.wickedcharts.highcharts.options.ChartOptions;
+import com.googlecode.wickedcharts.highcharts.options.Options;
+import com.googlecode.wickedcharts.highcharts.options.SeriesType;
+import com.googlecode.wickedcharts.highcharts.options.Title;
+import com.googlecode.wickedcharts.highcharts.options.series.SimpleSeries;
+import com.googlecode.wickedcharts.wicket6.highcharts.Chart;
+import de.kopis.timeclicker.ListEntriesCsvProducerResource;
+import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TimeEntry;
+import de.kopis.timeclicker.model.TimeSumWithDate;
+import de.kopis.timeclicker.utils.DurationUtils;
+import de.kopis.timeclicker.utils.TimeSumUtility;
 
 public class ListSumPage extends SecuredPage {
     private static final long serialVersionUID = 1L;
     private DateFormat DATE_FORMAT;
     private int pageSize = 31;
+    private Options chartOptions;
 
     public ListSumPage(PageParameters parameters) {
         super("Daily Sums", parameters);
@@ -67,6 +81,8 @@ public class ListSumPage extends SecuredPage {
         // use the locale to figure out the dateformat
         DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy Z", getLocale());
 
+        final Map<String, Number> dailySums = new HashMap<>();
+
         final IModel<Integer> pageSizeModel = new PropertyModel<>(this, "pageSize");
         final IDataProvider<TimeSumWithDate> entries = new IDataProvider<TimeSumWithDate>() {
             final List<TimeSumWithDate> entriesOnPage = new ArrayList<>();
@@ -79,11 +95,26 @@ public class ListSumPage extends SecuredPage {
             @Override
             public Iterator iterator(final long first, final long count) {
                 entriesOnPage.clear();
+                dailySums.clear();
                 getLOGGER().finer("Showing " + count + " entries for page " + (first / pageSizeModel.getObject()) + ", first=" + first + " pageSize=" + pageSizeModel.getObject());
                 try {
                     final List<TimeEntry> allEntries = getApi().list(pageSizeModel.getObject(), 0, getCurrentUser());
                     final List<TimeSumWithDate> sortedPerDay = new TimeSumUtility().calculateDailyTimeSum(allEntries);
                     entriesOnPage.addAll(sortedPerDay);
+
+                    for (TimeSumWithDate entry : entriesOnPage) {
+                        final double durationInHours = new BigDecimal(entry.getDuration() / (60.0 * 60.0 * 1000.0)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                        dailySums.put(DATE_FORMAT.format(entry.getDate()), durationInHours);
+                    }
+
+                    // clear chart
+                    chartOptions.getxAxis().clear();
+                    chartOptions.getSeries().clear();
+                    // update chart
+                    chartOptions.setxAxis(new Axis().setCategories(Arrays.asList(dailySums.keySet().toArray(new String[0]))));
+                    chartOptions.addSeries(new SimpleSeries()
+                            .setName("Time")
+                            .setData(Arrays.asList(dailySums.values().toArray(new Number[0]))));
                 } catch (NotAuthenticatedException e) {
                     getLOGGER().severe("Can not load entries for user " + getCurrentUser() + ": " + e.getMessage());
                 }
@@ -115,5 +146,15 @@ public class ListSumPage extends SecuredPage {
         final PagingNavigator navigator = new PagingNavigator("paginator", listView);
         add(navigator);
         add(listView);
+
+        chartOptions = new Options();
+        chartOptions.setChartOptions(new ChartOptions().setType(SeriesType.COLUMN));
+        chartOptions.setxAxis(new Axis().setCategories(Arrays.asList(dailySums.keySet().toArray(new String[0]))));
+        chartOptions.addSeries(new SimpleSeries()
+                .setName("Time")
+                .setData(Arrays.asList(dailySums.values().toArray(new Number[0]))));
+
+        chartOptions.setTitle(new Title("Daily"));
+        add(new Chart("chart", chartOptions));
     }
 }

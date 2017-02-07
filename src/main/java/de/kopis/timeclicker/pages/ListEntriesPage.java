@@ -1,9 +1,5 @@
 package de.kopis.timeclicker.pages;
 
-import de.kopis.timeclicker.ListEntriesCsvProducerResource;
-import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
-import de.kopis.timeclicker.model.TimeEntry;
-import de.kopis.timeclicker.model.TimeSum;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -11,6 +7,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TimeZone;
+
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.link.Link;
@@ -25,6 +22,10 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.string.StringValue;
+import de.kopis.timeclicker.ListEntriesCsvProducerResource;
+import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TimeEntry;
+import de.kopis.timeclicker.model.TimeSum;
 
 public class ListEntriesPage extends SecuredPage {
     private static final long serialVersionUID = 1L;
@@ -101,7 +102,9 @@ public class ListEntriesPage extends SecuredPage {
                 entriesOnPage.clear();
                 getLOGGER().finer("Showing " + count + " entries for page " + (first / pageSizeModel.getObject()) + ", first=" + first + " pageSize=" + pageSizeModel.getObject());
                 try {
-                    entriesOnPage.addAll(getApi().list((int) count, (int) (first / pageSizeModel.getObject()), getCurrentUser()));
+                    final List<TimeEntry> entries = getApi().list((int) count, (int) (first / pageSizeModel.getObject()), getCurrentUser());
+                    //TODO add pie chart of tags
+                    entriesOnPage.addAll(entries);
                 } catch (NotAuthenticatedException e) {
                     getLOGGER().severe("Can not load entries for user " + getCurrentUser() + ": " + e.getMessage());
                 }

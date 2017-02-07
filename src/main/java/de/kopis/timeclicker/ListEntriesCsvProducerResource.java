@@ -9,21 +9,20 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 
-import de.kopis.timeclicker.api.TimeclickerAPI;
-import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
-import de.kopis.timeclicker.model.TimeEntry;
-import de.kopis.timeclicker.model.TimeSum;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.request.resource.AbstractResource;
 import org.apache.wicket.util.string.StringValue;
 import org.joda.time.DateTime;
-
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import de.kopis.timeclicker.api.TimeclickerAPI;
+import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TimeEntry;
+import de.kopis.timeclicker.model.TimeSum;
 
 public class ListEntriesCsvProducerResource extends AbstractResource {
-    private static final Logger LOGGER = Logger.getLogger(ListEntriesChartProducerResource.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ListEntriesCsvProducerResource.class.getName());
 
     private static final transient TimeclickerAPI api = new TimeclickerAPI();
     private int pageSize;

@@ -3,29 +3,8 @@
 <head>
     <meta charset="utf-8">
 </head>
-<wicket:head>
-    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-    <script type="text/javascript">
-        google.load('visualization', '1', {'packages':['corechart']});
-        google.setOnLoadCallback(drawChart);
-
-        function drawChart() {
-            $.ajax({
-              url: "/chart.json",
-              dataType: "json",
-            }).success(function(jsonData) {
-                // Create our data table out of JSON data loaded from server.
-                var data = new google.visualization.DataTable(jsonData);
-                // Instantiate and draw our chart, passing in some options.
-                var chart = new google.visualization.PieChart(document.getElementById('timeline'));
-                chart.draw(data, {title: 'Tracked time'});
-            });
-        }
-    </script>
-</wicket:head>
 <body>
 <wicket:extend>
-
     <ul>
         <li><a wicket:id="addEntryLink">Add entry</a></li>
         <li><a wicket:id="csvLink">Download CSV</a></li>
@@ -59,8 +38,6 @@
         </tr>
         </tbody>
     </table>
-
-    <div id="timeline"></div>
 </wicket:extend>
 </body>
 </html>

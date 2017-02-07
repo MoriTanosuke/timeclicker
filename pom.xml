@@ -75,9 +75,9 @@
             <version>1.4.2</version>
         </dependency>
         <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>highcharts</artifactId>
-            <version>5.0.4</version>
+            <groupId>com.googlecode.wicked-charts</groupId>
+            <artifactId>wicked-charts-wicket6</artifactId>
+            <version>2.0.1</version>
         </dependency>
 
         <dependency>
@@ -219,7 +219,8 @@
                     <appId>${app.id}</appId>
                     <!-- Comment in the below snippet to bind to all IPs instead of just
                         localhost -->
-                    <!-- address>0.0.0.0</address> <port>8080</port -->
+                    <!-- address>0.0.0.0</address> -->
+                    <port>8181</port>
                     <!-- Comment in the below snippet to enable local debugging with a remote
                         debugger like those included with Eclipse or IntelliJ -->
                     <!-- jvmFlags> <jvmFlag>-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n</jvmFlag>

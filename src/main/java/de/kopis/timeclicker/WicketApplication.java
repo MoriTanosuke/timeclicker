@@ -1,17 +1,24 @@
 package de.kopis.timeclicker;
 
-import com.google.appengine.api.users.UserServiceFactory;
-import de.agilecoders.wicket.webjars.WicketWebjars;
-import de.agilecoders.wicket.webjars.settings.ResourceStreamProvider;
-import de.agilecoders.wicket.webjars.settings.WebjarsSettings;
-import de.kopis.timeclicker.pages.*;
+import java.util.logging.Logger;
+
 import org.apache.wicket.authorization.strategies.page.SimplePageAuthorizationStrategy;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.request.resource.IResource;
 import org.apache.wicket.request.resource.ResourceReference;
-
-import java.util.logging.Logger;
+import com.google.appengine.api.users.UserServiceFactory;
+import de.agilecoders.wicket.webjars.WicketWebjars;
+import de.agilecoders.wicket.webjars.settings.ResourceStreamProvider;
+import de.agilecoders.wicket.webjars.settings.WebjarsSettings;
+import de.kopis.timeclicker.pages.HomePage;
+import de.kopis.timeclicker.pages.ListEntriesPage;
+import de.kopis.timeclicker.pages.ListSumPage;
+import de.kopis.timeclicker.pages.MonthlyListSumPage;
+import de.kopis.timeclicker.pages.SecuredPage;
+import de.kopis.timeclicker.pages.StatisticPage;
+import de.kopis.timeclicker.pages.TimeEntryPage;
+import de.kopis.timeclicker.pages.UserSettingsPage;
 
 public class WicketApplication extends WebApplication {
     public static final int HOURS_PER_DAY = 8;
@@ -42,26 +49,7 @@ public class WicketApplication extends WebApplication {
         mountPage("/add", TimeEntryPage.class);
         mountPage("/settings", UserSettingsPage.class);
         mountPage("/statistics", StatisticPage.class);
-        mountPage("/dashboard", DashboardPage.class);
 
-        mountResource("/chart.json", new ResourceReference("jsonProducer-chart") {
-            @Override
-            public IResource getResource() {
-                return new ListEntriesChartProducerResource();
-            }
-        });
-        mountResource("/sumchart.json", new ResourceReference("jsonProducer-sum") {
-            @Override
-            public IResource getResource() {
-                return new SumChartProducerResource();
-            }
-        });
-        mountResource("/startchart.json", new ResourceReference("jsonProducer-starttime") {
-            @Override
-            public IResource getResource() {
-                return new StartTimeCandlestickChartProducerResource();
-            }
-        });
         mountResource("/list.csv", new ResourceReference("csvProducer") {
             @Override
             public IResource getResource() {

@@ -3,28 +3,6 @@
 <head>
     <meta charset="utf-8">
 </head>
-<wicket:head>
-    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-    <script type="text/javascript">
-        google.load('visualization', '1', {'packages':['corechart', 'bar']});
-        google.setOnLoadCallback(drawChart);
-
-        function drawChart() {
-            $.ajax({
-              url: "/sumchart.json",
-              dataType: "json",
-            }).success(function(jsonData) {
-                // Create our data table out of JSON data loaded from server.
-                var data = new google.visualization.DataTable(jsonData);
-                // Instantiate and draw our chart, passing in some options.
-                var chart = new google.visualization.ColumnChart(document.getElementById('timeline'));
-                chart.draw(data, {title: 'Tracked time'});
-            });
-        }
-
-    </script>
-</wicket:head>
 <body>
 <wicket:extend>
 
@@ -47,7 +25,8 @@
         </tbody>
     </table>
 
-    <div id="timeline"></div>
+    <div wicket:id="chart"/>
+
 </wicket:extend>
 </body>
 </html>
