@@ -16,6 +16,7 @@ import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.googlecode.wickedcharts.wicket6.JavaScriptResourceRegistry;
 import de.agilecoders.wicket.webjars.request.resource.WebjarsCssResourceReference;
 import de.agilecoders.wicket.webjars.request.resource.WebjarsJavaScriptResourceReference;
 import de.kopis.timeclicker.api.TimeclickerAPI;
@@ -122,10 +123,15 @@ public abstract class TemplatePage extends WebPage {
     @Override
     public void renderHead(IHeaderResponse response) {
         super.renderHead(response);
+        final WebjarsJavaScriptResourceReference jqueryReference = new WebjarsJavaScriptResourceReference("jquery/1.11.3/jquery.js");
         response.render(JavaScriptHeaderItem.forReference(
-                new WebjarsJavaScriptResourceReference("jquery/1.11.3/jquery.js")));
+                jqueryReference));
         response.render(JavaScriptHeaderItem.forReference(
                 new WebjarsJavaScriptResourceReference("bootstrap/3.3.6/js/bootstrap.js")));
+        JavaScriptResourceRegistry.getInstance().setHighchartsReference(new WebjarsJavaScriptResourceReference("highcharts/5.0.4/highcharts.js"));
+        JavaScriptResourceRegistry.getInstance().setHighchartsMoreReference(new WebjarsJavaScriptResourceReference("highcharts/5.0.4/highcharts-more.js"));
+        JavaScriptResourceRegistry.getInstance().setHighchartsExportingReference("//code.highcharts.com/modules/exporting.js");
+        JavaScriptResourceRegistry.getInstance().setJQueryReference(jqueryReference);
 
         response.render(CssHeaderItem.forReference(
                 new WebjarsCssResourceReference("bootstrap/3.3.6/css/bootstrap.css")));
