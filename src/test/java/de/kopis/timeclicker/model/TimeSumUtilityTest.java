@@ -1,16 +1,37 @@
 package de.kopis.timeclicker.model;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TimeZone;
 
 import de.kopis.timeclicker.utils.TimeSumUtility;
 import org.junit.Test;
 
 public class TimeSumUtilityTest {
+    @Test
+    public void sortKeysByDate() throws ParseException {
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss Z");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        final Map<Date, Number> sums = new HashMap<>();
+        final Date earlierDate = dateFormat.parse("1234-12-12 12:34:56 +0200");
+        final Date laterDate = dateFormat.parse("2341-12-12 12:34:56 +0200");
+        sums.put(laterDate, 42);
+        sums.put(earlierDate, 21);
+        final String[] keys = new TimeSumUtility().getSortedKeys(dateFormat, sums);
+        final String[] expectedSortedKeys = {dateFormat.format(earlierDate), dateFormat.format(laterDate)};
+        assertArrayEquals(expectedSortedKeys, keys);
+    }
+
     @Test
     public void aggregateByDate() {
         final Calendar cal = Calendar.getInstance();

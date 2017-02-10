@@ -5,9 +5,11 @@ import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
@@ -90,15 +92,16 @@ public class WeeklyListSumPage extends SecuredPage {
         add(navigator);
         add(listView);
 
-        final Map<String, Number> weeklySums = new HashMap<>();
+        final Map<Date, Number> weeklySums = new TreeMap<>();
         for (TimeSumWithDate entry : entries.getObject()) {
             final double durationInHours = new BigDecimal(entry.getDuration() / (60.0 * 60.0 * 1000.0)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-            weeklySums.put(DATE_FORMAT.format(entry.getDate()), durationInHours);
+            weeklySums.put(entry.getDate(), durationInHours);
         }
 
         final Options chartOptions = new Options();
         chartOptions.setChartOptions(new ChartOptions().setType(SeriesType.COLUMN));
-        chartOptions.setxAxis(new Axis().setCategories(Arrays.asList(weeklySums.keySet().toArray(new String[0]))));
+        final String[] dates = new TimeSumUtility().getSortedKeys(DATE_FORMAT, weeklySums);
+        chartOptions.setxAxis(new Axis().setCategories(Arrays.asList(dates)));
         chartOptions.addSeries(new SimpleSeries()
                 .setName("Time")
                 .setData(Arrays.asList(weeklySums.values().toArray(new Number[0]))));

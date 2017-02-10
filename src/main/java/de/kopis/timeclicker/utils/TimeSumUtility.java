@@ -1,5 +1,6 @@
 package de.kopis.timeclicker.utils;
 
+import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -8,6 +9,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import de.kopis.timeclicker.model.TimeEntry;
@@ -16,6 +19,16 @@ import de.kopis.timeclicker.model.TimeSumWithDate;
 
 public class TimeSumUtility {
     private static final Logger LOGGER = Logger.getLogger(TimeSumUtility.class.getName());
+
+    public String[] getSortedKeys(final DateFormat dateFormat, final Map<Date, Number> mapOfSums) {
+        String[] dates = new String[mapOfSums.size()];
+        final Set<Date> keys = new TreeSet<>(mapOfSums.keySet());
+        int i = 0;
+        for(Date date : keys) {
+            dates[i++] = dateFormat.format(date);
+        }
+        return dates;
+    }
 
     /**
      * Calculates the {@link TimeSum} by summing up all {@link TimeEntry}s with the same date.

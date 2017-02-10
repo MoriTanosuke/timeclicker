@@ -6,10 +6,11 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
@@ -81,7 +82,7 @@ public class ListSumPage extends SecuredPage {
         // use the locale to figure out the dateformat
         DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy Z", getLocale());
 
-        final Map<String, Number> dailySums = new HashMap<>();
+        final Map<Date, Number> dailySums = new TreeMap<>();
 
         final IModel<Integer> pageSizeModel = new PropertyModel<>(this, "pageSize");
         final IDataProvider<TimeSumWithDate> entries = new IDataProvider<TimeSumWithDate>() {
@@ -104,14 +105,15 @@ public class ListSumPage extends SecuredPage {
 
                     for (TimeSumWithDate entry : entriesOnPage) {
                         final double durationInHours = new BigDecimal(entry.getDuration() / (60.0 * 60.0 * 1000.0)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                        dailySums.put(DATE_FORMAT.format(entry.getDate()), durationInHours);
+                        dailySums.put(entry.getDate(), durationInHours);
                     }
 
                     // clear chart
                     chartOptions.getxAxis().clear();
                     chartOptions.getSeries().clear();
                     // update chart
-                    chartOptions.setxAxis(new Axis().setCategories(Arrays.asList(dailySums.keySet().toArray(new String[0]))));
+                    final String[] dates = new TimeSumUtility().getSortedKeys(DATE_FORMAT, dailySums);
+                    chartOptions.setxAxis(new Axis().setCategories(Arrays.asList(dates)));
                     chartOptions.addSeries(new SimpleSeries()
                             .setName("Time")
                             .setData(Arrays.asList(dailySums.values().toArray(new Number[0]))));
@@ -149,7 +151,8 @@ public class ListSumPage extends SecuredPage {
 
         chartOptions = new Options();
         chartOptions.setChartOptions(new ChartOptions().setType(SeriesType.COLUMN));
-        chartOptions.setxAxis(new Axis().setCategories(Arrays.asList(dailySums.keySet().toArray(new String[0]))));
+        final String[] dates = new TimeSumUtility().getSortedKeys(DATE_FORMAT, dailySums);
+        chartOptions.setxAxis(new Axis().setCategories(Arrays.asList(dates)));
         chartOptions.addSeries(new SimpleSeries()
                 .setName("Time")
                 .setData(Arrays.asList(dailySums.values().toArray(new Number[0]))));
@@ -157,4 +160,5 @@ public class ListSumPage extends SecuredPage {
         chartOptions.setTitle(new Title("Daily"));
         add(new Chart("chart", chartOptions));
     }
+
 }
