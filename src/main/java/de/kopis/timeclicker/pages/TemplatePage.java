@@ -51,6 +51,7 @@ public abstract class TemplatePage extends WebPage {
             }
         }
 
+        add(new Label("pageTitle", header + " :: Time Clicker"));
         add(new CustomFeedbackPanel("feedbackPanel"));
         // add all the wicket components
         add(new HeaderPanel("headerPanel"));
