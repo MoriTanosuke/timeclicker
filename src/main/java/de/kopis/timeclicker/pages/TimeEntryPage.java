@@ -1,8 +1,8 @@
 package de.kopis.timeclicker.pages;
 
-import java.util.Locale;
-import java.util.TimeZone;
-
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import org.apache.wicket.Session;
@@ -17,9 +17,8 @@ import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.protocol.http.request.WebClientInfo;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class TimeEntryPage extends SecuredPage {
 
@@ -55,6 +54,7 @@ public class TimeEntryPage extends SecuredPage {
             final Form<TimeEntry> form = new Form<>("entryForm");
             form.setDefaultModel(new CompoundPropertyModel(entry));
             form.add(new HiddenField("key"));
+            form.add(new TextField("project"));
             //TODO add timezone to DateTimeField?
             form.add(new DateTimeField("start"));
             form.add(new DateTimeField("stop"));
@@ -67,7 +67,7 @@ public class TimeEntryPage extends SecuredPage {
                     try {
                         UserService userService = UserServiceFactory.getUserService();
                         User user = userService.getCurrentUser();
-                        getApi().update(updateEntry.getKey(), updateEntry.getStart(), updateEntry.getStop(), updateEntry.getTags(), user);
+                        getApi().update(updateEntry.getKey(), updateEntry.getStart(), updateEntry.getStop(), updateEntry.getTags(), updateEntry.getProject(), user);
                         success("Entry saved.");
                     } catch (NotAuthenticatedException e) {
                         error("Can not save entry. Try again.");

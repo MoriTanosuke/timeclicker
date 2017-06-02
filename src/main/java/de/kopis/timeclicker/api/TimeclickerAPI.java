@@ -4,26 +4,15 @@ import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.DefaultValue;
 import com.google.api.server.spi.config.Named;
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.EntityNotFoundException;
-import com.google.appengine.api.datastore.FetchOptions;
-import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.api.datastore.PreparedQuery;
-import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.*;
 import com.google.appengine.api.users.User;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
 import de.kopis.timeclicker.model.UserSettings;
 import de.kopis.timeclicker.utils.TimeSumUtility;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
+
+import java.util.*;
 import java.util.logging.Logger;
 
 @Api(name = "timeclicker", version = "v1", scopes = {Constants.EMAIL_SCOPE},
@@ -112,7 +101,7 @@ public class TimeclickerAPI {
     }
 
     @ApiMethod(name = "update", path = "update", httpMethod = "post")
-    public void update(@Named("key") String key, @Named("start") Date start, @Named("stop") Date stop, @Named("tags") String tags, User user) throws NotAuthenticatedException {
+    public void update(@Named("key") String key, @Named("start") Date start, @Named("stop") Date stop, @Named("tags") String tags, @Named("project") String project, User user) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();
 
         final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
@@ -127,11 +116,12 @@ public class TimeclickerAPI {
                     throw new RuntimeException("Referenced entry does not belong to this user!");
                 }
             } else {
-                LOGGER.info("User " + user.getUserId() + " starting to save new entry " + key + " with start=" + start + " stop=" + stop);
+                LOGGER.info("User " + user.getUserId() + " starting to save new entry " + key + " for project=" + project + " with start=" + start + " stop=" + stop);
                 timeEntryEntity = createTimeEntryEntity(user);
             }
             timeEntryEntity.setProperty("start", start);
             timeEntryEntity.setProperty("stop", stop);
+            timeEntryEntity.setProperty("project", project);
             timeEntryEntity.setProperty("tags", tags);
             datastore.put(timeEntryEntity);
             LOGGER.info("User " + user.getUserId() + " updated entry " + timeEntryEntity.getKey());
@@ -436,6 +426,12 @@ public class TimeclickerAPI {
         return timeEntryEntity;
     }
 
+    /**
+     * Creates a {@link TimeEntry} from the given datastore {@link Entity}.
+     *
+     * @param timeEntryEntity already received datastore entity
+     * @return a fully set up {@link TimeEntry}
+     */
     private TimeEntry buildTimeEntryFromEntity(Entity timeEntryEntity) {
         final TimeEntry entry = new TimeEntry();
         entry.setKey(KeyFactory.keyToString(timeEntryEntity.getKey()));
@@ -447,6 +443,9 @@ public class TimeclickerAPI {
         }
         if (timeEntryEntity.hasProperty("tags")) {
             entry.setTags((String) timeEntryEntity.getProperty("tags"));
+        }
+        if (timeEntryEntity.hasProperty("project")) {
+            entry.setProject((String) timeEntryEntity.getProperty("project"));
         }
         return entry;
     }

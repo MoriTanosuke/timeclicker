@@ -10,6 +10,7 @@ public class TimeEntry implements Serializable {
     private Date stop = null;
     private String key;
     private String tags;
+    private String project;
 
     public TimeEntry() {
         this(new Date());
@@ -56,13 +57,22 @@ public class TimeEntry implements Serializable {
 		this.tags = tags;
 	}
 
-	@Override
+    public String getProject() {
+        return project;
+    }
+
+    public void setProject(String project) {
+        this.project = project;
+    }
+
+    @Override
     public String toString() {
         return "TimeEntry{" +
                 "start=" + start +
                 ", stop=" + stop +
                 ", key='" + key + "'" +
                 ", tags='" + tags + "'" + 
+                ", project='" + project + "'" +
                 '}';
     }
 }
