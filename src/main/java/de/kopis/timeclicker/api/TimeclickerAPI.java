@@ -471,6 +471,10 @@ public class TimeclickerAPI {
                 locale = Locale.getDefault();
             }
             us.setLocale(locale);
+
+            // set configured workingduration
+            final long workingDurationPerDay = (long) userSettingsEntity.getProperty("workingDurationPerDay");
+            us.setWorkingDurationPerDay(workingDurationPerDay);
         }
         return us;
     }
