@@ -50,7 +50,7 @@ public class ListEntriesPage extends SecuredPage {
             protected Long load() {
                 long count = 0L;
                 try {
-                    count = (long) getApi().countAvailableEntries(getCurrentUser());
+                    count = getApi().countAvailableEntries(getCurrentUser()).count;
                 } catch (NotAuthenticatedException e) {
                     getLOGGER().severe("Can not count entries for user " + getCurrentUser() + ": " + e.getMessage());
                 }

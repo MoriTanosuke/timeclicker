@@ -1,17 +1,14 @@
 package de.kopis.timeclicker.pages;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
+import com.googlecode.wickedcharts.highcharts.options.*;
+import com.googlecode.wickedcharts.highcharts.options.series.SimpleSeries;
+import com.googlecode.wickedcharts.wicket6.highcharts.Chart;
+import de.kopis.timeclicker.ListEntriesCsvProducerResource;
+import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TimeEntry;
+import de.kopis.timeclicker.model.TimeSumWithDate;
+import de.kopis.timeclicker.utils.DurationUtils;
+import de.kopis.timeclicker.utils.TimeSumUtility;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.link.ResourceLink;
@@ -25,19 +22,12 @@ import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.string.StringValue;
-import com.googlecode.wickedcharts.highcharts.options.Axis;
-import com.googlecode.wickedcharts.highcharts.options.ChartOptions;
-import com.googlecode.wickedcharts.highcharts.options.Options;
-import com.googlecode.wickedcharts.highcharts.options.SeriesType;
-import com.googlecode.wickedcharts.highcharts.options.Title;
-import com.googlecode.wickedcharts.highcharts.options.series.SimpleSeries;
-import com.googlecode.wickedcharts.wicket6.highcharts.Chart;
-import de.kopis.timeclicker.ListEntriesCsvProducerResource;
-import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
-import de.kopis.timeclicker.model.TimeEntry;
-import de.kopis.timeclicker.model.TimeSumWithDate;
-import de.kopis.timeclicker.utils.DurationUtils;
-import de.kopis.timeclicker.utils.TimeSumUtility;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class ListSumPage extends SecuredPage {
     private static final long serialVersionUID = 1L;
@@ -63,7 +53,7 @@ public class ListSumPage extends SecuredPage {
             protected Long load() {
                 long count = 0L;
                 try {
-                    count = (long) getApi().countAvailableDates(getCurrentUser());
+                    count = getApi().countAvailableDates(getCurrentUser()).count;
                 } catch (NotAuthenticatedException e) {
                     getLOGGER().severe("Can not count entries for user " + getCurrentUser() + ": " + e.getMessage());
                 }

@@ -7,6 +7,7 @@ import com.google.api.server.spi.config.Named;
 import com.google.appengine.api.datastore.*;
 import com.google.appengine.api.users.User;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.EntryCount;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
 import de.kopis.timeclicker.model.UserSettings;
@@ -183,17 +184,17 @@ public class TimeclickerAPI {
     }
 
     @ApiMethod(name = "count", path = "count")
-    public int countAvailableEntries(User user) throws NotAuthenticatedException {
+    public EntryCount countAvailableEntries(User user) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();
 
-        return countEntities(user);
+        return new EntryCount(countEntities(user));
     }
 
     @ApiMethod(name = "countDates", path = "count/dates")
-    public int countAvailableDates(User user) throws NotAuthenticatedException {
+    public EntryCount countAvailableDates(User user) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();
 
-        return countDates(user);
+        return new EntryCount(countDates(user));
     }
 
     @ApiMethod(name = "overallSum", path = "sum/overall")
@@ -290,7 +291,7 @@ public class TimeclickerAPI {
         return sum;
     }
 
-    @ApiMethod(name = "settings", path = "settings", httpMethod = "get")
+    @ApiMethod(name = "getUserSettings", path = "settings", httpMethod = "get")
     public UserSettings getUserSettings(@Named("key") String key, User user) throws NotAuthenticatedException, EntityNotFoundException {
         if (user == null) throw new NotAuthenticatedException();
 
@@ -319,7 +320,7 @@ public class TimeclickerAPI {
         return buildUserSettingsFromEntity(entity);
     }
 
-    @ApiMethod(name = "settings", path = "settings", httpMethod = "post")
+    @ApiMethod(name = "setUserSettings", path = "settings", httpMethod = "post")
     public void setUserSettings(UserSettings settings, User user) throws NotAuthenticatedException, EntityNotFoundException {
         if (user == null) throw new NotAuthenticatedException();
 
