@@ -8,20 +8,20 @@
     <form wicket:id="entryForm">
         <input type="hidden" wicket:id="key"/>
 
-        <label for="project">Project</label>
-        <div><input type="text" wicket:id="project" /></div>
+        <label for="projects">Project</label>
+        <div><select wicket:id="projects" id="projects"/> <input type="text" wicket:id="project" /></div>
         <br/>
 
         <label for="start">Start</label>
-        <div wicket:id="start"/>
+        <div wicket:id="start" id="start"></div>
         <br/>
 
         <label for="stop">Stop</label>
-        <div wicket:id="stop"/>
+        <div wicket:id="stop" id="stop"></div>
         <br/>
         
         <label for="tags">Tags</label>
-        <div><input type="text" wicket:id="tags" /></div>
+        <div><input type="text" wicket:id="tags" id="tags" /></div>
         <br/>
 
         <input type="submit" wicket:id="update" />

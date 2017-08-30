@@ -1,4 +1,4 @@
-package de.kopis.timeclicker.model;
+package de.kopis.timeclicker.model.wrappers;
 
 public class EntryCount {
     public final int count;

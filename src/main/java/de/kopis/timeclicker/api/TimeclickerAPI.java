@@ -4,16 +4,30 @@ import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.DefaultValue;
 import com.google.api.server.spi.config.Named;
-import com.google.appengine.api.datastore.*;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.PropertyProjection;
+import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.users.User;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
-import de.kopis.timeclicker.model.EntryCount;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
 import de.kopis.timeclicker.model.UserSettings;
+import de.kopis.timeclicker.model.wrappers.EntryCount;
+import de.kopis.timeclicker.model.wrappers.Project;
 import de.kopis.timeclicker.utils.TimeSumUtility;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.util.logging.Logger;
 
 @Api(name = "timeclicker", version = "v1", scopes = {Constants.EMAIL_SCOPE},
@@ -354,6 +368,35 @@ public class TimeclickerAPI {
 
         LOGGER.fine("Updated entity: " + entity);
         datastore.put(entity);
+    }
+
+    @ApiMethod(name = "getProjects", path = "projects", httpMethod = "get")
+    public List<Project> getProjects(User user) throws NotAuthenticatedException {
+        if (user == null) throw new NotAuthenticatedException();
+
+        final List<Project> projects = new ArrayList<>();
+
+        //TODO collect all used projects
+        final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        final Query.Filter propertyFilter =
+                new Query.FilterPredicate("userId",
+                        Query.FilterOperator.EQUAL,
+                        user.getUserId());
+        final Query q = new Query("TimeEntry")
+                .setFilter(propertyFilter)
+                // only get distinct entries
+                .addProjection(new PropertyProjection("project", String.class))
+                .setDistinct(true);
+        PreparedQuery query = datastore.prepare(q);
+        final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
+        List<Entity> entities = query.asList(fetchOptions);
+        for (Entity e : entities) {
+            String project  = (String) e.getProperty("project");
+            projects.add(new Project(project));
+        }
+
+        LOGGER.fine("Returning " + projects.size() + " projects");
+        return projects;
     }
 
     private int countDates(User user) throws NotAuthenticatedException {

@@ -5,23 +5,34 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
+import de.kopis.timeclicker.model.wrappers.Project;
 import org.apache.wicket.Session;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
+import org.apache.wicket.ajax.form.OnChangeAjaxBehavior;
 import org.apache.wicket.core.request.ClientInfo;
 import org.apache.wicket.extensions.yui.calendar.DateTimeField;
 import org.apache.wicket.markup.html.form.Button;
+import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.HiddenField;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.model.CompoundPropertyModel;
+import org.apache.wicket.model.LoadableDetachableModel;
+import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.protocol.http.request.WebClientInfo;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
 public class TimeEntryPage extends SecuredPage {
     private TimeEntry entry;
+
+    private String selectedProject = "";
 
     public TimeEntryPage(PageParameters parameters) {
         super("Edit entry", parameters);
@@ -62,7 +73,48 @@ public class TimeEntryPage extends SecuredPage {
         final Form<TimeEntry> form = new Form<>("entryForm");
         form.setDefaultModel(new CompoundPropertyModel(entry));
         form.add(new HiddenField("key"));
-        form.add(new TextField("project"));
+
+        final DropDownChoice<String> projectChoice = new DropDownChoice<>("projects", new PropertyModel<String>(this, "selectedProject"),
+                new LoadableDetachableModel<List<String>>() {
+                    @Override
+                    protected List<String> load() {
+                        final List<String> projects = new ArrayList<>();
+                        try {
+                            for (Project p : getApi().getProjects(getCurrentUser())) {
+                                projects.add(p.name);
+                            }
+                        } catch (NotAuthenticatedException e) {
+                            getLOGGER().warning("Can not load projects: " + e.getMessage());
+                        }
+                        return projects;
+                    }
+                });
+        projectChoice.setNullValid(true);
+        projectChoice.setModelObject(entry.getProject());
+        form.add(projectChoice);
+
+        final TextField<String> projectTextField = new TextField<>("project");
+        projectTextField.setOutputMarkupId(true);
+        form.add(projectTextField);
+
+        // add onchange listeners for project selection/input
+        projectChoice.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                if (selectedProject != null && !selectedProject.equals("")) {
+                    projectTextField.setModelObject(selectedProject);
+                }
+                target.add(projectChoice, projectTextField);
+            }
+        });
+        projectTextField.add(new OnChangeAjaxBehavior() {
+            @Override
+            protected void onUpdate(AjaxRequestTarget target) {
+                projectChoice.setModelObject(null);
+                target.add(projectChoice, projectTextField);
+            }
+        });
+
         //TODO add timezone to DateTimeField?
         form.add(new DateTimeField("start"));
         form.add(new DateTimeField("stop"));
