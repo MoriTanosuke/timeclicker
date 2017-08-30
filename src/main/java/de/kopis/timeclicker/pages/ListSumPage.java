@@ -1,6 +1,12 @@
 package de.kopis.timeclicker.pages;
 
-import com.googlecode.wickedcharts.highcharts.options.*;
+import com.googlecode.wickedcharts.highcharts.options.Axis;
+import com.googlecode.wickedcharts.highcharts.options.ChartOptions;
+import com.googlecode.wickedcharts.highcharts.options.Options;
+import com.googlecode.wickedcharts.highcharts.options.PlotBand;
+import com.googlecode.wickedcharts.highcharts.options.SeriesType;
+import com.googlecode.wickedcharts.highcharts.options.Title;
+import com.googlecode.wickedcharts.highcharts.options.color.HexColor;
 import com.googlecode.wickedcharts.highcharts.options.series.SimpleSeries;
 import com.googlecode.wickedcharts.wicket6.highcharts.Chart;
 import de.kopis.timeclicker.ListEntriesCsvProducerResource;
@@ -27,7 +33,13 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class ListSumPage extends SecuredPage {
     private static final long serialVersionUID = 1L;
@@ -94,8 +106,7 @@ public class ListSumPage extends SecuredPage {
                     entriesOnPage.addAll(sortedPerDay);
 
                     for (TimeSumWithDate entry : entriesOnPage) {
-                        final double durationInHours = new BigDecimal(entry.getDuration() / (60.0 * 60.0 * 1000.0)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-                        dailySums.put(entry.getDate(), durationInHours);
+                        dailySums.put(entry.getDate(), convertToHours(entry.getDuration()));
                     }
 
                     // clear chart
@@ -104,8 +115,11 @@ public class ListSumPage extends SecuredPage {
                     // update chart
                     final String[] dates = new TimeSumUtility().getSortedKeys(DATE_FORMAT, dailySums);
                     chartOptions.setxAxis(new Axis().setCategories(Arrays.asList(dates)));
+                    chartOptions.setyAxis(new Axis()
+                            .setTitle(new Title("Hours"))
+                            .addPlotBand(buildPlotBand("#efefef", convertToHours(getDailyDuration(getCurrentUser())))));
                     chartOptions.addSeries(new SimpleSeries()
-                            .setName("Time")
+                            .setName("Working Hours")
                             .setData(Arrays.asList(dailySums.values().toArray(new Number[0]))));
                 } catch (NotAuthenticatedException e) {
                     getLOGGER().severe("Can not load entries for user " + getCurrentUser() + ": " + e.getMessage());
@@ -149,6 +163,22 @@ public class ListSumPage extends SecuredPage {
 
         chartOptions.setTitle(new Title("Daily"));
         add(new Chart("chart", chartOptions));
+    }
+
+    private PlotBand buildPlotBand(String hexColor, double value) {
+        return getPlotBand(hexColor, 0, value);
+    }
+
+    private PlotBand getPlotBand(String hexColor, double from, double to) {
+        PlotBand plot = new PlotBand();
+        plot.setColor(new HexColor(hexColor));
+        plot.setFrom(from);
+        plot.setTo(to);
+        return plot;
+    }
+
+    private double convertToHours(long workingDuration) {
+        return new BigDecimal(workingDuration / (60.0 * 60.0 * 1000.0)).setScale(2, RoundingMode.HALF_UP).doubleValue();
     }
 
 }
