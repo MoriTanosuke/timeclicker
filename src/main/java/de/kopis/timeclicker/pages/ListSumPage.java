@@ -3,16 +3,15 @@ package de.kopis.timeclicker.pages;
 import com.googlecode.wickedcharts.highcharts.options.Axis;
 import com.googlecode.wickedcharts.highcharts.options.ChartOptions;
 import com.googlecode.wickedcharts.highcharts.options.Options;
-import com.googlecode.wickedcharts.highcharts.options.PlotBand;
 import com.googlecode.wickedcharts.highcharts.options.SeriesType;
 import com.googlecode.wickedcharts.highcharts.options.Title;
-import com.googlecode.wickedcharts.highcharts.options.color.HexColor;
 import com.googlecode.wickedcharts.highcharts.options.series.SimpleSeries;
 import com.googlecode.wickedcharts.wicket6.highcharts.Chart;
 import de.kopis.timeclicker.ListEntriesCsvProducerResource;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSumWithDate;
+import de.kopis.timeclicker.utils.ChartUtility;
 import de.kopis.timeclicker.utils.DurationUtils;
 import de.kopis.timeclicker.utils.TimeSumUtility;
 import org.apache.wicket.markup.html.basic.Label;
@@ -29,8 +28,6 @@ import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.util.string.StringValue;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -106,7 +103,7 @@ public class ListSumPage extends SecuredPage {
                     entriesOnPage.addAll(sortedPerDay);
 
                     for (TimeSumWithDate entry : entriesOnPage) {
-                        dailySums.put(entry.getDate(), convertToHours(entry.getDuration()));
+                        dailySums.put(entry.getDate(), TimeSumUtility.convertToHours(entry.getDuration()));
                     }
 
                     // clear chart
@@ -117,7 +114,7 @@ public class ListSumPage extends SecuredPage {
                     chartOptions.setxAxis(new Axis().setCategories(Arrays.asList(dates)));
                     chartOptions.setyAxis(new Axis()
                             .setTitle(new Title("Hours"))
-                            .addPlotBand(buildPlotBand("#efefef", convertToHours(getDailyDuration(getCurrentUser())))));
+                            .addPlotBand(ChartUtility.buildPlotBand("#efefef", TimeSumUtility.convertToHours(getDailyDuration(getCurrentUser())), "h")));
                     chartOptions.addSeries(new SimpleSeries()
                             .setName("Working Hours")
                             .setData(Arrays.asList(dailySums.values().toArray(new Number[0]))));
@@ -155,8 +152,12 @@ public class ListSumPage extends SecuredPage {
 
         chartOptions = new Options();
         chartOptions.setChartOptions(new ChartOptions().setType(SeriesType.COLUMN));
+        // update chart
         final String[] dates = new TimeSumUtility().getSortedKeys(DATE_FORMAT, dailySums);
         chartOptions.setxAxis(new Axis().setCategories(Arrays.asList(dates)));
+        chartOptions.setyAxis(new Axis()
+                .setTitle(new Title("Hours"))
+                .addPlotBand(ChartUtility.buildPlotBand("#efefef", TimeSumUtility.convertToHours(getDailyDuration(getCurrentUser())), "h")));
         chartOptions.addSeries(new SimpleSeries()
                 .setName("Time")
                 .setData(Arrays.asList(dailySums.values().toArray(new Number[0]))));
@@ -164,21 +165,4 @@ public class ListSumPage extends SecuredPage {
         chartOptions.setTitle(new Title("Daily"));
         add(new Chart("chart", chartOptions));
     }
-
-    private PlotBand buildPlotBand(String hexColor, double value) {
-        return getPlotBand(hexColor, 0, value);
-    }
-
-    private PlotBand getPlotBand(String hexColor, double from, double to) {
-        PlotBand plot = new PlotBand();
-        plot.setColor(new HexColor(hexColor));
-        plot.setFrom(from);
-        plot.setTo(to);
-        return plot;
-    }
-
-    private double convertToHours(long workingDuration) {
-        return new BigDecimal(workingDuration / (60.0 * 60.0 * 1000.0)).setScale(2, RoundingMode.HALF_UP).doubleValue();
-    }
-
 }

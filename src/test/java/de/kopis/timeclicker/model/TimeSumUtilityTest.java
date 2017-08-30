@@ -1,7 +1,7 @@
 package de.kopis.timeclicker.model;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import de.kopis.timeclicker.utils.TimeSumUtility;
+import org.junit.Test;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -10,14 +10,18 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
-import de.kopis.timeclicker.utils.TimeSumUtility;
-import org.junit.Test;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 public class TimeSumUtilityTest {
+    @Test
+    public void convertToHours() {
+        assertEquals(8, new TimeSumUtility().convertToHours(8 * 60 * 60 * 1000), 0.00001);
+    }
+
     @Test
     public void sortKeysByDate() throws ParseException {
         final SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss Z");

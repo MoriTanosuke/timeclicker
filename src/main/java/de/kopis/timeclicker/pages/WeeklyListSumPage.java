@@ -1,25 +1,5 @@
 package de.kopis.timeclicker.pages;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
-import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.link.Link;
-import org.apache.wicket.markup.html.link.ResourceLink;
-import org.apache.wicket.markup.html.list.ListItem;
-import org.apache.wicket.markup.html.list.PageableListView;
-import org.apache.wicket.markup.html.navigation.paging.PagingNavigator;
-import org.apache.wicket.model.util.ListModel;
-import org.apache.wicket.request.mapper.parameter.PageParameters;
-import org.apache.wicket.util.string.StringValue;
 import com.googlecode.wickedcharts.highcharts.options.Axis;
 import com.googlecode.wickedcharts.highcharts.options.ChartOptions;
 import com.googlecode.wickedcharts.highcharts.options.Options;
@@ -31,9 +11,29 @@ import de.kopis.timeclicker.ListEntriesCsvProducerResource;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSumWithDate;
+import de.kopis.timeclicker.utils.ChartUtility;
 import de.kopis.timeclicker.utils.DurationUtils;
 import de.kopis.timeclicker.utils.TimeSumUtility;
 import de.kopis.timeclicker.utils.WorkdayCalculator;
+import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.markup.html.link.ResourceLink;
+import org.apache.wicket.markup.html.list.ListItem;
+import org.apache.wicket.markup.html.list.PageableListView;
+import org.apache.wicket.markup.html.navigation.paging.PagingNavigator;
+import org.apache.wicket.model.util.ListModel;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.apache.wicket.util.string.StringValue;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class WeeklyListSumPage extends SecuredPage {
     private int pageSize = 12;
@@ -102,6 +102,9 @@ public class WeeklyListSumPage extends SecuredPage {
         chartOptions.setChartOptions(new ChartOptions().setType(SeriesType.COLUMN));
         final String[] dates = new TimeSumUtility().getSortedKeys(DATE_FORMAT, weeklySums);
         chartOptions.setxAxis(new Axis().setCategories(Arrays.asList(dates)));
+        chartOptions.setyAxis(new Axis()
+                .setTitle(new Title("Hours"))
+                .addPlotBand(ChartUtility.buildPlotBand("#efefef", TimeSumUtility.convertToHours(5 * getDailyDuration(getCurrentUser())), "h")));
         chartOptions.addSeries(new SimpleSeries()
                 .setName("Time")
                 .setData(Arrays.asList(weeklySums.values().toArray(new Number[0]))));

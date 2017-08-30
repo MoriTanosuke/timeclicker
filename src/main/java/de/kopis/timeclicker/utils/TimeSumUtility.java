@@ -1,5 +1,11 @@
 package de.kopis.timeclicker.utils;
 
+import de.kopis.timeclicker.model.TimeEntry;
+import de.kopis.timeclicker.model.TimeSum;
+import de.kopis.timeclicker.model.TimeSumWithDate;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -13,12 +19,12 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
-import de.kopis.timeclicker.model.TimeEntry;
-import de.kopis.timeclicker.model.TimeSum;
-import de.kopis.timeclicker.model.TimeSumWithDate;
-
 public class TimeSumUtility {
     private static final Logger LOGGER = Logger.getLogger(TimeSumUtility.class.getName());
+
+    public static double convertToHours(long workingDuration) {
+        return new BigDecimal(workingDuration / (60.0 * 60.0 * 1000.0)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+    }
 
     public String[] getSortedKeys(final DateFormat dateFormat, final Map<Date, Number> mapOfSums) {
         String[] dates = new String[mapOfSums.size()];
