@@ -12,7 +12,7 @@
     <properties>
         <app.id>timeclicker-1079</app.id>
         <app.version>9</app.version>
-        <appengine.version>1.9.42</appengine.version>
+        <appengine.version>1.9.54</appengine.version>
         <gcloud.plugin.version>2.0.9.74.v20150814</gcloud.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
@@ -73,11 +73,6 @@
             <groupId>org.webjars</groupId>
             <artifactId>respond</artifactId>
             <version>1.4.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>highcharts</artifactId>
-            <version>5.0.4</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.wicked-charts</groupId>
@@ -238,14 +233,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>com.google.appengine</groupId>
-                <artifactId>gcloud-maven-plugin</artifactId>
-                <version>${gcloud.plugin.version}</version>
-                <configuration>
-                    <set_default>true</set_default>
-                </configuration>
             </plugin>
         </plugins>
     </build>

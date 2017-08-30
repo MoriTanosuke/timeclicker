@@ -1,17 +1,5 @@
 package de.kopis.timeclicker.pages;
 
-import java.util.Locale;
-import java.util.TimeZone;
-import java.util.logging.Logger;
-
-import org.apache.wicket.Page;
-import org.apache.wicket.Session;
-import org.apache.wicket.markup.head.CssHeaderItem;
-import org.apache.wicket.markup.head.IHeaderResponse;
-import org.apache.wicket.markup.head.JavaScriptHeaderItem;
-import org.apache.wicket.markup.html.WebPage;
-import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.request.mapper.parameter.PageParameters;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
@@ -25,6 +13,18 @@ import de.kopis.timeclicker.model.UserSettings;
 import de.kopis.timeclicker.panels.CustomFeedbackPanel;
 import de.kopis.timeclicker.panels.FooterPanel;
 import de.kopis.timeclicker.panels.HeaderPanel;
+import org.apache.wicket.Page;
+import org.apache.wicket.Session;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
+import org.apache.wicket.markup.head.JavaScriptHeaderItem;
+import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
+
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.logging.Logger;
 
 public abstract class TemplatePage extends WebPage {
     private static final long serialVersionUID = 1L;
@@ -72,7 +72,7 @@ public abstract class TemplatePage extends WebPage {
         return user;
     }
 
-    public TimeclickerAPI getApi() {
+    protected TimeclickerAPI getApi() {
         if (api == null) {
             api = new TimeclickerAPI();
         }
@@ -129,9 +129,9 @@ public abstract class TemplatePage extends WebPage {
                 jqueryReference));
         response.render(JavaScriptHeaderItem.forReference(
                 new WebjarsJavaScriptResourceReference("bootstrap/3.3.6/js/bootstrap.js")));
-        JavaScriptResourceRegistry.getInstance().setHighchartsReference(new WebjarsJavaScriptResourceReference("highcharts/5.0.4/highcharts.js"));
-        JavaScriptResourceRegistry.getInstance().setHighchartsMoreReference(new WebjarsJavaScriptResourceReference("highcharts/5.0.4/highcharts-more.js"));
-        JavaScriptResourceRegistry.getInstance().setHighchartsExportingReference("//code.highcharts.com/modules/exporting.js");
+        JavaScriptResourceRegistry.getInstance().setHighchartsReference("https://code.highcharts.com/5.0.4/highcharts.js");
+        JavaScriptResourceRegistry.getInstance().setHighchartsMoreReference("https://code.highcharts.com/5.0.4/highcharts-more.js");
+        JavaScriptResourceRegistry.getInstance().setHighchartsExportingReference("https://code.highcharts.com/modules/exporting.js");
         JavaScriptResourceRegistry.getInstance().setJQueryReference(jqueryReference);
 
         response.render(CssHeaderItem.forReference(
