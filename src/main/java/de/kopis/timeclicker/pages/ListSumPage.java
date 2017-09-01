@@ -43,6 +43,8 @@ public class ListSumPage extends SecuredPage {
     private DateFormat DATE_FORMAT;
     private int pageSize = 31;
     private Options chartOptions;
+    private IModel<Long> entriesCountModel;
+    private IModel<Integer> pageSizeModel;
 
     public ListSumPage(PageParameters parameters) {
         super("Daily Sums", parameters);
@@ -57,7 +59,7 @@ public class ListSumPage extends SecuredPage {
             pageSize = ps.toInt(pageSize);
         }
 
-        final IModel<Long> entriesCountModel = new LoadableDetachableModel<Long>() {
+        entriesCountModel = new LoadableDetachableModel<Long>() {
             @Override
             protected Long load() {
                 long count = 0L;
@@ -83,7 +85,7 @@ public class ListSumPage extends SecuredPage {
 
         final Map<Date, Number> dailySums = new TreeMap<>();
 
-        final IModel<Integer> pageSizeModel = new PropertyModel<>(this, "pageSize");
+        pageSizeModel = new PropertyModel<>(this, "pageSize");
         final IDataProvider<TimeSumWithDate> entries = new IDataProvider<TimeSumWithDate>() {
             final List<TimeSumWithDate> entriesOnPage = new ArrayList<>();
 
@@ -98,7 +100,7 @@ public class ListSumPage extends SecuredPage {
                 dailySums.clear();
                 getLOGGER().finer("Showing " + count + " entries for page " + (first / pageSizeModel.getObject()) + ", first=" + first + " pageSize=" + pageSizeModel.getObject());
                 try {
-                    final List<TimeEntry> allEntries = getApi().list(pageSizeModel.getObject(), 0, getCurrentUser());
+                    final List<TimeEntry> allEntries = getApi().list(pageSizeModel.getObject(), (int) (first / pageSizeModel.getObject()), getCurrentUser());
                     final List<TimeSumWithDate> sortedPerDay = new TimeSumUtility().calculateDailyTimeSum(allEntries);
                     entriesOnPage.addAll(sortedPerDay);
 
@@ -135,7 +137,17 @@ public class ListSumPage extends SecuredPage {
             }
         };
 
-        final DataView<TimeSumWithDate> listView = new DataView<TimeSumWithDate>("listView", entries, pageSizeModel.getObject()) {
+        final DataView<TimeSumWithDate> listView = new DataView<TimeSumWithDate>("listView", entries) {
+            @Override
+            public long getPageCount() {
+                long pageCount = entriesCountModel.getObject() / pageSizeModel.getObject();
+                return pageCount + 1;
+            }
+
+            @Override
+            public long getItemsPerPage() {
+                return pageSizeModel.getObject();
+            }
             @Override
             protected void populateItem(Item<TimeSumWithDate> item) {
                 item.add(new Label("entryDate", DATE_FORMAT.format(item.getModelObject().getDate())));
