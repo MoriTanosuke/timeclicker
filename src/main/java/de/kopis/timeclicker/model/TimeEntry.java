@@ -6,8 +6,16 @@ import java.util.Date;
 public class TimeEntry implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    public static final String ENTRY_USER_ID = "userId";
+    public static final String ENTRY_START = "start";
+    public static final String ENTRY_STOP = "stop";
+    public static final String ENTRY_TAGS = "tags";
+    public static final String ENTRY_PROJECT = "project";
+    public static final String ENTRY_BREAK_DURATION = "breakDuration";
+
     private Date start = null;
     private Date stop = null;
+    private long breakDuration = 0;
     private String key;
     private String tags;
     private String project;
@@ -65,11 +73,20 @@ public class TimeEntry implements Serializable {
         this.project = project;
     }
 
+    public long getBreakDuration() {
+        return breakDuration;
+    }
+
+    public void setBreakDuration(long breakDuration) {
+        this.breakDuration = breakDuration;
+    }
+
     @Override
     public String toString() {
         return "TimeEntry{" +
                 "start=" + start +
                 ", stop=" + stop +
+                ", break=" + breakDuration +
                 ", key='" + key + "'" +
                 ", tags='" + tags + "'" + 
                 ", project='" + project + "'" +

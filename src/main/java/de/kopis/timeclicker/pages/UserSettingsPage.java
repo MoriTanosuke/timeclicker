@@ -1,20 +1,24 @@
 package de.kopis.timeclicker.pages;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Locale;
-import java.util.TimeZone;
-
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.users.User;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.UserSettings;
 import org.apache.wicket.Session;
-import org.apache.wicket.markup.html.form.*;
+import org.apache.wicket.markup.html.form.Button;
+import org.apache.wicket.markup.html.form.DropDownChoice;
+import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.IChoiceRenderer;
+import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class UserSettingsPage extends SecuredPage {
     private UserSettings settings = new UserSettings();
@@ -32,7 +36,8 @@ public class UserSettingsPage extends SecuredPage {
             settings = getApi().getUserSettings(null, user);
             getLOGGER().info("Loaded user settings with timezone=" + settings.getTimezone().getID()
                     + " locale=" + settings.getLocale().getDisplayName()
-                    + " workingDurationPerDay=" + settings.getWorkingDurationPerDay());
+                    + " workingDurationPerDay=" + settings.getWorkingDurationPerDay()
+                    + " breakDurationPerDay=" + settings.getBreakDurationPerDay());
         } catch (NotAuthenticatedException e) {
             getLOGGER().severe("Can not load user settings for user " + user + ": " + e.getMessage());
             error("Can not load user settings for user " + user + ": " + e.getMessage());
@@ -62,11 +67,13 @@ public class UserSettingsPage extends SecuredPage {
             }
         });
         final TextField<Long> workingDuration = new TextField<>("workingDuration", new PropertyModel<Long>(settings, "workingDurationPerDay"));
+        final TextField<Long> breakDuration = new TextField<>("breakDuration", new PropertyModel<Long>(settings, "breakDurationPerDay"));
 
         final Form<Void> entryForm = new Form<>("entryForm");
         entryForm.add(timezones);
         entryForm.add(locales);
         entryForm.add(workingDuration);
+        entryForm.add(breakDuration);
         entryForm.add(new Button("submit") {
             @Override
             public void onSubmit() {
@@ -79,14 +86,17 @@ public class UserSettingsPage extends SecuredPage {
                 if (locale == null) {
                     locale = Locale.getDefault();
                 }
-                long duration = workingDuration.getModelObject();
+                long workDurationPerDay = workingDuration.getModelObject();
+                long breakDurationPerDay = breakDuration.getModelObject();
                 getLOGGER().info("Updating user settings with timezone=" + timezone
                         + " locale=" + locale
-                        + " workingDurationPerDay=" + duration);
+                        + " workingDurationPerDay=" + workDurationPerDay
+                        + " breakDuration=" + breakDurationPerDay);
                 try {
                     settings.setTimezone(timezone);
                     settings.setLocale(locale);
-                    settings.setWorkingDurationPerDay(duration);
+                    settings.setWorkingDurationPerDay(workDurationPerDay);
+                    settings.setBreakDurationPerDay(breakDurationPerDay);
                     getApi().setUserSettings(settings, user);
                     success("Settings saved.");
 

@@ -57,11 +57,11 @@ public class TimeclickerAPI {
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         try {
             Entity timeEntryEntity = datastore.get(KeyFactory.stringToKey(key));
-            if (!timeEntryEntity.getProperty("userId").equals(user.getUserId())) {
+            if (!timeEntryEntity.getProperty(TimeEntry.ENTRY_USER_ID).equals(user.getUserId())) {
                 throw new RuntimeException("Referenced entry does not belong to this user!");
             }
             //TODO check if entry is still open before closing it
-            timeEntryEntity.setProperty("stop", new Date());
+            timeEntryEntity.setProperty(TimeEntry.ENTRY_STOP, new Date());
             datastore.put(timeEntryEntity);
 
             TimeEntry entry = buildTimeEntryFromEntity(timeEntryEntity);
@@ -82,7 +82,7 @@ public class TimeclickerAPI {
         Entity openEntity = findLatest(user, datastore);
         if (openEntity != null) {
             LOGGER.warning("Open entity found, closing it");
-            openEntity.setProperty("stop", new Date());
+            openEntity.setProperty(TimeEntry.ENTRY_STOP, new Date());
             datastore.put(openEntity);
         }
 
@@ -103,7 +103,7 @@ public class TimeclickerAPI {
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         try {
             Entity timeEntryEntity = datastore.get(KeyFactory.stringToKey(key));
-            if (!timeEntryEntity.getProperty("userId").equals(user.getUserId())) {
+            if (!timeEntryEntity.getProperty(TimeEntry.ENTRY_USER_ID).equals(user.getUserId())) {
                 throw new RuntimeException("Referenced entry does not belong to this user!");
             }
             TimeEntry entry = buildTimeEntryFromEntity(timeEntryEntity);
@@ -116,7 +116,12 @@ public class TimeclickerAPI {
     }
 
     @ApiMethod(name = "update", path = "update", httpMethod = "post")
-    public void update(@Named("key") String key, @Named("start") Date start, @Named("stop") Date stop, @Named("tags") String tags, @Named("project") String project, User user) throws NotAuthenticatedException {
+    public void update(@Named("key") String key,
+                       @Named("start") Date start, @Named("stop") Date stop,
+                       @Named("breakDuration") Long breakDuration,
+                       @Named("tags") String tags,
+                       @Named("project") String project,
+                       User user) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();
 
         final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
@@ -127,17 +132,18 @@ public class TimeclickerAPI {
                 LOGGER.info("User " + user.getUserId() + " starting to update entry " + key + " with start=" + start + " stop=" + stop);
                 timeEntryEntity = datastore.get(KeyFactory.stringToKey(key));
 
-                if (!timeEntryEntity.getProperty("userId").equals(user.getUserId())) {
+                if (!timeEntryEntity.getProperty(TimeEntry.ENTRY_USER_ID).equals(user.getUserId())) {
                     throw new RuntimeException("Referenced entry does not belong to this user!");
                 }
             } else {
                 LOGGER.info("User " + user.getUserId() + " starting to save new entry " + key + " for project=" + project + " with start=" + start + " stop=" + stop);
                 timeEntryEntity = createTimeEntryEntity(user);
             }
-            timeEntryEntity.setProperty("start", start);
-            timeEntryEntity.setProperty("stop", stop);
-            timeEntryEntity.setProperty("project", project);
-            timeEntryEntity.setProperty("tags", tags);
+            timeEntryEntity.setProperty(TimeEntry.ENTRY_START, start);
+            timeEntryEntity.setProperty(TimeEntry.ENTRY_STOP, stop);
+            timeEntryEntity.setProperty(TimeEntry.ENTRY_BREAK_DURATION, breakDuration);
+            timeEntryEntity.setProperty(TimeEntry.ENTRY_PROJECT, project);
+            timeEntryEntity.setProperty(TimeEntry.ENTRY_TAGS, tags);
             datastore.put(timeEntryEntity);
             LOGGER.info("User " + user.getUserId() + " updated entry " + timeEntryEntity.getKey());
         } catch (EntityNotFoundException e) {
@@ -159,7 +165,7 @@ public class TimeclickerAPI {
         LOGGER.fine("Entity found: " + timeEntryEntity);
 
         //TODO check if entry is still open before closing it
-        timeEntryEntity.setProperty("stop", new Date());
+        timeEntryEntity.setProperty(TimeEntry.ENTRY_STOP, new Date());
         datastore.put(timeEntryEntity);
 
         TimeEntry entry = buildTimeEntryFromEntity(timeEntryEntity);
@@ -314,7 +320,7 @@ public class TimeclickerAPI {
         if (key != null) {
             try {
                 entity = datastore.get(KeyFactory.stringToKey(key));
-                if (!entity.getProperty("userId").equals(user.getUserId())) {
+                if (!entity.getProperty(TimeEntry.ENTRY_USER_ID).equals(user.getUserId())) {
                     throw new RuntimeException("Referenced entry does not belong to this user!");
                 }
             } catch (EntityNotFoundException e) {
@@ -323,7 +329,7 @@ public class TimeclickerAPI {
             }
         } else {
             final Query.Filter propertyFilter =
-                    new Query.FilterPredicate("userId",
+                    new Query.FilterPredicate(TimeEntry.ENTRY_USER_ID,
                             Query.FilterOperator.EQUAL,
                             user.getUserId());
             final Query q = new Query("UserSettings")
@@ -346,23 +352,20 @@ public class TimeclickerAPI {
         if (key != null) {
             try {
                 entity = datastore.get(KeyFactory.stringToKey(key));
-                if (!entity.getProperty("userId").equals(user.getUserId())) {
+                if (!entity.getProperty(TimeEntry.ENTRY_USER_ID).equals(user.getUserId())) {
                     throw new RuntimeException("Referenced entry does not belong to this user!");
                 }
                 LOGGER.fine("Updating entity with key=" + key + ": " + entity);
                 // update existing entity
-                entity.setProperty("timezone", settings.getTimezone().getID());
-                entity.setProperty("workingDurationPerDay", settings.getWorkingDurationPerDay());
-                entity.setProperty("userId", user.getUserId());
-                entity.setProperty("language", settings.getLocale().getLanguage());
-                entity.setProperty("country", settings.getLocale().getCountry());
-                entity.setProperty("variant", settings.getLocale().getVariant());
+                updateUserSettingsEntity(user, entity, settings);
             } catch (EntityNotFoundException e) {
                 LOGGER.severe("Can not load user settings with key=" + key + " for user " + user);
                 throw e;
             }
         } else {
-            entity = createUserSettingsEntity(settings, user);
+            entity = new Entity("UserSettings");
+            entity.setProperty("key", settings.getKey());
+            updateUserSettingsEntity(user, entity, settings);
             LOGGER.fine("Creating entity: " + entity);
         }
 
@@ -379,19 +382,19 @@ public class TimeclickerAPI {
         //TODO collect all used projects
         final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         final Query.Filter propertyFilter =
-                new Query.FilterPredicate("userId",
+                new Query.FilterPredicate(TimeEntry.ENTRY_USER_ID,
                         Query.FilterOperator.EQUAL,
                         user.getUserId());
         final Query q = new Query("TimeEntry")
                 .setFilter(propertyFilter)
                 // only get distinct entries
-                .addProjection(new PropertyProjection("project", String.class))
+                .addProjection(new PropertyProjection(TimeEntry.ENTRY_PROJECT, String.class))
                 .setDistinct(true);
         PreparedQuery query = datastore.prepare(q);
         final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
         List<Entity> entities = query.asList(fetchOptions);
         for (Entity e : entities) {
-            String project  = (String) e.getProperty("project");
+            String project = (String) e.getProperty(TimeEntry.ENTRY_PROJECT);
             projects.add(new Project(project));
         }
 
@@ -405,34 +408,34 @@ public class TimeclickerAPI {
     }
 
     private int countEntities(User user) {
-        final PreparedQuery pq = buildQuery(user);
+        final PreparedQuery pq = buildTimeEntryQuery(user);
         final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
         return pq.countEntities(fetchOptions);
     }
 
     private List<Entity> listEntities(User user) {
-        final PreparedQuery pq = buildQuery(user);
+        final PreparedQuery pq = buildTimeEntryQuery(user);
         final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
         return pq.asList(fetchOptions);
     }
 
     private List<Entity> listEntities(User user, int page, int pageSize) {
         LOGGER.finer("Listing page=" + page + " size=" + pageSize);
-        final PreparedQuery pq = buildQuery(user);
+        final PreparedQuery pq = buildTimeEntryQuery(user);
         final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults().offset(pageSize * page).limit(pageSize);
         return pq.asList(fetchOptions);
     }
 
-    private PreparedQuery buildQuery(final User user) {
+    private PreparedQuery buildTimeEntryQuery(final User user) {
         final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         // load all time entries for this user
         final Query.Filter propertyFilter =
-                new Query.FilterPredicate("userId",
+                new Query.FilterPredicate(TimeEntry.ENTRY_USER_ID,
                         Query.FilterOperator.EQUAL,
                         user.getUserId());
         final Query q = new Query("TimeEntry")
                 .setFilter(propertyFilter)
-                .addSort("start", Query.SortDirection.DESCENDING);
+                .addSort(TimeEntry.ENTRY_START, Query.SortDirection.DESCENDING);
         return datastore.prepare(q);
     }
 
@@ -444,16 +447,16 @@ public class TimeclickerAPI {
      * @return {@link Entity} if an open entry was found, else <code>null</code>
      */
     private Entity findLatest(User user, DatastoreService datastore) {
-        Query.FilterPredicate userFilter = new Query.FilterPredicate("userId",
+        Query.FilterPredicate userFilter = new Query.FilterPredicate(TimeEntry.ENTRY_USER_ID,
                 Query.FilterOperator.EQUAL,
                 user.getUserId());
-        Query.FilterPredicate stopNullFilter = new Query.FilterPredicate("stop",
+        Query.FilterPredicate stopNullFilter = new Query.FilterPredicate(TimeEntry.ENTRY_STOP,
                 Query.FilterOperator.EQUAL,
                 null);
         Query.Filter propertyFilter = Query.CompositeFilterOperator.and(userFilter, stopNullFilter);
         Query q = new Query("TimeEntry").setFilter(propertyFilter);
         // sort descending to get the newest
-        q.addSort("start", Query.SortDirection.DESCENDING);
+        q.addSort(TimeEntry.ENTRY_START, Query.SortDirection.DESCENDING);
         PreparedQuery pq = datastore.prepare(q);
         // only return 1 match
         List<Entity> entities = pq.asList(FetchOptions.Builder.withLimit(1));
@@ -464,7 +467,7 @@ public class TimeclickerAPI {
         }
 
         Entity timeEntryEntity = entities.get(0);
-        if (!timeEntryEntity.getProperty("userId").equals(user.getUserId())) {
+        if (!timeEntryEntity.getProperty(TimeEntry.ENTRY_USER_ID).equals(user.getUserId())) {
             throw new RuntimeException("Referenced entry does not belong to this user!");
         }
         return timeEntryEntity;
@@ -479,17 +482,20 @@ public class TimeclickerAPI {
     private TimeEntry buildTimeEntryFromEntity(Entity timeEntryEntity) {
         final TimeEntry entry = new TimeEntry();
         entry.setKey(KeyFactory.keyToString(timeEntryEntity.getKey()));
-        if (timeEntryEntity.hasProperty("start")) {
-            entry.setStart((Date) timeEntryEntity.getProperty("start"));
+        if (timeEntryEntity.hasProperty(TimeEntry.ENTRY_START)) {
+            entry.setStart((Date) timeEntryEntity.getProperty(TimeEntry.ENTRY_START));
         }
-        if (timeEntryEntity.hasProperty("stop")) {
-            entry.setStop((Date) timeEntryEntity.getProperty("stop"));
+        if (timeEntryEntity.hasProperty(TimeEntry.ENTRY_STOP)) {
+            entry.setStop((Date) timeEntryEntity.getProperty(TimeEntry.ENTRY_STOP));
         }
-        if (timeEntryEntity.hasProperty("tags")) {
-            entry.setTags((String) timeEntryEntity.getProperty("tags"));
+        if (timeEntryEntity.hasProperty(TimeEntry.ENTRY_BREAK_DURATION)) {
+            entry.setBreakDuration((Long) timeEntryEntity.getProperty(TimeEntry.ENTRY_BREAK_DURATION));
         }
-        if (timeEntryEntity.hasProperty("project")) {
-            entry.setProject((String) timeEntryEntity.getProperty("project"));
+        if (timeEntryEntity.hasProperty(TimeEntry.ENTRY_TAGS)) {
+            entry.setTags((String) timeEntryEntity.getProperty(TimeEntry.ENTRY_TAGS));
+        }
+        if (timeEntryEntity.hasProperty(TimeEntry.ENTRY_PROJECT)) {
+            entry.setProject((String) timeEntryEntity.getProperty(TimeEntry.ENTRY_PROJECT));
         }
         return entry;
     }
@@ -498,42 +504,47 @@ public class TimeclickerAPI {
         final UserSettings us = new UserSettings();
         if (userSettingsEntity != null) {
             us.setKey(KeyFactory.keyToString(userSettingsEntity.getKey()));
-            if (userSettingsEntity.hasProperty("timezone")) {
-                us.setTimezone(TimeZone.getTimeZone((String) userSettingsEntity.getProperty("timezone")));
+            if (userSettingsEntity.hasProperty(UserSettings.TIMEZONE)) {
+                us.setTimezone(TimeZone.getTimeZone((String) userSettingsEntity.getProperty(UserSettings.TIMEZONE)));
             }
             Locale locale;
-            if (userSettingsEntity.hasProperty("language") && userSettingsEntity.hasProperty("country")) {
-                if (userSettingsEntity.hasProperty("variant")) {
-                    locale = new Locale((String) userSettingsEntity.getProperty("language"),
-                            (String) userSettingsEntity.getProperty("country"),
-                            (String) userSettingsEntity.getProperty("variant"));
+            if (userSettingsEntity.hasProperty(UserSettings.LANGUAGE) && userSettingsEntity.hasProperty(UserSettings.COUNTRY)) {
+                if (userSettingsEntity.hasProperty(UserSettings.VARIANT)) {
+                    locale = new Locale((String) userSettingsEntity.getProperty(UserSettings.LANGUAGE),
+                            (String) userSettingsEntity.getProperty(UserSettings.COUNTRY),
+                            (String) userSettingsEntity.getProperty(UserSettings.VARIANT));
                 } else {
-                    locale = new Locale((String) userSettingsEntity.getProperty("language"), (String) userSettingsEntity.getProperty("country"));
+                    locale = new Locale((String) userSettingsEntity.getProperty(UserSettings.LANGUAGE),
+                            (String) userSettingsEntity.getProperty(UserSettings.COUNTRY));
                 }
             } else {
                 locale = Locale.getDefault();
             }
             us.setLocale(locale);
 
-            // set configured workingduration
-            final long workingDurationPerDay = (long) userSettingsEntity.getProperty("workingDurationPerDay");
-            us.setWorkingDurationPerDay(workingDurationPerDay);
+            if (userSettingsEntity.hasProperty(UserSettings.WORKING_DURATION_PER_DAY)) {
+                // set configured workingduration
+                final long workingDurationPerDay = (long) userSettingsEntity.getProperty(UserSettings.WORKING_DURATION_PER_DAY);
+                us.setWorkingDurationPerDay(workingDurationPerDay);
+            }
+
+            if (userSettingsEntity.hasProperty(UserSettings.BREAK_DURATION_PER_DAY)) {
+                // set configured breakduration
+                final long breakDurationPerDay = (long) userSettingsEntity.getProperty(UserSettings.BREAK_DURATION_PER_DAY);
+                us.setBreakDurationPerDay(breakDurationPerDay);
+            }
         }
         return us;
     }
 
-    private Entity createUserSettingsEntity(UserSettings settings, User user) {
-        final Entity userSettingsEntity = new Entity("UserSettings");
-
-        userSettingsEntity.setProperty("key", settings.getKey());
-        userSettingsEntity.setProperty("timezone", settings.getTimezone().getID());
-        userSettingsEntity.setProperty("workingDurationPerDay", settings.getWorkingDurationPerDay());
-        userSettingsEntity.setProperty("country", settings.getLocale().getCountry());
-        userSettingsEntity.setProperty("language", settings.getLocale().getLanguage());
-        userSettingsEntity.setProperty("variant", settings.getLocale().getVariant());
-        userSettingsEntity.setProperty("userId", user.getUserId());
-
-        return userSettingsEntity;
+    private void updateUserSettingsEntity(User user, Entity entity, UserSettings settings) {
+        entity.setProperty(UserSettings.TIMEZONE, settings.getTimezone().getID());
+        entity.setProperty(UserSettings.WORKING_DURATION_PER_DAY, settings.getWorkingDurationPerDay());
+        entity.setProperty(UserSettings.BREAK_DURATION_PER_DAY, settings.getBreakDurationPerDay());
+        entity.setProperty(UserSettings.COUNTRY, settings.getLocale().getCountry());
+        entity.setProperty(UserSettings.LANGUAGE, settings.getLocale().getLanguage());
+        entity.setProperty(UserSettings.VARIANT, settings.getLocale().getVariant());
+        entity.setProperty(UserSettings.USER_ID, user.getUserId());
     }
 
     /**
@@ -544,20 +555,20 @@ public class TimeclickerAPI {
      */
     private Entity createTimeEntryEntity(User user) {
         Entity timeEntryEntity = new Entity("TimeEntry");
-        timeEntryEntity.setProperty("start", new Date());
+        timeEntryEntity.setProperty(TimeEntry.ENTRY_START, new Date());
         // set stop=null to make if queriable
-        timeEntryEntity.setProperty("stop", null);
-        timeEntryEntity.setProperty("userId", user.getUserId());
+        timeEntryEntity.setProperty(TimeEntry.ENTRY_STOP, null);
+        timeEntryEntity.setProperty(TimeEntry.ENTRY_USER_ID, user.getUserId());
         return timeEntryEntity;
     }
 
     private List<Entity> searchTimeEntries(User user, Date firstDate, Date lastDate) {
         // define query where START > FIRST OF MONTH and STOP < LAST OF MONTH
-        Query.FilterPredicate userFilter = new Query.FilterPredicate("userId",
+        Query.FilterPredicate userFilter = new Query.FilterPredicate(TimeEntry.ENTRY_USER_ID,
                 Query.FilterOperator.EQUAL,
                 user.getUserId());
-        Query.FilterPredicate startAfter = new Query.FilterPredicate("start", Query.FilterOperator.GREATER_THAN_OR_EQUAL, firstDate);
-        Query.FilterPredicate stopBefore = new Query.FilterPredicate("start", Query.FilterOperator.LESS_THAN, lastDate);
+        Query.FilterPredicate startAfter = new Query.FilterPredicate(TimeEntry.ENTRY_START, Query.FilterOperator.GREATER_THAN_OR_EQUAL, firstDate);
+        Query.FilterPredicate stopBefore = new Query.FilterPredicate(TimeEntry.ENTRY_START, Query.FilterOperator.LESS_THAN, lastDate);
         Query.Filter propertyFilter = Query.CompositeFilterOperator.and(userFilter, startAfter, stopBefore);
         Query q = new Query("TimeEntry").setFilter(propertyFilter);
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
@@ -568,17 +579,17 @@ public class TimeclickerAPI {
     }
 
     /**
-     * Calculates the duration for the given TimeEntry entity. If no "stop" property is available, the current Date is used.
+     * Calculates the duration for the given TimeEntry entity. If no {@link TimeEntry#ENTRY_STOP} property is available, the current Date is used.
      *
      * @param entity a {@link TimeEntry}
-     * @return duration as <code>long</code> value, calculated from properties "start" and "stop"
+     * @return duration as <code>long</code> value, calculated from properties {@link TimeEntry#ENTRY_START} and {@link TimeEntry#ENTRY_STOP}
      */
     private long calculateDuration(Entity entity) {
-        Date start = (Date) entity.getProperty("start");
+        Date start = (Date) entity.getProperty(TimeEntry.ENTRY_START);
         // check if the entity is already stopped, else use the current date
         Date stop;
-        if (entity.getProperty("stop") != null) {
-            stop = (Date) entity.getProperty("stop");
+        if (entity.getProperty(TimeEntry.ENTRY_STOP) != null) {
+            stop = (Date) entity.getProperty(TimeEntry.ENTRY_STOP);
         } else {
             stop = new Date();
         }

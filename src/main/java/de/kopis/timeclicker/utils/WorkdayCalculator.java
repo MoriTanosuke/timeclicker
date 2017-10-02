@@ -1,11 +1,14 @@
 package de.kopis.timeclicker.utils;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class WorkdayCalculator {
     private static final Logger LOGGER = Logger.getLogger(WorkdayCalculator.class.getName());
+    private static final List<Integer> WORKDAYS_WEEK = Arrays.asList(Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY);
 
     public static int getWorkingDays(final Date startDate, final Date endDate) {
         LOGGER.fine("Calculating work days from " + startDate + " to " + endDate);
@@ -31,13 +34,8 @@ public class WorkdayCalculator {
             return 1;
         }
 
-        if (startCal.getTimeInMillis() > endCal.getTimeInMillis()) {
-            startCal.setTime(endDate);
-            endCal.setTime(startDate);
-        }
-
         while (startCal.getTimeInMillis() <= endCal.getTimeInMillis()) {
-            if (startCal.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY && startCal.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
+            if (WORKDAYS_WEEK.contains(startCal.get(Calendar.DAY_OF_WEEK))) {
                 ++workDays;
             }
             startCal.add(Calendar.DAY_OF_MONTH, 1);

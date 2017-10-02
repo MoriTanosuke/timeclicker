@@ -118,6 +118,7 @@ public class TimeEntryPage extends SecuredPage {
         //TODO add timezone to DateTimeField?
         form.add(new DateTimeField("start"));
         form.add(new DateTimeField("stop"));
+        form.add(new TextField<Long>("breakDuration"));
         form.add(new TextField("tags"));
         form.add(new Button("update") {
             @Override
@@ -127,7 +128,9 @@ public class TimeEntryPage extends SecuredPage {
                 try {
                     UserService userService = UserServiceFactory.getUserService();
                     User user = userService.getCurrentUser();
-                    getApi().update(updateEntry.getKey(), updateEntry.getStart(), updateEntry.getStop(), updateEntry.getTags(), updateEntry.getProject(), user);
+                    getApi().update(updateEntry.getKey(), updateEntry.getStart(), updateEntry.getStop(),
+                            updateEntry.getBreakDuration(),
+                            updateEntry.getTags(), updateEntry.getProject(), user);
                     success("Entry saved.");
                 } catch (NotAuthenticatedException e) {
                     error("Can not save entry. Try again.");

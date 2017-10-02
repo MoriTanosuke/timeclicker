@@ -1,11 +1,11 @@
 package de.kopis.timeclicker.utils;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 import java.util.Calendar;
 import java.util.Date;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 public class WorkdayCalculatorTest {
 
@@ -59,6 +59,7 @@ public class WorkdayCalculatorTest {
 
     @Test
     public void testGetWorkingDaysForWeek() {
+        //does not yet take into account holidays
         assertEquals(5, WorkdayCalculator.getWorkingDaysForCurrentWeek());
     }
 }

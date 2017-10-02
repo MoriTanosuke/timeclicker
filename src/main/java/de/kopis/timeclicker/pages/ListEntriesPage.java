@@ -4,6 +4,7 @@ import de.kopis.timeclicker.ListEntriesCsvProducerResource;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
+import de.kopis.timeclicker.utils.DurationUtils;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.link.Link;
@@ -21,7 +22,11 @@ import org.apache.wicket.util.string.StringValue;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.TimeZone;
 
 public class ListEntriesPage extends SecuredPage {
     private static final long serialVersionUID = 1L;
@@ -142,6 +147,7 @@ public class ListEntriesPage extends SecuredPage {
                     item.add(new Label("entryStop", "-"));
                     item.add(new Label("entrySum", "-"));
                 }
+                item.add(new Label("break", DurationUtils.getReadableDuration(item.getModelObject().getBreakDuration())));
 
                 if (item.getModelObject().getTags() != null) {
                     item.add(new Label("tags",item.getModelObject().getTags()));
