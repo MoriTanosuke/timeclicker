@@ -9,6 +9,7 @@ public class TimeEntry implements Serializable {
     public static final String ENTRY_USER_ID = "userId";
     public static final String ENTRY_START = "start";
     public static final String ENTRY_STOP = "stop";
+    public static final String ENTRY_DESCRIPTION = "description";
     public static final String ENTRY_TAGS = "tags";
     public static final String ENTRY_PROJECT = "project";
     public static final String ENTRY_BREAK_DURATION = "breakDuration";
@@ -19,6 +20,7 @@ public class TimeEntry implements Serializable {
     private String key;
     private String tags;
     private String project;
+    private String description;
 
     public TimeEntry() {
         this(new Date());
@@ -79,6 +81,14 @@ public class TimeEntry implements Serializable {
 
     public void setBreakDuration(long breakDuration) {
         this.breakDuration = breakDuration;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override

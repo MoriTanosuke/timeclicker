@@ -149,6 +149,12 @@ public class ListEntriesPage extends SecuredPage {
                 }
                 item.add(new Label("break", DurationUtils.getReadableDuration(item.getModelObject().getBreakDuration())));
 
+                if(item.getModelObject().getDescription() != null) {
+                    item.add(new Label("description",item.getModelObject().getDescription()));
+                } else {
+                    item.add(new Label("description", "-"));
+                }
+
                 if (item.getModelObject().getTags() != null) {
                     item.add(new Label("tags",item.getModelObject().getTags()));
                 } else {

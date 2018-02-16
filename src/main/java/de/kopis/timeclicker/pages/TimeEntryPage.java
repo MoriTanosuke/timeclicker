@@ -16,6 +16,7 @@ import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.HiddenField;
+import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.model.CompoundPropertyModel;
@@ -119,7 +120,8 @@ public class TimeEntryPage extends SecuredPage {
         form.add(new DateTimeField("start"));
         form.add(new DateTimeField("stop"));
         form.add(new TextField<Long>("breakDuration"));
-        form.add(new TextField("tags"));
+        form.add(new TextArea<String>("description"));
+        form.add(new TextField<String>("tags"));
         form.add(new Button("update") {
             @Override
             public void onSubmit() {
@@ -130,7 +132,8 @@ public class TimeEntryPage extends SecuredPage {
                     User user = userService.getCurrentUser();
                     getApi().update(updateEntry.getKey(), updateEntry.getStart(), updateEntry.getStop(),
                             updateEntry.getBreakDuration(),
-                            updateEntry.getTags(), updateEntry.getProject(), user);
+                            updateEntry.getDescription(), updateEntry.getTags(),
+                            updateEntry.getProject(), user);
                     success("Entry saved.");
                 } catch (NotAuthenticatedException e) {
                     error("Can not save entry. Try again.");

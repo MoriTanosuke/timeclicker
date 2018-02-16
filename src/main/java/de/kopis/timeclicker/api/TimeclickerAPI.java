@@ -119,6 +119,7 @@ public class TimeclickerAPI {
     public void update(@Named("key") String key,
                        @Named("start") Date start, @Named("stop") Date stop,
                        @Named("breakDuration") Long breakDuration,
+                       @Named("description") String description,
                        @Named("tags") String tags,
                        @Named("project") String project,
                        User user) throws NotAuthenticatedException {
@@ -143,6 +144,7 @@ public class TimeclickerAPI {
             timeEntryEntity.setProperty(TimeEntry.ENTRY_STOP, stop);
             timeEntryEntity.setProperty(TimeEntry.ENTRY_BREAK_DURATION, breakDuration);
             timeEntryEntity.setProperty(TimeEntry.ENTRY_PROJECT, project);
+            timeEntryEntity.setProperty(TimeEntry.ENTRY_DESCRIPTION, description);
             timeEntryEntity.setProperty(TimeEntry.ENTRY_TAGS, tags);
             datastore.put(timeEntryEntity);
             LOGGER.info("User " + user.getUserId() + " updated entry " + timeEntryEntity.getKey());
@@ -490,6 +492,9 @@ public class TimeclickerAPI {
         }
         if (timeEntryEntity.hasProperty(TimeEntry.ENTRY_BREAK_DURATION)) {
             entry.setBreakDuration((Long) timeEntryEntity.getProperty(TimeEntry.ENTRY_BREAK_DURATION));
+        }
+        if (timeEntryEntity.hasProperty(TimeEntry.ENTRY_DESCRIPTION)) {
+            entry.setDescription((String) timeEntryEntity.getProperty(TimeEntry.ENTRY_DESCRIPTION));
         }
         if (timeEntryEntity.hasProperty(TimeEntry.ENTRY_TAGS)) {
             entry.setTags((String) timeEntryEntity.getProperty(TimeEntry.ENTRY_TAGS));

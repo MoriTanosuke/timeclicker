@@ -1,5 +1,17 @@
 package de.kopis.timeclicker;
 
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
+import de.kopis.timeclicker.api.TimeclickerAPI;
+import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TimeEntry;
+import de.kopis.timeclicker.model.TimeSum;
+import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.apache.wicket.request.resource.AbstractResource;
+import org.apache.wicket.util.string.StringValue;
+import org.joda.time.DateTime;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -8,18 +20,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
-
-import org.apache.wicket.request.mapper.parameter.PageParameters;
-import org.apache.wicket.request.resource.AbstractResource;
-import org.apache.wicket.util.string.StringValue;
-import org.joda.time.DateTime;
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
-import de.kopis.timeclicker.api.TimeclickerAPI;
-import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
-import de.kopis.timeclicker.model.TimeEntry;
-import de.kopis.timeclicker.model.TimeSum;
 
 public class ListEntriesCsvProducerResource extends AbstractResource {
     private static final Logger LOGGER = Logger.getLogger(ListEntriesCsvProducerResource.class.getName());
@@ -76,7 +76,9 @@ public class ListEntriesCsvProducerResource extends AbstractResource {
                                 new DateTime(entry.getStart()).toString("HH:mm:ss") + "\",\"" +
                                 new DateTime(entry.getStop()).toString("HH:mm:ss") + "\"," +
                                 new TimeSum(entry).getDuration() + ",\"" +
-                                ((entry.getTags() != null) ? entry.getTags() : "") + "\"\n");
+                                ((entry.getDescription() != null) ? entry.getDescription() : "") + "\",\"" +
+                                ((entry.getTags() != null) ? entry.getTags() : "") + "\"" +
+                                "\n");
                     }
                 } catch (NotAuthenticatedException e) {
                     LOGGER.severe("Can not load entries: " + e.getMessage());
