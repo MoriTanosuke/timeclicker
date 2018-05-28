@@ -598,8 +598,14 @@ public class TimeclickerAPI {
         } else {
             stop = new Date();
         }
+        long duration = stop.getTime() - start.getTime();
 
-        return stop.getTime() - start.getTime();
+        // check if we need to subtract a break
+        if(entity.getProperty(TimeEntry.ENTRY_BREAK_DURATION) != null) {
+            duration -= (Long) entity.getProperty(TimeEntry.ENTRY_BREAK_DURATION);
+        }
+
+        return duration;
     }
 
     /**
