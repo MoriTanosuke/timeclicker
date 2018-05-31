@@ -79,7 +79,7 @@ public class MonthlyTimeSumTest extends AbstractTimeEntryTest {
         sum1.add(entryTwoHours);
 
         assertEquals(3 * 60 * 60 * 1000, sum1.getDuration());
-        assertEquals("03 hours, 00 minutes, 00 seconds", sum1.getReadableDuration());
+        assertEquals("03:00:00", sum1.getReadableDuration());
     }
 
     @Test
