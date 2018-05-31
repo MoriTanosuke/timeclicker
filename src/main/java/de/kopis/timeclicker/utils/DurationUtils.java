@@ -12,7 +12,7 @@ public class DurationUtils {
         String readableDuration = "" + duration;
         try {
             Duration d = DatatypeFactory.newInstance().newDuration(duration);
-            readableDuration = String.format("%02d hours, %02d minutes, %02d seconds", d.getDays() * 24 + d.getHours(),
+            readableDuration = String.format("%02d:%02d:%02d", d.getDays() * 24 + d.getHours(),
                     d.getMinutes(), d.getSeconds());
         } catch (DatatypeConfigurationException e) {
             LOGGER.severe("Can not format duration: " + e.getMessage());
