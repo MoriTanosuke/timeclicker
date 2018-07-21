@@ -1,5 +1,6 @@
 package de.kopis.timeclicker.model;
 
+import de.kopis.timeclicker.Application;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
@@ -16,9 +17,9 @@ public class TimeEntry implements Serializable {
     public static final String ENTRY_PROJECT = "project";
     public static final String ENTRY_BREAK_DURATION = "breakDuration";
 
-    @DateTimeFormat(iso=DateTimeFormat.ISO.DATE)
+    @DateTimeFormat(pattern = Application.DATE_PATTERN)
     private Date start = null;
-    @DateTimeFormat(iso=DateTimeFormat.ISO.DATE)
+    @DateTimeFormat(pattern = Application.DATE_PATTERN)
     private Date stop = null;
     private long breakDuration = 0;
     private String key;
@@ -64,12 +65,12 @@ public class TimeEntry implements Serializable {
     }
 
     public String getTags() {
-		return tags;
-	}
+        return tags;
+    }
 
-	public void setTags(String tags) {
-		this.tags = tags;
-	}
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
 
     public String getProject() {
         return project;
@@ -102,7 +103,7 @@ public class TimeEntry implements Serializable {
                 ", stop=" + stop +
                 ", break=" + breakDuration +
                 ", key='" + key + "'" +
-                ", tags='" + tags + "'" + 
+                ", tags='" + tags + "'" +
                 ", project='" + project + "'" +
                 '}';
     }
