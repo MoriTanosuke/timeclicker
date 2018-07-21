@@ -4,15 +4,7 @@ import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.DefaultValue;
 import com.google.api.server.spi.config.Named;
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.EntityNotFoundException;
-import com.google.appengine.api.datastore.FetchOptions;
-import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.api.datastore.PreparedQuery;
-import com.google.appengine.api.datastore.PropertyProjection;
-import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.*;
 import com.google.appengine.api.users.User;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
@@ -22,12 +14,7 @@ import de.kopis.timeclicker.model.wrappers.EntryCount;
 import de.kopis.timeclicker.model.wrappers.Project;
 import de.kopis.timeclicker.utils.TimeSumUtility;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.logging.Logger;
 
 @Api(name = "timeclicker", version = "v1", scopes = {Constants.EMAIL_SCOPE},
@@ -129,7 +116,7 @@ public class TimeclickerAPI {
 
         try {
             Entity timeEntryEntity;
-            if (key != null) {
+            if (key != null && !key.isEmpty()) {
                 LOGGER.info("User " + user.getUserId() + " starting to update entry " + key + " with start=" + start + " stop=" + stop);
                 timeEntryEntity = datastore.get(KeyFactory.stringToKey(key));
 
@@ -137,7 +124,7 @@ public class TimeclickerAPI {
                     throw new RuntimeException("Referenced entry does not belong to this user!");
                 }
             } else {
-                LOGGER.info("User " + user.getUserId() + " starting to save new entry " + key + " for project=" + project + " with start=" + start + " stop=" + stop);
+                LOGGER.info("User " + user.getUserId() + " starting to save new entry for project=" + project + " with start=" + start + " stop=" + stop);
                 timeEntryEntity = createTimeEntryEntity(user);
             }
             timeEntryEntity.setProperty(TimeEntry.ENTRY_START, start);
@@ -175,6 +162,13 @@ public class TimeclickerAPI {
         return entry;
     }
 
+    /**
+     * Returns the latest open {@link TimeEntry} or <code>null</code>.
+     *
+     * @param user current {@link User}
+     * @return latest open {@link TimeEntry} or <code>null</code>
+     * @throws NotAuthenticatedException
+     */
     @ApiMethod(name = "latest", path = "latest")
     public TimeEntry latest(User user) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();

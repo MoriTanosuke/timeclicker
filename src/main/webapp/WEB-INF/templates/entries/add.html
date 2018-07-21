@@ -1,13 +1,54 @@
 <!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head"></head>
 <body>
-<h1>Timeclicker</h1>
-<h2>Add entry</h2>
-<form action="#" th:action="@{/entries/add}" th:object="${entry}" method="post">
-    <p><label for="start">Start:</label><input type="text" th:field="*{{start}}" id="start" /></p>
-    <p><label for="stop">Stop:</label><input type="text" th:field="*{{stop}}" id="stop" /></p>
-    <p><input type="submit" value="Submit" /> <input type="reset" value="Reset" /></p>
-</form>
+
+<header>
+    <th:block th:replace="fragments/nav"></th:block>
+</header>
+
+<main role="main">
+    <div class="container-fluid">
+        <h1>Timeclicker</h1>
+        <h2>Add entry</h2>
+        <form action="#" th:action="@{/entries}" th:object="${entry}" method="post">
+            <input type="hidden" th:field="*{key}"/>
+
+            <div class="form-group">
+                <label for="start">Start:</label>
+                <input type="text" th:field="*{{start}}" name="start" id="start" class="form-control"/>
+            </div>
+            <div class="form-group">
+                <label for="stop">Stop:</label>
+                <input type="text" th:field="*{{stop}}" id="stop" class="form-control"/>
+            </div>
+            <div class="form-group">
+                <label for="breakDuration">Break (in ms):</label>
+                <input type="text" th:field="*{{breakDuration}}" id="breakDuration" class="form-control"/>
+            </div>
+            <div class="form-group">
+                <label for="Description">Description:</label>
+                <input type="text" th:field="*{{description}}" id="description" class="form-control"/>
+            </div>
+            <div class="form-group">
+                <label for="tags">Tags:</label>
+                <input type="text" th:field="*{{tags}}" id="tags" class="form-control"/>
+            </div>
+            <div class="form-group">
+                <label for="project">Project:</label>
+                <input type="text" th:field="*{{project}}" id="project" class="form-control"/>
+            </div>
+            <input type="submit" value="Submit"/>
+            <input type="reset" value="Reset"/>
+            <a th:href="@{'/entries/list'}">Go back</a>
+        </form>
+    </div>
+</main>
+
+<footer>
+    <th:block th:replace="fragments/foot"></th:block>
+</footer>
+
 </body>
 </html>

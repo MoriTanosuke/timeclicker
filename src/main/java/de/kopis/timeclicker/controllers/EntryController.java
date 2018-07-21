@@ -27,21 +27,67 @@ public class EntryController {
     private final Logger LOG = Logger.getLogger(EntryController.class.getName());
 
     @GetMapping
-    public String index(Model model) throws NotAuthenticatedException {
+    public String list(Model model) throws NotAuthenticatedException {
+        // TODO move into request filter and redirect to login automatically
+        final User user = userService.getCurrentUser();
+        if (user == null) {
+            LOG.fine("User not logged in, redirecting to login URL...");
+            return "redirect:" + userService.createLoginURL("/entries");
+        }
+
+        final List<TimeEntry> entries = api.list(31, 0, user);
+        model.addAttribute("entries", entries);
+
+        return "entries/list";
+    }
+
+    @PostMapping
+    public String create(@ModelAttribute TimeEntry input) throws NotAuthenticatedException {
+        // TODO move into request filter and redirect to login automatically
+        final User user = userService.getCurrentUser();
+        if (user == null) {
+            LOG.fine("User not logged in, redirecting to login URL...");
+            return "redirect:" + userService.createLoginURL("/entries/add");
+        }
+
+        api.update(input.getKey(),
+                input.getStart(), input.getStop(), 0L,
+                input.getDescription(), input.getTags(), input.getProject(),
+                user);
+
+        return "redirect:/entries/list";
+    }
+
+    @GetMapping("/{key}")
+    public String get(Model model, @PathVariable String key) throws NotAuthenticatedException {
         // TODO move into request filter and redirect to login automatically
         final User user = userService.getCurrentUser();
         if (user == null) {
             LOG.fine("User not logged in, redirecting to login URL...");
             // quit early
             return "redirect:" + userService.createLoginURL("/entries");
-        } else {
-
-            final List<TimeEntry> entries = api.list(31, 0, user);
-            LOG.fine(() -> String.format("%d entries found", entries.size()));
-            model.addAttribute("entries", entries);
         }
 
-        return "entries/index";
+        final TimeEntry entry = api.show(key, user);
+        if (entry != null) {
+            model.addAttribute("entry", entry);
+        }
+
+        return "entries/add";
+    }
+
+    @DeleteMapping("/{key}")
+    public String delete(@PathVariable String key) throws NotAuthenticatedException {
+        // TODO move into request filter and redirect to login automatically
+        final User user = userService.getCurrentUser();
+        if (user == null) {
+            LOG.fine("User not logged in, redirecting to login URL...");
+            return "redirect:" + userService.createLoginURL("/entries/list");
+        }
+
+        api.delete(key, user);
+
+        return "redirect:/entries/list";
     }
 
     @GetMapping("/add")
@@ -57,20 +103,6 @@ public class EntryController {
         model.addAttribute("entry", new TimeEntry());
 
         return "entries/add";
-    }
-
-    @PostMapping("/add")
-    public String create(@ModelAttribute TimeEntry input) throws NotAuthenticatedException {
-        // TODO move into request filter and redirect to login automatically
-        final User user = userService.getCurrentUser();
-        if (user == null) {
-            LOG.fine("User not logged in, redirecting to login URL...");
-            return "redirect:" + userService.createLoginURL("/entries/add");
-        }
-
-        api.update(null, input.getStart(), input.getStop(), 0L, input.getDescription(), null, null, user);
-
-        return "entries";
     }
 
     @InitBinder
