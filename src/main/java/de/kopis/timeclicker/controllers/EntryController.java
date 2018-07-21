@@ -27,7 +27,9 @@ public class EntryController {
     private final Logger LOG = Logger.getLogger(EntryController.class.getName());
 
     @GetMapping
-    public String list(Model model) throws NotAuthenticatedException {
+    public String list(Model model,
+                       @RequestParam(defaultValue = "31") int limit,
+                       @RequestParam(defaultValue = "0") int page) throws NotAuthenticatedException {
         // TODO move into request filter and redirect to login automatically
         final User user = userService.getCurrentUser();
         if (user == null) {
@@ -35,7 +37,7 @@ public class EntryController {
             return "redirect:" + userService.createLoginURL("/entries");
         }
 
-        final List<TimeEntry> entries = api.list(31, 0, user);
+        final List<TimeEntry> entries = api.list(limit, page, user);
         model.addAttribute("entries", entries);
 
         return "entries/list";
@@ -51,7 +53,7 @@ public class EntryController {
         }
 
         api.update(input.getKey(),
-                input.getStart(), input.getStop(), 0L,
+                input.getStart(), input.getStop(), input.getBreakDuration(),
                 input.getDescription(), input.getTags(), input.getProject(),
                 user);
 
