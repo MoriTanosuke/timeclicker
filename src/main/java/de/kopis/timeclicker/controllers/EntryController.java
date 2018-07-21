@@ -7,6 +7,8 @@ import de.kopis.timeclicker.Application;
 import de.kopis.timeclicker.api.TimeclickerAPI;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Logger;
 
 @Controller
 @RequestMapping("/entries")
@@ -24,19 +25,13 @@ public class EntryController {
 
     private UserService userService = UserServiceFactory.getUserService();
 
-    private final Logger LOG = Logger.getLogger(EntryController.class.getName());
+    private final Logger LOG = LoggerFactory.getLogger(EntryController.class);
 
     @GetMapping
     public String list(Model model,
                        @RequestParam(defaultValue = "31") int limit,
                        @RequestParam(defaultValue = "0") int page) throws NotAuthenticatedException {
-        // TODO move into request filter and redirect to login automatically
         final User user = userService.getCurrentUser();
-        if (user == null) {
-            LOG.fine("User not logged in, redirecting to login URL...");
-            return "redirect:" + userService.createLoginURL("/entries");
-        }
-
         final List<TimeEntry> entries = api.list(limit, page, user);
         model.addAttribute("entries", entries);
 
@@ -45,13 +40,7 @@ public class EntryController {
 
     @PostMapping
     public String create(@ModelAttribute TimeEntry input) throws NotAuthenticatedException {
-        // TODO move into request filter and redirect to login automatically
         final User user = userService.getCurrentUser();
-        if (user == null) {
-            LOG.fine("User not logged in, redirecting to login URL...");
-            return "redirect:" + userService.createLoginURL("/entries/add");
-        }
-
         api.update(input.getKey(),
                 input.getStart(), input.getStop(), input.getBreakDuration(),
                 input.getDescription(), input.getTags(), input.getProject(),
@@ -62,14 +51,7 @@ public class EntryController {
 
     @GetMapping("/{key}")
     public String get(Model model, @PathVariable String key) throws NotAuthenticatedException {
-        // TODO move into request filter and redirect to login automatically
         final User user = userService.getCurrentUser();
-        if (user == null) {
-            LOG.fine("User not logged in, redirecting to login URL...");
-            // quit early
-            return "redirect:" + userService.createLoginURL("/entries");
-        }
-
         final TimeEntry entry = api.show(key, user);
         if (entry != null) {
             model.addAttribute("entry", entry);
@@ -80,13 +62,7 @@ public class EntryController {
 
     @DeleteMapping("/{key}")
     public String delete(@PathVariable String key) throws NotAuthenticatedException {
-        // TODO move into request filter and redirect to login automatically
         final User user = userService.getCurrentUser();
-        if (user == null) {
-            LOG.fine("User not logged in, redirecting to login URL...");
-            return "redirect:" + userService.createLoginURL("/entries");
-        }
-
         api.delete(key, user);
 
         return "redirect:/entries";
@@ -94,14 +70,6 @@ public class EntryController {
 
     @GetMapping("/add")
     public String create(Model model) {
-        // TODO move into request filter and redirect to login automatically
-        final User user = userService.getCurrentUser();
-        if (user == null) {
-            LOG.fine("User not logged in, redirecting to login URL...");
-            // quit early
-            return "redirect:" + userService.createLoginURL("/entries/add");
-        }
-
         model.addAttribute("entry", new TimeEntry());
 
         return "entries/add";

@@ -1,17 +1,19 @@
 package de.kopis.timeclicker.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Logger;
 
 public class WorkdayCalculator {
-    private static final Logger LOGGER = Logger.getLogger(WorkdayCalculator.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorkdayCalculator.class);
     private static final List<Integer> WORKDAYS_WEEK = Arrays.asList(Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY);
 
     public static int getWorkingDays(final Date startDate, final Date endDate) {
-        LOGGER.fine("Calculating work days from " + startDate + " to " + endDate);
+        LOGGER.debug("Calculating work days from " + startDate + " to " + endDate);
 
         final Calendar startCal = Calendar.getInstance();
         startCal.setTime(startDate);
@@ -46,7 +48,7 @@ public class WorkdayCalculator {
             workDays = 1;
         }
 
-        LOGGER.fine("Workdays: " + workDays);
+        LOGGER.debug("Workdays: " + workDays);
         return workDays;
     }
 

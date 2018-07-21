@@ -1,13 +1,14 @@
 package de.kopis.timeclicker.model;
 
 import de.kopis.timeclicker.utils.DurationUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.logging.Logger;
 
 public class TimeSum implements Serializable, Comparable {
-    private static final Logger LOGGER = Logger.getLogger(TimeSum.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(TimeSum.class);
 
     private static final long serialVersionUID = 1L;
     private long duration;
@@ -45,7 +46,7 @@ public class TimeSum implements Serializable, Comparable {
         }
 
         long duration = stop.getTime() - start.getTime() - entry.getBreakDuration();
-        LOGGER.finer("Calculated duration: " + duration);
+        LOGGER.debug("Calculated duration: " + duration);
         return duration;
     }
 

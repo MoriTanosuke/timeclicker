@@ -13,15 +13,16 @@ import de.kopis.timeclicker.model.UserSettings;
 import de.kopis.timeclicker.model.wrappers.EntryCount;
 import de.kopis.timeclicker.model.wrappers.Project;
 import de.kopis.timeclicker.utils.TimeSumUtility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.logging.Logger;
 
 @Api(name = "timeclicker", version = "v1", scopes = {Constants.EMAIL_SCOPE},
         clientIds = {Constants.WEB_CLIENT_ID, Constants.ANDROID_CLIENT_ID, "292824132082.apps.googleusercontent.com"},
         audiences = {Constants.ANDROID_AUDIENCE})
 public class TimeclickerAPI {
-    private static final transient Logger LOGGER = Logger.getLogger(TimeclickerAPI.class.getName());
+    private static final transient Logger LOGGER = LoggerFactory.getLogger(TimeclickerAPI.class);
 
     @ApiMethod(name = "delete", path = "delete", httpMethod = "post")
     public void delete(@Named("key") String key, User user) throws NotAuthenticatedException {
@@ -33,7 +34,7 @@ public class TimeclickerAPI {
             datastore.delete(KeyFactory.stringToKey(entry.getKey()));
             LOGGER.info("User " + user.getUserId() + " deleted entry " + entry.getKey());
         } else {
-            LOGGER.warning("No entry found for user " + user + " and key " + key);
+            LOGGER.warn("No entry found for user {} and key {}", user, key);
         }
     }
 
@@ -55,7 +56,7 @@ public class TimeclickerAPI {
             LOGGER.info("User " + user.getUserId() + " stopped entry " + timeEntryEntity.getKey());
             return entry;
         } catch (EntityNotFoundException e) {
-            LOGGER.warning("Can not find entity with key " + KeyFactory.stringToKey(key));
+            LOGGER.warn("Can not find entity with key {}", KeyFactory.stringToKey(key));
         }
         return null;
     }
@@ -68,7 +69,7 @@ public class TimeclickerAPI {
         // check if there is an open entry and close it
         Entity openEntity = findLatest(user, datastore);
         if (openEntity != null) {
-            LOGGER.warning("Open entity found, closing it");
+            LOGGER.warn("Open entity found, closing it");
             openEntity.setProperty(TimeEntry.ENTRY_STOP, new Date());
             datastore.put(openEntity);
         }
@@ -97,7 +98,7 @@ public class TimeclickerAPI {
             LOGGER.info("User " + user.getUserId() + " showed entry " + entry.getKey());
             return entry;
         } catch (EntityNotFoundException e) {
-            LOGGER.warning("Can not find entity with key " + KeyFactory.stringToKey(key));
+            LOGGER.warn("Can not find entity with key {}", KeyFactory.stringToKey(key));
         }
         return null;
     }
@@ -136,7 +137,7 @@ public class TimeclickerAPI {
             datastore.put(timeEntryEntity);
             LOGGER.info("User " + user.getUserId() + " updated entry " + timeEntryEntity.getKey());
         } catch (EntityNotFoundException e) {
-            LOGGER.warning("Can not find entity with key " + KeyFactory.stringToKey(key));
+            LOGGER.warn("Can not find entity with key {}", KeyFactory.stringToKey(key));
         }
     }
 
@@ -148,10 +149,10 @@ public class TimeclickerAPI {
 
         Entity timeEntryEntity = findLatest(user, datastore);
         if (timeEntryEntity == null) {
-            LOGGER.warning("No entity found");
+            LOGGER.warn("No entity found");
             return null;
         }
-        LOGGER.fine("Entity found: " + timeEntryEntity);
+        LOGGER.debug("Entity found: {}", timeEntryEntity);
 
         //TODO check if entry is still open before closing it
         timeEntryEntity.setProperty(TimeEntry.ENTRY_STOP, new Date());
@@ -320,7 +321,7 @@ public class TimeclickerAPI {
                     throw new RuntimeException("Referenced entry does not belong to this user!");
                 }
             } catch (EntityNotFoundException e) {
-                LOGGER.severe("Can not load user settings with key=" + key + " for user " + user);
+                LOGGER.warn("Can not load user settings for user {} with key {}", user, key);
                 throw e;
             }
         } else {
@@ -351,21 +352,21 @@ public class TimeclickerAPI {
                 if (!entity.getProperty(TimeEntry.ENTRY_USER_ID).equals(user.getUserId())) {
                     throw new RuntimeException("Referenced entry does not belong to this user!");
                 }
-                LOGGER.fine("Updating entity with key=" + key + ": " + entity);
+                LOGGER.debug("Updating entity with key={}: {}", key, entity);
                 // update existing entity
                 updateUserSettingsEntity(user, entity, settings);
             } catch (EntityNotFoundException e) {
-                LOGGER.severe("Can not load user settings with key=" + key + " for user " + user);
+                LOGGER.warn("Can not load user settings for user {} with key={}", user, key);
                 throw e;
             }
         } else {
             entity = new Entity("UserSettings");
             entity.setProperty("key", settings.getKey());
             updateUserSettingsEntity(user, entity, settings);
-            LOGGER.fine("Creating entity: " + entity);
+            LOGGER.debug("Creating entity: {}", entity);
         }
 
-        LOGGER.fine("Updated entity: " + entity);
+        LOGGER.debug("Updated entity: {}", entity);
         datastore.put(entity);
     }
 
@@ -394,7 +395,7 @@ public class TimeclickerAPI {
             projects.add(new Project(project));
         }
 
-        LOGGER.fine("Returning " + projects.size() + " projects");
+        LOGGER.debug("Returning {} projects", projects.size());
         return projects;
     }
 
@@ -416,7 +417,7 @@ public class TimeclickerAPI {
     }
 
     private List<Entity> listEntities(User user, int page, int pageSize) {
-        LOGGER.finer("Listing page=" + page + " size=" + pageSize);
+        LOGGER.debug("Listing page={} size={}", page, pageSize);
         final PreparedQuery pq = buildTimeEntryQuery(user);
         final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults().offset(pageSize * page).limit(pageSize);
         return pq.asList(fetchOptions);
@@ -458,7 +459,7 @@ public class TimeclickerAPI {
         List<Entity> entities = pq.asList(FetchOptions.Builder.withLimit(1));
         if (entities == null || entities.size() == 0) {
             // no open entity found
-            LOGGER.warning("No entity found");
+            LOGGER.warn("No entity found");
             return null;
         }
 

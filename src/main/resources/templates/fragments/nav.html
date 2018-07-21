@@ -1,5 +1,6 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
 <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
     <div class="collapse navbar-collapse" id="navbarCollapse">
         <ul class="navbar-nav mr-auto">
@@ -11,6 +12,9 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="/entries/add">Add new</a>
+            </li>
+            <li th:if="${session.user != null}">
+                <a class="nav-link" th:href="${session.logoutUrl}">Log out</a>
             </li>
         </ul>
     </div>

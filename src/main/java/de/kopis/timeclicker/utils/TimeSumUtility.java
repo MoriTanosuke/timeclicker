@@ -3,24 +3,16 @@ package de.kopis.timeclicker.utils;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
 import de.kopis.timeclicker.model.TimeSumWithDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DateFormat;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.logging.Logger;
+import java.util.*;
 
 public class TimeSumUtility {
-    private static final Logger LOGGER = Logger.getLogger(TimeSumUtility.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(TimeSumUtility.class);
 
     public static double convertToHours(long workingDuration) {
         return new BigDecimal(workingDuration / (60.0 * 60.0 * 1000.0)).setScale(2, RoundingMode.HALF_UP).doubleValue();

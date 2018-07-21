@@ -11,13 +11,13 @@
 <main role="main">
     <div class="container-fluid">
         <h1>Timeclicker</h1>
-        <th:block th:if="${entry != null}">Entry <a th:href="@{'/entries/' + ${entry.key}}"
-                                                    th:text="${entry.key}">key</a>
-            active since <span th:text="${entry.start}">eternity</span>.
+        <th:block th:if="${entry != null}">
+            Entry <a th:href="@{'/entries/' + ${entry.key}}" th:text="${entry.key}">key</a>
+            active since <span th:text="${entry.start}">eternity</span>. Sum <span th:text="${sum}">0</span>.
         </th:block>
-        <th:block th:if="${entry == null}">No active entry. <a th:href="@{'/entries/add'}">Start a new one.</a>
+        <th:block th:if="${entry == null}">
+            No active entry found. <a th:href="@{/entries/add}">Start a new one.</a>
         </th:block>
-        <a th:href="@{'/entries'}">List all entries.</a>
     </div>
 </main>
 

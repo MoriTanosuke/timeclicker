@@ -2,13 +2,14 @@ package de.kopis.timeclicker.model;
 
 import de.kopis.timeclicker.Application;
 import de.kopis.timeclicker.utils.WorkdayCalculator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.logging.Logger;
 
 public class MonthlyTimeSum extends TimeSum {
-    private static final Logger LOGGER = Logger.getLogger(MonthlyTimeSum.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(MonthlyTimeSum.class);
 
     private final Date firstOfMonth;
     private final Date lastOfMonth;
@@ -20,7 +21,7 @@ public class MonthlyTimeSum extends TimeSum {
         lastOfMonth = makeLastOfMonth(month);
 
         expectedDuration = WorkdayCalculator.getWorkingDays(this.firstOfMonth, lastOfMonth) * Application.HOURS_PER_DAY_IN_MILLISECONDS;
-        LOGGER.finer("Setting expected duration for " + this.firstOfMonth + " to " + expectedDuration);
+        LOGGER.debug("Setting expected duration for " + this.firstOfMonth + " to " + expectedDuration);
     }
 
     public static Date makeLastOfMonth(Date month) {
@@ -33,7 +34,7 @@ public class MonthlyTimeSum extends TimeSum {
         }
         // roll back one day, we counted 1 too far
         cal.add(Calendar.DAY_OF_MONTH, -1);
-        LOGGER.finer("Last day of firstOfMonth: " + cal.get(Calendar.DAY_OF_MONTH));
+        LOGGER.debug("Last day of firstOfMonth: " + cal.get(Calendar.DAY_OF_MONTH));
         return cal.getTime();
     }
 
