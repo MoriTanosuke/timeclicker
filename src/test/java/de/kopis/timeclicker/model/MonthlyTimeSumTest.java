@@ -1,13 +1,14 @@
 package de.kopis.timeclicker.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import de.kopis.timeclicker.Application;
 
 import java.util.Calendar;
 import java.util.Date;
 
-import de.kopis.timeclicker.WicketApplication;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class MonthlyTimeSumTest extends AbstractTimeEntryTest {
 
@@ -35,7 +36,7 @@ public class MonthlyTimeSumTest extends AbstractTimeEntryTest {
         final MonthlyTimeSum sum = new MonthlyTimeSum(cal.getTime(), 1234L);
         Calendar sumCal = Calendar.getInstance();
         sumCal.setTime(sum.getDate());
-        assertEquals(22 * WicketApplication.HOURS_PER_DAY_IN_MILLISECONDS, sum.getExpectedDuration());
+        assertEquals(22 * Application.HOURS_PER_DAY_IN_MILLISECONDS, sum.getExpectedDuration());
     }
 
     @Test
@@ -50,7 +51,7 @@ public class MonthlyTimeSumTest extends AbstractTimeEntryTest {
         sum.add(new TimeSum(4321L));
 
         assertEquals(1234L + 4321L, sum.getDuration());
-        assertEquals(22 * WicketApplication.HOURS_PER_DAY_IN_MILLISECONDS, sum.getExpectedDuration());
+        assertEquals(22 * Application.HOURS_PER_DAY_IN_MILLISECONDS, sum.getExpectedDuration());
     }
 
     @Test

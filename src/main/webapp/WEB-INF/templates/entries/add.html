@@ -1,0 +1,13 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+<h1>Timeclicker</h1>
+<h2>Add entry</h2>
+<form action="#" th:action="@{/entries/add}" th:object="${entry}" method="post">
+    <p><label for="start">Start:</label><input type="text" th:field="*{{start}}" id="start" /></p>
+    <p><label for="stop">Stop:</label><input type="text" th:field="*{{stop}}" id="stop" /></p>
+    <p><input type="submit" value="Submit" /> <input type="reset" value="Reset" /></p>
+</form>
+</body>
+</html>

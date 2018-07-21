@@ -1,24 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
     <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.0.3.RELEASE</version>
+    </parent>
+
     <packaging>war</packaging>
-    <version>0.1.8-SNAPSHOT</version>
+    <version>0.2.0-SNAPSHOT</version>
 
     <groupId>de.kopis.timeclicker</groupId>
     <artifactId>timeclicker</artifactId>
 
     <properties>
         <app.id>timeclicker-1079</app.id>
-        <app.version>12</app.version>
+        <app.version>20</app.version>
         <appengine.version>1.9.63</appengine.version>
         <gcloud.plugin.version>2.0.9.74.v20150814</gcloud.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
-
-        <wicket.version>6.20.0</wicket.version>
-        <slf4j.version>1.6.4</slf4j.version>
+        <checkforupdates>true</checkforupdates>
     </properties>
 
     <prerequisites>
@@ -26,60 +30,43 @@
     </prerequisites>
 
     <dependencies>
-        <!-- WICKET DEPENDENCIES -->
+        <!-- Spring -->
         <dependency>
-            <groupId>org.apache.wicket</groupId>
-            <artifactId>wicket-core</artifactId>
-            <version>${wicket.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.wicket</groupId>
-            <artifactId>wicket-datetime</artifactId>
-            <version>${wicket.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wicketstuff</groupId>
-            <artifactId>wicketstuff-gae-initializer</artifactId>
-            <version>${wicket.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
-            <version>${slf4j.version}</version>
+            <artifactId>slf4j-log4j12</artifactId>
         </dependency>
 
-        <!-- webjars -->
         <dependency>
-            <groupId>de.agilecoders.wicket.webjars</groupId>
-            <artifactId>wicket-webjars</artifactId>
-            <version>0.4.8</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>jquery</artifactId>
-            <version>1.11.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>bootstrap</artifactId>
-            <version>3.3.6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>html5shiv</artifactId>
-            <version>3.7.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>respond</artifactId>
-            <version>1.4.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.googlecode.wicked-charts</groupId>
-            <artifactId>wicked-charts-wicket6</artifactId>
-            <version>2.0.1</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
         </dependency>
 
+        <!-- exclude dependencies that are already on appengine -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- AppEngine -->
         <dependency>
             <groupId>com.google.appengine</groupId>
             <artifactId>appengine-api-1.0-sdk</artifactId>
@@ -93,7 +80,7 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>3.0.1</version>
+            <version>3.1.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -217,6 +204,7 @@
                     <enableJarClasses>false</enableJarClasses>
                     <version>${app.version}</version>
                     <appId>${app.id}</appId>
+                    <disableUpdateCheck>${checkforupdates}</disableUpdateCheck>
                     <!-- Comment in the below snippet to bind to all IPs instead of just
                         localhost -->
                     <!-- address>0.0.0.0</address> -->

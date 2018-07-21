@@ -1,5 +1,7 @@
 package de.kopis.timeclicker.model;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -14,7 +16,9 @@ public class TimeEntry implements Serializable {
     public static final String ENTRY_PROJECT = "project";
     public static final String ENTRY_BREAK_DURATION = "breakDuration";
 
+    @DateTimeFormat(iso=DateTimeFormat.ISO.DATE)
     private Date start = null;
+    @DateTimeFormat(iso=DateTimeFormat.ISO.DATE)
     private Date stop = null;
     private long breakDuration = 0;
     private String key;

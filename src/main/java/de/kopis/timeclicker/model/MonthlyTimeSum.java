@@ -1,11 +1,11 @@
 package de.kopis.timeclicker.model;
 
+import de.kopis.timeclicker.Application;
+import de.kopis.timeclicker.utils.WorkdayCalculator;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.logging.Logger;
-
-import de.kopis.timeclicker.WicketApplication;
-import de.kopis.timeclicker.utils.WorkdayCalculator;
 
 public class MonthlyTimeSum extends TimeSum {
     private static final Logger LOGGER = Logger.getLogger(MonthlyTimeSum.class.getName());
@@ -19,7 +19,7 @@ public class MonthlyTimeSum extends TimeSum {
         this.firstOfMonth = makeFirstOfMonth(month);
         lastOfMonth = makeLastOfMonth(month);
 
-        expectedDuration = WorkdayCalculator.getWorkingDays(this.firstOfMonth, lastOfMonth) * WicketApplication.HOURS_PER_DAY_IN_MILLISECONDS;
+        expectedDuration = WorkdayCalculator.getWorkingDays(this.firstOfMonth, lastOfMonth) * Application.HOURS_PER_DAY_IN_MILLISECONDS;
         LOGGER.finer("Setting expected duration for " + this.firstOfMonth + " to " + expectedDuration);
     }
 
