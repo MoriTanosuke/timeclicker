@@ -10,6 +10,6 @@ public class Application {
 
     // TODO get locale from user settings
     public static final Locale LOCALE = Locale.getDefault();
-    public static final String DATE_PATTERN = "yyyy-MM-dd HH:MM:ss";
+    public static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
     public static final DateFormat DATE_FORMAT = new SimpleDateFormat(DATE_PATTERN, LOCALE);
 }
