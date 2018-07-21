@@ -156,6 +156,7 @@
                     <deploy.stopPreviousVersion>false</deploy.stopPreviousVersion>
                     <enableJarClasses>false</enableJarClasses>
                     <version>${app.version}</version>
+                    <deploy.promote>true</deploy.promote>
                     <port>8181</port>
                 </configuration>
             </plugin>

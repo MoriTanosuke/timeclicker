@@ -1,6 +1,7 @@
 package de.kopis.timeclicker.filters;
 
 import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,13 +38,18 @@ public class GaeAuthenticationFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         LOG.debug("filtering method={} url={}", ((HttpServletRequest) request).getMethod(), ((HttpServletRequest) request).getRequestURL().toString());
 
-        User user = UserServiceFactory.getUserService().getCurrentUser();
+        final UserService userService = UserServiceFactory.getUserService();
+        final User user = userService.getCurrentUser();
         LOG.debug("user {}", user);
+
         if (user != null) {
             PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(user, null, Arrays.asList(new SimpleGrantedAuthority("USER")));
             Authentication authentication = authenticationManager.authenticate(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
+        } else {
+            SecurityContextHolder.getContext().setAuthentication(null);
         }
+
 
         LOG.debug("Continuing filter chain");
         chain.doFilter(request, response);

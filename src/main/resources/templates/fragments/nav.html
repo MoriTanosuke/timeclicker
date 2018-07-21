@@ -13,7 +13,7 @@
             <li class="nav-item">
                 <a class="nav-link" href="/entries/add">Add new</a>
             </li>
-            <li th:if="${session.user != null}">
+            <li th:if="${session.logoutUrl != null}">
                 <a class="nav-link" th:href="${session.logoutUrl}">Log out</a>
             </li>
         </ul>

@@ -3,10 +3,8 @@ package de.kopis.timeclicker;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
-import de.kopis.timeclicker.filters.GaeAuthenticationFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,22 +21,23 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationFa
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(WebSecurityConfig.class);
 
-    @Autowired
-    private GaeAuthenticationFilter gaeAuthenticationFilter;
-
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        UserService userService = UserServiceFactory.getUserService();
+        final UserService userService = UserServiceFactory.getUserService();
+        final String loginUrl = userService.createLoginURL("/");
+        final String logoutUrl = userService.createLogoutURL("/");
+        LOG.debug("loginUrl={} logoutUrl={}", loginUrl, logoutUrl);
+
         http
                 .csrf().ignoringAntMatchers("/_ah/**")
                 .and()
+                .authorizeRequests().antMatchers("/_ah/**").permitAll()
+                .and()
                 .authorizeRequests().anyRequest().authenticated()
                 .and()
-                .authorizeRequests().antMatchers("/_ah/login", "/_ah/logout").permitAll()
+                .formLogin().loginPage(loginUrl).permitAll()
                 .and()
-                .formLogin().loginPage(userService.createLoginURL("/")).permitAll()
-                .and()
-                .logout().logoutUrl(userService.createLogoutURL("/")).permitAll();
+                .logout().logoutUrl(logoutUrl).permitAll();
     }
 
     @Bean
