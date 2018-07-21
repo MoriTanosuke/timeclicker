@@ -55,7 +55,7 @@ public class EntryController {
                 input.getDescription(), input.getTags(), input.getProject(),
                 user);
 
-        return "redirect:/entries/list";
+        return "redirect:/entries";
     }
 
     @GetMapping("/{key}")
@@ -82,12 +82,12 @@ public class EntryController {
         final User user = userService.getCurrentUser();
         if (user == null) {
             LOG.fine("User not logged in, redirecting to login URL...");
-            return "redirect:" + userService.createLoginURL("/entries/list");
+            return "redirect:" + userService.createLoginURL("/entries");
         }
 
         api.delete(key, user);
 
-        return "redirect:/entries/list";
+        return "redirect:/entries";
     }
 
     @GetMapping("/add")
