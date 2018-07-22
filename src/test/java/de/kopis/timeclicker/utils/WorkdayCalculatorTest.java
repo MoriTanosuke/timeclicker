@@ -21,7 +21,7 @@ public class WorkdayCalculatorTest {
         // 2015-12-23
         final Date date2 = cal.getTime();
 
-        final int workdays = WorkdayCalculator.getWorkingDays(date1, date2);
+        final int workdays = WorkdayCalculator.getWorkingDays(date1.toInstant(), date2.toInstant());
         assertEquals(8, workdays);
     }
 
@@ -37,7 +37,7 @@ public class WorkdayCalculatorTest {
         // 2016-02-01
         final Date date2 = cal.getTime();
 
-        final int workdays = WorkdayCalculator.getWorkingDays(date1, date2);
+        final int workdays = WorkdayCalculator.getWorkingDays(date1.toInstant(), date2.toInstant());
         assertEquals(1, workdays);
     }
 
@@ -53,7 +53,7 @@ public class WorkdayCalculatorTest {
         cal.set(Calendar.DAY_OF_MONTH, 30);
         final Date date2 = cal.getTime();
 
-        final int workdays = WorkdayCalculator.getWorkingDays(date1, date2);
+        final int workdays = WorkdayCalculator.getWorkingDays(date1.toInstant(), date2.toInstant());
         assertEquals(22, workdays);
     }
 

@@ -1,13 +1,15 @@
 package de.kopis.timeclicker.utils;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.Calendar;
-import java.util.Date;
-
 import de.kopis.timeclicker.model.AbstractTimeEntryTest;
 import de.kopis.timeclicker.model.TimeEntry;
 import org.junit.Test;
+
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
+import java.util.Date;
+
+import static org.junit.Assert.assertEquals;
 
 public class MonthlyTimeSumAccumulatorTest extends AbstractTimeEntryTest {
 
@@ -32,7 +34,7 @@ public class MonthlyTimeSumAccumulatorTest extends AbstractTimeEntryTest {
         accumulator.accumulate(entry2);
 
         assertEquals(2, accumulator.getAll().size());
-        assertEquals(2 * 60 * 60 * 1000, accumulator.get(entry1.getStart()).getDuration());
-        assertEquals(3 * 60 * 60 * 1000, accumulator.get(entry2.getStart()).getDuration());
+        assertEquals(Duration.of(2 * 60 * 60, ChronoUnit.SECONDS), accumulator.get(entry1.getStart()).getDuration());
+        assertEquals(Duration.of(3 * 60 * 60, ChronoUnit.SECONDS), accumulator.get(entry2.getStart()).getDuration());
     }
 }

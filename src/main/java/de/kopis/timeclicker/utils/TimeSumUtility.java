@@ -9,6 +9,9 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DateFormat;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class TimeSumUtility {
@@ -39,9 +42,9 @@ public class TimeSumUtility {
         final Map<Long, TimeSumWithDate> perDay = new HashMap<>();
         for (TimeEntry e : allEntries) {
             // build the key from given TimeEntry
-            final Date entryDate = e.getStart();
+            final Instant entryDate = e.getStart();
             final Calendar cal = Calendar.getInstance();
-            cal.setTime(entryDate);
+            cal.setTime(Date.from(entryDate));
             // reset to midnight
             cal.set(Calendar.HOUR_OF_DAY, 0);
             cal.set(Calendar.MINUTE, 0);
@@ -50,7 +53,7 @@ public class TimeSumUtility {
             // check if date is already set as key previously
             final Long key = cal.getTimeInMillis();
             if (!perDay.containsKey(key)) {
-                perDay.put(key, new TimeSumWithDate(cal.getTime(), 0L));
+                perDay.put(key, new TimeSumWithDate(cal.getTime(), Duration.of(0, ChronoUnit.SECONDS)));
             }
             // add sum to existing entry
             final TimeSumWithDate sum = perDay.get(key);
@@ -73,10 +76,10 @@ public class TimeSumUtility {
 
         for (TimeEntry e : allEntries) {
             // build the key from given TimeEntry
-            final Date entryDate = e.getStart();
+            final Instant entryDate = e.getStart();
             LOGGER.info("Got entry at " + entryDate);
             final Calendar cal = Calendar.getInstance();
-            cal.setTime(entryDate);
+            cal.setTime(Date.from(entryDate));
             // reset to first of week
             cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
             // reset to midnight
@@ -87,7 +90,7 @@ public class TimeSumUtility {
             // check if date is already set as key previously
             final Long key = cal.getTimeInMillis();
             if (!perWeek.containsKey(key)) {
-                perWeek.put(key, new TimeSumWithDate(cal.getTime(), 0L));
+                perWeek.put(key, new TimeSumWithDate(cal.getTime(), Duration.of(0, ChronoUnit.SECONDS)));
             }
             // add sum to existing entry
             final TimeSumWithDate sum = perWeek.get(key);
@@ -112,9 +115,9 @@ public class TimeSumUtility {
 
         for (TimeEntry e : allEntries) {
             // build the key from given TimeEntry
-            final Date entryDate = e.getStart();
+            final Instant entryDate = e.getStart();
             final Calendar cal = Calendar.getInstance();
-            cal.setTime(entryDate);
+            cal.setTime(Date.from(entryDate));
             // reset to first of month
             cal.set(Calendar.DAY_OF_MONTH, 1);
             // reset to midnight
@@ -125,7 +128,8 @@ public class TimeSumUtility {
             // check if date is already set as key previously
             final Long key = cal.getTimeInMillis();
             if (!perMonth.containsKey(key)) {
-                perMonth.put(key, new TimeSumWithDate(cal.getTime(), 0L));
+                LOGGER.debug("Adding new key {} for instant {}", key, entryDate);
+                perMonth.put(key, new TimeSumWithDate(cal.getTime(), Duration.of(0, ChronoUnit.SECONDS)));
             }
             // add sum to existing entry
             final TimeSumWithDate sum = perMonth.get(key);

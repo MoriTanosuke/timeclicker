@@ -5,13 +5,10 @@ import org.junit.Test;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -41,43 +38,42 @@ public class TimeSumUtilityTest {
         final Calendar cal = Calendar.getInstance();
 
         // add 1 entry today, and 2 entries tomorrow
-        final TimeEntry t1 = new TimeEntry(cal.getTime());
-        t1.setStop(new Date(t1.getStart().getTime() + 42 * 1000));
+        final TimeEntry t1 = new TimeEntry(cal.getTime().toInstant());
+        t1.setStop(t1.getStart().plus(Duration.of(42, ChronoUnit.SECONDS)));
         cal.add(Calendar.DAY_OF_YEAR, 1);
-        final TimeEntry t2 = new TimeEntry(cal.getTime());
-        t2.setStop(new Date(t2.getStart().getTime() + 42 * 1000));
-        final TimeEntry t3 = new TimeEntry(cal.getTime());
-        t3.setStop(new Date(t3.getStart().getTime() + 42 * 1000));
+        final TimeEntry t2 = new TimeEntry(cal.getTime().toInstant());
+        t2.setStop(t2.getStart().plus(Duration.of(42, ChronoUnit.SECONDS)));
+        final TimeEntry t3 = new TimeEntry(cal.getTime().toInstant());
+        t3.setStop(t3.getStart().plus(Duration.of(42, ChronoUnit.SECONDS)));
         final List<TimeEntry> entries = Arrays.asList(t1, t2, t3);
 
         List<TimeSumWithDate> values = new TimeSumUtility().calculateDailyTimeSum(entries);
         assertEquals(2, values.size());
-        assertEquals(84000L, values.get(0).getDuration());
-        assertEquals(42000L, values.get(1).getDuration());
+        assertEquals(Duration.of(84, ChronoUnit.SECONDS), values.get(0).getDuration());
+        assertEquals(Duration.of(42, ChronoUnit.SECONDS), values.get(1).getDuration());
     }
 
     @Test
     public void aggregateByMonth() {
         final Calendar cal = Calendar.getInstance();
+        final Instant start = cal.getTime().toInstant();
 
         // add 1 entry today, and 2 entries tomorrow
-        final TimeEntry t1 = new TimeEntry(cal.getTime());
-        t1.setStop(new Date(t1.getStart().getTime() + 42 * 1000));
-        final TimeEntry t11 = new TimeEntry(cal.getTime());
-        t11.setStop(new Date(t11.getStart().getTime() + 42 * 1000));
+        final TimeEntry t1 = new TimeEntry(start);
+        t1.setStop(t1.getStart().plus(Duration.of(42, ChronoUnit.SECONDS)));
+        final TimeEntry t11 = new TimeEntry(start);
+        t11.setStop(t11.getStart().plus(Duration.of(42, ChronoUnit.SECONDS)));
         cal.add(Calendar.MONTH, -2);
-        final TimeEntry t2 = new TimeEntry(cal.getTime());
-        t2.setStop(new Date(t2.getStart().getTime() + 42 * 1000));
+        final TimeEntry t2 = new TimeEntry(start);
+        t2.setStop(t2.getStart().plus(Duration.of(42, ChronoUnit.SECONDS)));
         cal.add(Calendar.MONTH, -1);
-        final TimeEntry t3 = new TimeEntry(cal.getTime());
-        t3.setStop(new Date(t3.getStart().getTime() + 42 * 1000));
+        final TimeEntry t3 = new TimeEntry(start);
+        t3.setStop(t3.getStart().plus(Duration.of(42, ChronoUnit.SECONDS)));
         final List<TimeEntry> entries = Arrays.asList(t1, t11, t2, t3);
 
         List<TimeSumWithDate> values = new TimeSumUtility().calculateMonthlyTimeSum(entries);
-        assertEquals(3, values.size());
-        assertEquals(84000L, values.get(0).getDuration());
-        assertEquals(42000L, values.get(1).getDuration());
-        assertEquals(42000L, values.get(2).getDuration());
+        assertEquals(1, values.size());
+        assertEquals(Duration.of(84 + 42 + 42, ChronoUnit.SECONDS), values.get(0).getDuration());
     }
 
     @Test
@@ -88,21 +84,21 @@ public class TimeSumUtilityTest {
         cal.add(Calendar.WEEK_OF_YEAR, -1);
 
         // add entries last week
-        final TimeEntry t1 = new TimeEntry(cal.getTime());
-        t1.setStop(new Date(t1.getStart().getTime() + 42 * 1000));
+        final TimeEntry t1 = new TimeEntry(cal.getTime().toInstant());
+        t1.setStop(t1.getStart().plus(Duration.of(42, ChronoUnit.SECONDS)));
         cal.add(Calendar.DAY_OF_WEEK, 1);
-        final TimeEntry t2 = new TimeEntry(cal.getTime());
-        t2.setStop(new Date(t2.getStart().getTime() + 42 * 1000));
+        final TimeEntry t2 = new TimeEntry(cal.getTime().toInstant());
+        t2.setStop(t2.getStart().plus(Duration.of(42, ChronoUnit.SECONDS)));
         // add one entry next week
         cal.add(Calendar.WEEK_OF_YEAR, 1);
-        final TimeEntry t3 = new TimeEntry(cal.getTime());
-        t3.setStop(new Date(t3.getStart().getTime() + 42 * 1000));
+        final TimeEntry t3 = new TimeEntry(cal.getTime().toInstant());
+        t3.setStop(t3.getStart().plus(Duration.of(42, ChronoUnit.SECONDS)));
         final List<TimeEntry> entries = Arrays.asList(t1, t2, t3);
 
         List<TimeSumWithDate> values = new TimeSumUtility().calculateWeeklyTimeSum(entries);
         assertEquals(2, values.size());
         // sorted per week
-        assertEquals(42000L, values.get(0).getDuration());
-        assertEquals(84000L, values.get(1).getDuration());
+        assertEquals(Duration.of(42, ChronoUnit.SECONDS), values.get(0).getDuration());
+        assertEquals(Duration.of(84, ChronoUnit.SECONDS), values.get(1).getDuration());
     }
 }

@@ -1,10 +1,10 @@
 package de.kopis.timeclicker.model;
 
-import de.kopis.timeclicker.Application;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 public class TimeEntry implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -17,42 +17,40 @@ public class TimeEntry implements Serializable {
     public static final String ENTRY_PROJECT = "project";
     public static final String ENTRY_BREAK_DURATION = "breakDuration";
 
-    @DateTimeFormat(pattern = Application.DATE_PATTERN)
-    private Date start = null;
-    @DateTimeFormat(pattern = Application.DATE_PATTERN)
-    private Date stop = null;
-    private long breakDuration = 0;
+    private Instant start = null;
+    private Instant stop = null;
+    private Duration breakDuration = Duration.of(0, ChronoUnit.SECONDS);
     private String key;
     private String tags;
     private String project;
     private String description;
 
     public TimeEntry() {
-        this(new Date());
+        this(Instant.now());
     }
 
-    public TimeEntry(Date start, Date stop) {
+    public TimeEntry(Instant start, Instant stop) {
         this.start = start;
         this.stop = stop;
     }
 
-    public TimeEntry(Date start) {
+    public TimeEntry(Instant start) {
         this.start = start;
     }
 
-    public Date getStart() {
+    public Instant getStart() {
         return start;
     }
 
-    public void setStart(Date start) {
+    public void setStart(Instant start) {
         this.start = start;
     }
 
-    public Date getStop() {
+    public Instant getStop() {
         return stop;
     }
 
-    public void setStop(Date stop) {
+    public void setStop(Instant stop) {
         this.stop = stop;
     }
 
@@ -80,11 +78,11 @@ public class TimeEntry implements Serializable {
         this.project = project;
     }
 
-    public long getBreakDuration() {
+    public Duration getBreakDuration() {
         return breakDuration;
     }
 
-    public void setBreakDuration(long breakDuration) {
+    public void setBreakDuration(Duration breakDuration) {
         this.breakDuration = breakDuration;
     }
 

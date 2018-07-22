@@ -15,6 +15,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 
@@ -41,8 +43,12 @@ public class EntryController {
     @PostMapping
     public String create(@ModelAttribute TimeEntry input) throws NotAuthenticatedException {
         final User user = userService.getCurrentUser();
+
+        // duration is optional
+        Duration breakDuration = input.getBreakDuration() != null ? input.getBreakDuration() : Duration.of(0, ChronoUnit.SECONDS);
+
         api.update(input.getKey(),
-                input.getStart(), input.getStop(), input.getBreakDuration(),
+                Date.from(input.getStart()), Date.from(input.getStop()), breakDuration.toMillis(),
                 input.getDescription(), input.getTags(), input.getProject(),
                 user);
 

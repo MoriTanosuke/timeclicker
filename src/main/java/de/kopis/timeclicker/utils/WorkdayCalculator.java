@@ -3,6 +3,7 @@ package de.kopis.timeclicker.utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -12,18 +13,18 @@ public class WorkdayCalculator {
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkdayCalculator.class);
     private static final List<Integer> WORKDAYS_WEEK = Arrays.asList(Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY);
 
-    public static int getWorkingDays(final Date startDate, final Date endDate) {
+    public static int getWorkingDays(final Instant startDate, final Instant endDate) {
         LOGGER.debug("Calculating work days from " + startDate + " to " + endDate);
 
         final Calendar startCal = Calendar.getInstance();
-        startCal.setTime(startDate);
+        startCal.setTime(Date.from(startDate));
         startCal.set(Calendar.HOUR_OF_DAY, 0);
         startCal.set(Calendar.MINUTE, 0);
         startCal.set(Calendar.SECOND, 0);
         startCal.set(Calendar.MILLISECOND, 0);
 
         final Calendar endCal = Calendar.getInstance();
-        endCal.setTime(endDate);
+        endCal.setTime(Date.from(endDate));
         endCal.set(Calendar.HOUR_OF_DAY, 0);
         endCal.set(Calendar.MINUTE, 0);
         endCal.set(Calendar.SECOND, 0);
@@ -58,7 +59,7 @@ public class WorkdayCalculator {
         final Date startOfMonth = cal.getTime();
         cal.roll(Calendar.DAY_OF_MONTH, false);
         final Date endOfMonth = cal.getTime();
-        return WorkdayCalculator.getWorkingDays(startOfMonth, endOfMonth);
+        return WorkdayCalculator.getWorkingDays(startOfMonth.toInstant(), endOfMonth.toInstant());
     }
 
     public static int getWorkingDaysForCurrentWeek() {
@@ -67,6 +68,6 @@ public class WorkdayCalculator {
         final Date start = cal.getTime();
         cal.add(Calendar.DAY_OF_WEEK, 7);
         final Date end = cal.getTime();
-        return WorkdayCalculator.getWorkingDays(start, end);
+        return WorkdayCalculator.getWorkingDays(start.toInstant(), end.toInstant());
     }
 }

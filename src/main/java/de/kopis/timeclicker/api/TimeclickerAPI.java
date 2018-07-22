@@ -16,6 +16,8 @@ import de.kopis.timeclicker.utils.TimeSumUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Api(name = "timeclicker", version = "v1", scopes = {Constants.EMAIL_SCOPE},
@@ -118,7 +120,7 @@ public class TimeclickerAPI {
         try {
             Entity timeEntryEntity;
             if (key != null && !key.isEmpty()) {
-                LOGGER.info("User " + user.getUserId() + " starting to update entry " + key + " with start=" + start + " stop=" + stop);
+                LOGGER.info("User {} starting to update entry {} with start={} stop={} duration={}", user, key, start, stop, breakDuration);
                 timeEntryEntity = datastore.get(KeyFactory.stringToKey(key));
 
                 if (!timeEntryEntity.getProperty(TimeEntry.ENTRY_USER_ID).equals(user.getUserId())) {
@@ -218,11 +220,11 @@ public class TimeclickerAPI {
     public TimeSum getOverallSum(User user) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();
 
-        TimeSum sum = new TimeSum(0L);
+        TimeSum sum = new TimeSum(Duration.of(0, ChronoUnit.SECONDS));
 
         List<Entity> entities = listEntities(user);
         for (Entity entity : entities) {
-            final long duration = calculateDuration(entity);
+            final Duration duration = calculateDuration(entity);
             sum.addDuration(duration);
         }
 
@@ -247,9 +249,9 @@ public class TimeclickerAPI {
 
 
         // calculate the sum from the result list
-        final TimeSum sum = new TimeSum(0L);
+        final TimeSum sum = new TimeSum(Duration.of(0, ChronoUnit.SECONDS));
         for (Entity e : entities) {
-            long duration = calculateDuration(e);
+            Duration duration = calculateDuration(e);
             sum.addDuration(duration);
         }
 
@@ -274,9 +276,9 @@ public class TimeclickerAPI {
 
 
         // calculate the sum from the result list
-        final TimeSum sum = new TimeSum(0L);
+        final TimeSum sum = new TimeSum(Duration.of(0, ChronoUnit.MILLIS));
         for (Entity e : entities) {
-            long duration = calculateDuration(e);
+            Duration duration = calculateDuration(e);
             sum.addDuration(duration);
         }
 
@@ -298,9 +300,9 @@ public class TimeclickerAPI {
 
 
         // calculate the sum from the result list
-        final TimeSum sum = new TimeSum(0L);
+        final TimeSum sum = new TimeSum(Duration.of(0, ChronoUnit.SECONDS));
         for (Entity e : entities) {
-            long duration = calculateDuration(e);
+            Duration duration = calculateDuration(e);
             sum.addDuration(duration);
         }
 
@@ -480,13 +482,13 @@ public class TimeclickerAPI {
         final TimeEntry entry = new TimeEntry();
         entry.setKey(KeyFactory.keyToString(timeEntryEntity.getKey()));
         if (timeEntryEntity.hasProperty(TimeEntry.ENTRY_START)) {
-            entry.setStart((Date) timeEntryEntity.getProperty(TimeEntry.ENTRY_START));
+            entry.setStart(((Date) timeEntryEntity.getProperty(TimeEntry.ENTRY_START)).toInstant());
         }
         if (timeEntryEntity.hasProperty(TimeEntry.ENTRY_STOP)) {
-            entry.setStop((Date) timeEntryEntity.getProperty(TimeEntry.ENTRY_STOP));
+            entry.setStop(((Date) timeEntryEntity.getProperty(TimeEntry.ENTRY_STOP)).toInstant());
         }
         if (timeEntryEntity.hasProperty(TimeEntry.ENTRY_BREAK_DURATION)) {
-            entry.setBreakDuration((Long) timeEntryEntity.getProperty(TimeEntry.ENTRY_BREAK_DURATION));
+            entry.setBreakDuration(Duration.of((Long) timeEntryEntity.getProperty(TimeEntry.ENTRY_BREAK_DURATION), ChronoUnit.MILLIS));
         }
         if (timeEntryEntity.hasProperty(TimeEntry.ENTRY_DESCRIPTION)) {
             entry.setDescription((String) timeEntryEntity.getProperty(TimeEntry.ENTRY_DESCRIPTION));
@@ -584,7 +586,7 @@ public class TimeclickerAPI {
      * @param entity a {@link TimeEntry}
      * @return duration as <code>long</code> value, calculated from properties {@link TimeEntry#ENTRY_START} and {@link TimeEntry#ENTRY_STOP}
      */
-    private long calculateDuration(Entity entity) {
+    private Duration calculateDuration(Entity entity) {
         Date start = (Date) entity.getProperty(TimeEntry.ENTRY_START);
         // check if the entity is already stopped, else use the current date
         Date stop;
@@ -600,7 +602,7 @@ public class TimeclickerAPI {
             duration -= (Long) entity.getProperty(TimeEntry.ENTRY_BREAK_DURATION);
         }
 
-        return duration;
+        return Duration.of(duration, ChronoUnit.MILLIS);
     }
 
     /**
