@@ -5,13 +5,16 @@
     <div class="collapse navbar-collapse" id="navbarCollapse">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item active">
-                <a class="nav-link" href="/">Home</a>
+                <a class="nav-link" href="/">
+                    <span class="fas fa-home" aria-hidden="true"></span> Home</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/entries">List</a>
+                <a class="nav-link" href="/entries">
+                    <span class="fas fa-th-list" aria-hidden="true"></span> List</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/entries/add">Add new</a>
+                <a class="nav-link" href="/entries/add">
+                    <span class="fas fa-plus" aria-hidden="true"></span> Add new</a>
             </li>
             <li th:if="${session.logoutUrl != null}">
                 <a class="nav-link" th:href="${session.logoutUrl}">Log out</a>

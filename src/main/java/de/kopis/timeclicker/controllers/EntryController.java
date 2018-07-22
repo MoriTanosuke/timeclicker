@@ -7,6 +7,7 @@ import de.kopis.timeclicker.Application;
 import de.kopis.timeclicker.api.TimeclickerAPI;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
+import de.kopis.timeclicker.model.wrappers.EntryCount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
@@ -36,6 +37,14 @@ public class EntryController {
         final User user = userService.getCurrentUser();
         final List<TimeEntry> entries = api.list(limit, page, user);
         model.addAttribute("entries", entries);
+
+        // build pagination
+        final EntryCount maxEntries = api.countAvailableEntries(user);
+        final int lastPage = maxEntries.count / limit;
+        model.addAttribute("limit", limit);
+        model.addAttribute("lastPage", lastPage);
+        model.addAttribute("previousPage", (page > 0) ? (page - 1) : page);
+        model.addAttribute("nextPage", (page < lastPage) ? (page + 1) : page);
 
         return "entries/list";
     }
