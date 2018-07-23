@@ -1,25 +1,35 @@
 package de.kopis.timeclicker.controllers;
 
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
 import de.kopis.timeclicker.Application;
 import de.kopis.timeclicker.api.TimeclickerAPI;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.wrappers.EntryCount;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
+
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Controller
 @RequestMapping("/entries")
@@ -55,9 +65,15 @@ public class EntryController {
 
         // duration is optional
         Duration breakDuration = input.getBreakDuration() != null ? input.getBreakDuration() : Duration.of(0, ChronoUnit.SECONDS);
+        // stop is optional
+        Date stop = null;
+        Instant inputStop = input.getStop();
+        if(inputStop != null) {
+            stop = Date.from(inputStop);
+        }
 
         api.update(input.getKey(),
-                Date.from(input.getStart()), Date.from(input.getStop()), breakDuration.toMillis(),
+                Date.from(input.getStart()), stop, breakDuration.toMillis(),
                 input.getDescription(), input.getTags(), input.getProject(),
                 user);
 

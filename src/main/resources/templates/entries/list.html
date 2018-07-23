@@ -47,10 +47,16 @@
                 <td th:text="${entry.tags}">tags</td>
                 <td th:text="${entry.project}">project</td>
                 <td>
-                    <a th:href="@{'/entries/' + ${entry.key}}">edit</a>
-                    <form th:action="@{'/entries/' + ${entry.key}}" th:method="delete">
-                        <button type="submit">delete</button>
-                    </form>
+                    <div role="group" aria-label="Actions" class="btn-toolbar">
+                        <a th:href="@{'/entries/' + ${entry.key}}" class="btn btn-link" title="edit">
+                            <span class="fas fa-edit"></span>
+                        </a>
+                        <form th:action="@{'/entries/' + ${entry.key}}" th:method="delete">
+                            <button type="submit" class="btn btn-link" title="delete">
+                                <span class="fas fa-trash"></span>
+                            </button>
+                        </form>
+                    </div>
                 </td>
             </tr>
             </tbody>

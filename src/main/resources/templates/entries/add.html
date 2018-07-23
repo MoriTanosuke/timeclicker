@@ -16,28 +16,28 @@
             <input type="hidden" th:field="*{key}"/>
 
             <div class="form-group">
-                <label for="start">Start:</label>
-                <input type="text" th:field="*{start}" name="start" id="start" class="form-control"/>
+                <label th:for="start">Start:</label>
+                <input type="text" th:field="*{start}" th:required="true" class="form-control"/>
             </div>
             <div class="form-group">
-                <label for="stop">Stop:</label>
-                <input type="text" th:field="*{stop}" id="stop" class="form-control"/>
+                <label th:for="stop">Stop:</label>
+                <input type="text" th:field="*{stop}" th:required="false" class="form-control"/>
             </div>
             <div class="form-group">
-                <label for="breakDuration">Break:</label>
-                <input type="text" th:field="*{{breakDuration}}" id="breakDuration" class="form-control"/>
+                <label th:for="breakDuration">Break:</label>
+                <input type="text" th:field="*{{breakDuration}}" th:required="false" class="form-control"/>
             </div>
             <div class="form-group">
-                <label for="Description">Description:</label>
-                <input type="text" th:field="*{description}" id="description" class="form-control"/>
+                <label th:for="Description">Description:</label>
+                <input type="text" th:field="*{description}" th:required="false" class="form-control"/>
             </div>
             <div class="form-group">
-                <label for="tags">Tags:</label>
-                <input type="text" th:field="*{tags}" id="tags" class="form-control"/>
+                <label th:for="tags">Tags:</label>
+                <input type="text" th:field="*{tags}" th:required="false" class="form-control"/>
             </div>
             <div class="form-group">
-                <label for="project">Project:</label>
-                <input type="text" th:field="*{project}" id="project" class="form-control"/>
+                <label th:for="project">Project:</label>
+                <input type="text" th:field="*{project}" th:required="false" class="form-control"/>
             </div>
             <input type="submit" value="Submit"/>
             <input type="reset" value="Reset"/>
