@@ -66,11 +66,13 @@
 <script>
     function insertNow(element) {
         var d = new Date();
+        var timezoneOffset = d.getTimezoneOffset() / 60;
+        var hours = d.getHours() + timezoneOffset;
         var datestring =
                                                 d.getFullYear()   + "-" +
             (d.getMonth()   < 10 ? '0' : '') + (d.getMonth() + 1) + "-" +
             (d.getDate()    < 10 ? '0' : '') +  d.getDate()       + " " +
-            (d.getHours()   < 10 ? '0' : '') +  d.getHours()      + ":" +
+            (d.getHours() < 10 ? '0' : '') + hours + ":" +
             (d.getMinutes() < 10 ? '0' : '') +  d.getMinutes()    + ":" +
             (d.getSeconds() < 10 ? '0' : '') +  d.getSeconds();
         element.value = datestring;
