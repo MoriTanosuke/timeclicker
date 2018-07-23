@@ -60,4 +60,15 @@ public class UserSettings implements Serializable {
     public long getBreakDurationPerDay() {
         return breakDurationPerDay;
     }
+
+    @Override
+    public String toString() {
+        return "UserSettings{" +
+                "workingDurationPerDay=" + workingDurationPerDay +
+                ", breakDurationPerDay=" + breakDurationPerDay +
+                ", timezone=" + timezone.getDisplayName() +
+                ", locale=" + locale.getDisplayName() +
+                ", key='" + key + '\'' +
+                '}';
+    }
 }

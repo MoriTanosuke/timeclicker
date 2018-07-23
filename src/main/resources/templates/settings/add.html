@@ -1,0 +1,54 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head"></head>
+<body>
+
+<header>
+    <th:block th:replace="fragments/nav"></th:block>
+</header>
+
+<main role="main">
+    <div class="container-fluid">
+        <h1>Timeclicker</h1>
+        <h2>Settings</h2>
+        <form action="#" th:action="@{/settings}" th:object="${settings}" method="post">
+            <input type="hidden" th:field="*{key}" th:required="false"/>
+
+            <div class="form-group">
+                <label th:for="breakDuration">Break per day:</label>
+                <input type="text" th:field="*{{breakDurationPerDay}}" th:required="false" class="form-control"/>
+            </div>
+            <div class="form-group">
+                <label th:for="workingDurationPerDay">Work per day:</label>
+                <input type="text" th:field="*{{workingDurationPerDay}}" th:required="false" class="form-control"/>
+            </div>
+            <div class="form-group">
+                <label th:for="locale">Locale:</label>
+                <select th:field="*{locale}" class="form-control">
+                    <option th:each="l : ${locales}"
+                            th:value="${l.toLanguageTag()}" th:text="${l.getDisplayName()}"
+                            th:selected="${l.toLanguageTag() == settings.locale.toLanguageTag()}"></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label th:for="timezone">Timezone:</label>
+                <select th:field="*{timezone}" class="form-control">
+                    <option th:each="tz : ${timezones}"
+                            th:value="${tz}" th:text="${tz}"
+                            th:selected="${tz == settings.timezone.getID()}"></option>
+                </select>
+            </div>
+            <input type="submit" value="Submit"/>
+            <input type="reset" value="Reset"/>
+            <a th:href="@{'/'}">Go back</a>
+        </form>
+    </div>
+</main>
+
+<footer>
+    <th:block th:replace="fragments/foot"></th:block>
+</footer>
+
+</body>
+</html>

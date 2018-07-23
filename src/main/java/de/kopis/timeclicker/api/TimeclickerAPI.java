@@ -327,6 +327,8 @@ public class TimeclickerAPI {
     public UserSettings getUserSettings(@Named("key") String key, User user) throws NotAuthenticatedException, EntityNotFoundException {
         if (user == null) throw new NotAuthenticatedException();
 
+        LOGGER.info("Searching for settings for user {}", user.getUserId());
+
         final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         Entity entity;
         if (key != null) {
@@ -349,12 +351,16 @@ public class TimeclickerAPI {
             final PreparedQuery pq = datastore.prepare(q);
             entity = pq.asSingleEntity();
         }
-        return TimeclickerEntityFactory.buildUserSettingsFromEntity(entity);
+        UserSettings settings = TimeclickerEntityFactory.buildUserSettingsFromEntity(entity);
+
+        LOGGER.info("Settings found with key={} for user {}", settings.getKey(), user.getUserId());
+        return settings;
     }
 
     @ApiMethod(name = "setUserSettings", path = "settings", httpMethod = "post")
     public void setUserSettings(UserSettings settings, User user) throws NotAuthenticatedException, EntityNotFoundException {
         if (user == null) throw new NotAuthenticatedException();
+        LOGGER.info("Updating settings {} for user {}", settings, user.getUserId());
 
         final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 
@@ -381,7 +387,7 @@ public class TimeclickerAPI {
             LOGGER.debug("Creating entity: {}", entity);
         }
 
-        LOGGER.debug("Updated entity: {}", entity);
+        LOGGER.info("Updated settings: {} for user {}", entity, user.getUserId());
         datastore.put(entity);
     }
 
