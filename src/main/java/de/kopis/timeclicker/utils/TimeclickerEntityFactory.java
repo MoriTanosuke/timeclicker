@@ -86,13 +86,13 @@ public class TimeclickerEntityFactory {
 
             if (checkProperty(userSettingsEntity, UserSettings.WORKING_DURATION_PER_DAY)) {
                 // set configured workingduration
-                final long workingDurationPerDay = (long) userSettingsEntity.getProperty(UserSettings.WORKING_DURATION_PER_DAY);
+                final Duration workingDurationPerDay = Duration.of((long) userSettingsEntity.getProperty(UserSettings.WORKING_DURATION_PER_DAY), ChronoUnit.MILLIS);
                 us.setWorkingDurationPerDay(workingDurationPerDay);
             }
 
             if (checkProperty(userSettingsEntity, UserSettings.BREAK_DURATION_PER_DAY)) {
                 // set configured breakduration
-                final long breakDurationPerDay = (long) userSettingsEntity.getProperty(UserSettings.BREAK_DURATION_PER_DAY);
+                final Duration breakDurationPerDay = Duration.of((long) userSettingsEntity.getProperty(UserSettings.BREAK_DURATION_PER_DAY), ChronoUnit.MILLIS);
                 us.setBreakDurationPerDay(breakDurationPerDay);
             }
         }
@@ -101,8 +101,8 @@ public class TimeclickerEntityFactory {
 
     public static void updateUserSettingsEntity(User user, Entity entity, UserSettings settings) {
         entity.setProperty(UserSettings.TIMEZONE, settings.getTimezone().getID());
-        entity.setProperty(UserSettings.WORKING_DURATION_PER_DAY, settings.getWorkingDurationPerDay());
-        entity.setProperty(UserSettings.BREAK_DURATION_PER_DAY, settings.getBreakDurationPerDay());
+        entity.setProperty(UserSettings.WORKING_DURATION_PER_DAY, settings.getWorkingDurationPerDay().toMillis());
+        entity.setProperty(UserSettings.BREAK_DURATION_PER_DAY, settings.getBreakDurationPerDay().toMillis());
         entity.setProperty(UserSettings.COUNTRY, settings.getLocale().getCountry());
         entity.setProperty(UserSettings.LANGUAGE, settings.getLocale().getLanguage());
         entity.setProperty(UserSettings.VARIANT, settings.getLocale().getVariant());

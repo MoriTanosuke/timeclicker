@@ -30,12 +30,8 @@ public class UserSettingsController {
     @GetMapping
     public String showUserSettings(Model model) throws NotAuthenticatedException {
         final User user = userService.getCurrentUser();
-        try {
-            final UserSettings userSettings = api.getUserSettings(null, user);
-            model.addAttribute("settings", userSettings);
-        } catch (EntityNotFoundException e) {
-            // UserSettings will be create if they do not exist, this exception will not be thrown here
-        }
+        final UserSettings userSettings = api.getUserSettings(null, user);
+        model.addAttribute("settings", userSettings);
 
         // add all timezones
         String[] availableIDs = TimeZone.getAvailableIDs();

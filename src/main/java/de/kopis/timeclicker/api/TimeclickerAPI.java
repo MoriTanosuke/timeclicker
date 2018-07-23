@@ -324,13 +324,13 @@ public class TimeclickerAPI {
     }
 
     @ApiMethod(name = "getUserSettings", path = "settings", httpMethod = "get")
-    public UserSettings getUserSettings(@Named("key") String key, User user) throws NotAuthenticatedException, EntityNotFoundException {
+    public UserSettings getUserSettings(@Named("key") String key, User user) throws NotAuthenticatedException {
         if (user == null) throw new NotAuthenticatedException();
 
         LOGGER.info("Searching for settings for user {}", user.getUserId());
 
         final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        Entity entity;
+        Entity entity = null;
         if (key != null) {
             try {
                 entity = datastore.get(KeyFactory.stringToKey(key));
@@ -339,7 +339,6 @@ public class TimeclickerAPI {
                 }
             } catch (EntityNotFoundException e) {
                 LOGGER.warn("Can not load user settings for user {} with key {}", user, key);
-                throw e;
             }
         } else {
             final Query.Filter propertyFilter =

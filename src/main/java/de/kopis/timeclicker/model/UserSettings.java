@@ -1,12 +1,13 @@
 package de.kopis.timeclicker.model;
 
 import java.io.Serializable;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 import java.util.TimeZone;
 
 public class UserSettings implements Serializable {
     public static final int HOURS_PER_DAY = 8;
-    public static final int HOURS_PER_DAY_IN_MILLISECONDS = HOURS_PER_DAY * 60 * 60 * 1000;
     public static final String BREAK_DURATION_PER_DAY = "breakDurationPerDay";
     public static final String WORKING_DURATION_PER_DAY = "workingDurationPerDay";
     public static final String TIMEZONE = "timezone";
@@ -15,17 +16,17 @@ public class UserSettings implements Serializable {
     public static final String VARIANT = "variant";
     public static final String USER_ID = "userId";
 
-    private long workingDurationPerDay = HOURS_PER_DAY_IN_MILLISECONDS;
-    private long breakDurationPerDay = 0;
+    private Duration workingDurationPerDay = Duration.of(HOURS_PER_DAY, ChronoUnit.HOURS);
+    private Duration breakDurationPerDay = Duration.ZERO;
     private TimeZone timezone = TimeZone.getDefault();
     private Locale locale = Locale.getDefault();
     private String key;
 
-    public long getWorkingDurationPerDay() {
+    public Duration getWorkingDurationPerDay() {
         return workingDurationPerDay;
     }
 
-    public void setWorkingDurationPerDay(long workingDurationPerDay) {
+    public void setWorkingDurationPerDay(Duration workingDurationPerDay) {
         this.workingDurationPerDay = workingDurationPerDay;
     }
 
@@ -53,11 +54,11 @@ public class UserSettings implements Serializable {
         this.locale = locale;
     }
 
-    public void setBreakDurationPerDay(long breakDurationPerDay) {
+    public void setBreakDurationPerDay(Duration breakDurationPerDay) {
         this.breakDurationPerDay = breakDurationPerDay;
     }
 
-    public long getBreakDurationPerDay() {
+    public Duration getBreakDurationPerDay() {
         return breakDurationPerDay;
     }
 

@@ -10,6 +10,6 @@ import java.time.temporal.ChronoUnit;
 public class StringToDurationConverter implements Converter<String, Duration> {
     @Override
     public Duration convert(String source) {
-        return Duration.of(Long.valueOf(source), ChronoUnit.MILLIS);
+        return Duration.of(Long.valueOf(source), ChronoUnit.MINUTES);
     }
 }

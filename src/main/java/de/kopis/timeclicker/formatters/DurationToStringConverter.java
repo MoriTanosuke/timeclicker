@@ -9,6 +9,6 @@ import java.time.Duration;
 public class DurationToStringConverter implements Converter<Duration, String> {
     @Override
     public String convert(Duration source) {
-        return Long.toString(source.toMillis());
+        return Long.toString(source.toMinutes());
     }
 }

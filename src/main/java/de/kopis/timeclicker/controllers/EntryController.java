@@ -4,6 +4,7 @@ import de.kopis.timeclicker.Application;
 import de.kopis.timeclicker.api.TimeclickerAPI;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
+import de.kopis.timeclicker.model.UserSettings;
 import de.kopis.timeclicker.model.wrappers.EntryCount;
 
 import org.springframework.beans.propertyeditors.CustomDateEditor;
@@ -100,8 +101,13 @@ public class EntryController {
     }
 
     @GetMapping("/add")
-    public String create(Model model) {
+    public String create(Model model) throws NotAuthenticatedException {
         model.addAttribute("entry", new TimeEntry());
+
+        final User user = userService.getCurrentUser();
+        UserSettings userSettings = api.getUserSettings(null, user);
+        int offset = userSettings.getTimezone().getOffset(Instant.now().toEpochMilli());
+        model.addAttribute("timezoneOffset", offset);
 
         return "entries/add";
     }
