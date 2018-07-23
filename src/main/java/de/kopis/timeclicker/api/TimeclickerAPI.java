@@ -1,11 +1,5 @@
 package de.kopis.timeclicker.api;
 
-import com.google.api.server.spi.config.Api;
-import com.google.api.server.spi.config.ApiMethod;
-import com.google.api.server.spi.config.DefaultValue;
-import com.google.api.server.spi.config.Named;
-import com.google.appengine.api.datastore.*;
-import com.google.appengine.api.users.User;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
@@ -13,12 +7,31 @@ import de.kopis.timeclicker.model.UserSettings;
 import de.kopis.timeclicker.model.wrappers.EntryCount;
 import de.kopis.timeclicker.model.wrappers.Project;
 import de.kopis.timeclicker.utils.TimeSumUtility;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.kopis.timeclicker.utils.TimeclickerEntityFactory;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import com.google.api.server.spi.config.Api;
+import com.google.api.server.spi.config.ApiMethod;
+import com.google.api.server.spi.config.DefaultValue;
+import com.google.api.server.spi.config.Named;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.PropertyProjection;
+import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.users.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Api(name = "timeclicker", version = "v1", scopes = {Constants.EMAIL_SCOPE},
         clientIds = {Constants.WEB_CLIENT_ID, Constants.ANDROID_CLIENT_ID, "292824132082.apps.googleusercontent.com"},
@@ -54,7 +67,7 @@ public class TimeclickerAPI {
             timeEntryEntity.setProperty(TimeEntry.ENTRY_STOP, new Date());
             datastore.put(timeEntryEntity);
 
-            TimeEntry entry = buildTimeEntryFromEntity(timeEntryEntity);
+            TimeEntry entry = TimeclickerEntityFactory.buildTimeEntryFromEntity(timeEntryEntity);
             LOGGER.info("User " + user.getUserId() + " stopped entry " + timeEntryEntity.getKey());
             return entry;
         } catch (EntityNotFoundException e) {
@@ -77,10 +90,10 @@ public class TimeclickerAPI {
         }
 
         // start new entry
-        Entity timeEntryEntity = createTimeEntryEntity(user);
+        Entity timeEntryEntity = TimeclickerEntityFactory.createTimeEntryEntity(user);
         datastore.put(timeEntryEntity);
 
-        TimeEntry entry = buildTimeEntryFromEntity(timeEntryEntity);
+        TimeEntry entry = TimeclickerEntityFactory.buildTimeEntryFromEntity(timeEntryEntity);
 
         LOGGER.info("User " + user.getUserId() + " started a new entry");
         return entry;
@@ -96,7 +109,7 @@ public class TimeclickerAPI {
             if (!timeEntryEntity.getProperty(TimeEntry.ENTRY_USER_ID).equals(user.getUserId())) {
                 throw new RuntimeException("Referenced entry does not belong to this user!");
             }
-            TimeEntry entry = buildTimeEntryFromEntity(timeEntryEntity);
+            TimeEntry entry = TimeclickerEntityFactory.buildTimeEntryFromEntity(timeEntryEntity);
             LOGGER.info("User " + user.getUserId() + " showed entry " + entry.getKey());
             return entry;
         } catch (EntityNotFoundException e) {
@@ -128,7 +141,7 @@ public class TimeclickerAPI {
                 }
             } else {
                 LOGGER.info("User " + user.getUserId() + " starting to save new entry for project=" + project + " with start=" + start + " stop=" + stop);
-                timeEntryEntity = createTimeEntryEntity(user);
+                timeEntryEntity = TimeclickerEntityFactory.createTimeEntryEntity(user);
             }
             timeEntryEntity.setProperty(TimeEntry.ENTRY_START, start);
             timeEntryEntity.setProperty(TimeEntry.ENTRY_STOP, stop);
@@ -160,7 +173,7 @@ public class TimeclickerAPI {
         timeEntryEntity.setProperty(TimeEntry.ENTRY_STOP, new Date());
         datastore.put(timeEntryEntity);
 
-        TimeEntry entry = buildTimeEntryFromEntity(timeEntryEntity);
+        TimeEntry entry = TimeclickerEntityFactory.buildTimeEntryFromEntity(timeEntryEntity);
         LOGGER.info("User " + user.getUserId() + " stopped the latest entry");
         return entry;
     }
@@ -179,7 +192,7 @@ public class TimeclickerAPI {
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         Entity entity = findLatest(user, datastore);
         if (entity != null) {
-            TimeEntry timeEntry = buildTimeEntryFromEntity(entity);
+            TimeEntry timeEntry = TimeclickerEntityFactory.buildTimeEntryFromEntity(entity);
             LOGGER.info("User " + user.getUserId() + " loaded the latest entry");
             return timeEntry;
         }
@@ -195,7 +208,7 @@ public class TimeclickerAPI {
 
         final List<TimeEntry> l = new ArrayList<>();
         for (Entity timeEntryEntity : entities) {
-            final TimeEntry entry = buildTimeEntryFromEntity(timeEntryEntity);
+            final TimeEntry entry = TimeclickerEntityFactory.buildTimeEntryFromEntity(timeEntryEntity);
             l.add(entry);
         }
         LOGGER.info("User " + user.getUserId() + " listed all entries");
@@ -336,7 +349,7 @@ public class TimeclickerAPI {
             final PreparedQuery pq = datastore.prepare(q);
             entity = pq.asSingleEntity();
         }
-        return buildUserSettingsFromEntity(entity);
+        return TimeclickerEntityFactory.buildUserSettingsFromEntity(entity);
     }
 
     @ApiMethod(name = "setUserSettings", path = "settings", httpMethod = "post")
@@ -356,7 +369,7 @@ public class TimeclickerAPI {
                 }
                 LOGGER.debug("Updating entity with key={}: {}", key, entity);
                 // update existing entity
-                updateUserSettingsEntity(user, entity, settings);
+                TimeclickerEntityFactory.updateUserSettingsEntity(user, entity, settings);
             } catch (EntityNotFoundException e) {
                 LOGGER.warn("Can not load user settings for user {} with key={}", user, key);
                 throw e;
@@ -364,7 +377,7 @@ public class TimeclickerAPI {
         } else {
             entity = new Entity("UserSettings");
             entity.setProperty("key", settings.getKey());
-            updateUserSettingsEntity(user, entity, settings);
+            TimeclickerEntityFactory.updateUserSettingsEntity(user, entity, settings);
             LOGGER.debug("Creating entity: {}", entity);
         }
 
@@ -469,98 +482,6 @@ public class TimeclickerAPI {
         if (!timeEntryEntity.getProperty(TimeEntry.ENTRY_USER_ID).equals(user.getUserId())) {
             throw new RuntimeException("Referenced entry does not belong to this user!");
         }
-        return timeEntryEntity;
-    }
-
-    /**
-     * Creates a {@link TimeEntry} from the given datastore {@link Entity}.
-     *
-     * @param timeEntryEntity already received datastore entity
-     * @return a fully set up {@link TimeEntry}
-     */
-    private TimeEntry buildTimeEntryFromEntity(Entity timeEntryEntity) {
-        final TimeEntry entry = new TimeEntry();
-        entry.setKey(KeyFactory.keyToString(timeEntryEntity.getKey()));
-        if (timeEntryEntity.hasProperty(TimeEntry.ENTRY_START)) {
-            entry.setStart(((Date) timeEntryEntity.getProperty(TimeEntry.ENTRY_START)).toInstant());
-        }
-        if (timeEntryEntity.hasProperty(TimeEntry.ENTRY_STOP)) {
-            entry.setStop(((Date) timeEntryEntity.getProperty(TimeEntry.ENTRY_STOP)).toInstant());
-        }
-        if (timeEntryEntity.hasProperty(TimeEntry.ENTRY_BREAK_DURATION)) {
-            entry.setBreakDuration(Duration.of((Long) timeEntryEntity.getProperty(TimeEntry.ENTRY_BREAK_DURATION), ChronoUnit.MILLIS));
-        }
-        if (timeEntryEntity.hasProperty(TimeEntry.ENTRY_DESCRIPTION)) {
-            entry.setDescription((String) timeEntryEntity.getProperty(TimeEntry.ENTRY_DESCRIPTION));
-        }
-        if (timeEntryEntity.hasProperty(TimeEntry.ENTRY_TAGS)) {
-            entry.setTags((String) timeEntryEntity.getProperty(TimeEntry.ENTRY_TAGS));
-        }
-        if (timeEntryEntity.hasProperty(TimeEntry.ENTRY_PROJECT)) {
-            entry.setProject((String) timeEntryEntity.getProperty(TimeEntry.ENTRY_PROJECT));
-        }
-        return entry;
-    }
-
-    private UserSettings buildUserSettingsFromEntity(Entity userSettingsEntity) {
-        final UserSettings us = new UserSettings();
-        if (userSettingsEntity != null) {
-            us.setKey(KeyFactory.keyToString(userSettingsEntity.getKey()));
-            if (userSettingsEntity.hasProperty(UserSettings.TIMEZONE)) {
-                us.setTimezone(TimeZone.getTimeZone((String) userSettingsEntity.getProperty(UserSettings.TIMEZONE)));
-            }
-            Locale locale;
-            if (userSettingsEntity.hasProperty(UserSettings.LANGUAGE) && userSettingsEntity.hasProperty(UserSettings.COUNTRY)) {
-                if (userSettingsEntity.hasProperty(UserSettings.VARIANT)) {
-                    locale = new Locale((String) userSettingsEntity.getProperty(UserSettings.LANGUAGE),
-                            (String) userSettingsEntity.getProperty(UserSettings.COUNTRY),
-                            (String) userSettingsEntity.getProperty(UserSettings.VARIANT));
-                } else {
-                    locale = new Locale((String) userSettingsEntity.getProperty(UserSettings.LANGUAGE),
-                            (String) userSettingsEntity.getProperty(UserSettings.COUNTRY));
-                }
-            } else {
-                locale = Locale.getDefault();
-            }
-            us.setLocale(locale);
-
-            if (userSettingsEntity.hasProperty(UserSettings.WORKING_DURATION_PER_DAY)) {
-                // set configured workingduration
-                final long workingDurationPerDay = (long) userSettingsEntity.getProperty(UserSettings.WORKING_DURATION_PER_DAY);
-                us.setWorkingDurationPerDay(workingDurationPerDay);
-            }
-
-            if (userSettingsEntity.hasProperty(UserSettings.BREAK_DURATION_PER_DAY)) {
-                // set configured breakduration
-                final long breakDurationPerDay = (long) userSettingsEntity.getProperty(UserSettings.BREAK_DURATION_PER_DAY);
-                us.setBreakDurationPerDay(breakDurationPerDay);
-            }
-        }
-        return us;
-    }
-
-    private void updateUserSettingsEntity(User user, Entity entity, UserSettings settings) {
-        entity.setProperty(UserSettings.TIMEZONE, settings.getTimezone().getID());
-        entity.setProperty(UserSettings.WORKING_DURATION_PER_DAY, settings.getWorkingDurationPerDay());
-        entity.setProperty(UserSettings.BREAK_DURATION_PER_DAY, settings.getBreakDurationPerDay());
-        entity.setProperty(UserSettings.COUNTRY, settings.getLocale().getCountry());
-        entity.setProperty(UserSettings.LANGUAGE, settings.getLocale().getLanguage());
-        entity.setProperty(UserSettings.VARIANT, settings.getLocale().getVariant());
-        entity.setProperty(UserSettings.USER_ID, user.getUserId());
-    }
-
-    /**
-     * Create a new {@link TimeEntry} for the given user.
-     *
-     * @param user
-     * @return a {@link TimeEntry} with property <code>start</code> set to current date
-     */
-    private Entity createTimeEntryEntity(User user) {
-        Entity timeEntryEntity = new Entity("TimeEntry");
-        timeEntryEntity.setProperty(TimeEntry.ENTRY_START, new Date());
-        // set stop=null to make if queriable
-        timeEntryEntity.setProperty(TimeEntry.ENTRY_STOP, null);
-        timeEntryEntity.setProperty(TimeEntry.ENTRY_USER_ID, user.getUserId());
         return timeEntryEntity;
     }
 
