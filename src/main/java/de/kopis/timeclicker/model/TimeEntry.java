@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.function.Supplier;
 
 public class TimeEntry implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -16,6 +17,9 @@ public class TimeEntry implements Serializable {
     public static final String ENTRY_TAGS = "tags";
     public static final String ENTRY_PROJECT = "project";
     public static final String ENTRY_BREAK_DURATION = "breakDuration";
+
+    // Supplier for default value of stop - used during testing
+    protected Supplier<Instant> stopSupplier = () -> Instant.now();
 
     private Instant start = null;
     private Instant stop = null;
@@ -92,6 +96,19 @@ public class TimeEntry implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Duration getDuration() {
+        if (this.start == null && this.stop == null) return Duration.ZERO;
+        if (this.start == null && this.stop != null)
+            throw new IllegalArgumentException("start is null, stop is " + this.stop + "  - can not calculate duration");
+
+        Instant t1 = this.start;
+        Instant t2 = stopSupplier.get();
+        if (this.stop != null) {
+            t2 = this.stop;
+        }
+        return Duration.between(t1, t2).minus(breakDuration);
     }
 
     @Override

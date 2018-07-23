@@ -19,14 +19,14 @@
                 <label th:for="breakDuration">Break:</label>
                 <input type="text" th:field="*{{breakDurationPerDay}}" th:required="false" class="form-control"/>
                 <small id="breakDurationHelpBlock" class="form-text text-muted">
-                    Enter the amount of minutes you usually take breaks per day.
+                    Enter your usual break per day (hh:mm:ss).
                 </small>
             </div>
             <div class="form-group">
-                <label th:for="workingDurationPerDay">Work per day (minutes):</label>
+                <label th:for="workingDurationPerDay">Work per day:</label>
                 <input type="text" th:field="*{{workingDurationPerDay}}" th:required="false" class="form-control"/>
                 <small id="workingDurationPerDayHelpBlock" class="form-text text-muted">
-                    Enter the amount of minutes you usually work per day.
+                    Enter your usual work duration per day (hh:mm:ss).
                 </small>
             </div>
             <div class="form-group">

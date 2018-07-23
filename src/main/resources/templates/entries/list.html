@@ -32,6 +32,7 @@
                 <th scope="col">Start</th>
                 <th scope="col">Stop</th>
                 <th scope="col">Break</th>
+                <th scope="col">Duration</th>
                 <th scope="col">Description</th>
                 <th scope="col">Tags</th>
                 <th scope="col">Project</th>
@@ -42,7 +43,8 @@
             <tr th:each="entry : ${entries}">
                 <td th:text="${entry.start}">start</td>
                 <td th:text="${entry.stop}">stop</td>
-                <td th:text="${entry.breakDuration}">breakDuration</td>
+                <td th:text="${{entry.breakDuration}}">breakDuration</td>
+                <td th:text="${{entry.duration}}">duration</td>
                 <td th:text="${entry.description}">description</td>
                 <td th:text="${entry.tags}">tags</td>
                 <td th:text="${entry.project}">project</td>

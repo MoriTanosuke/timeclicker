@@ -3,8 +3,6 @@ package de.kopis.timeclicker.utils;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
 import de.kopis.timeclicker.model.TimeSumWithDate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -12,7 +10,19 @@ import java.text.DateFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TimeSumUtility {
     private static final Logger LOGGER = LoggerFactory.getLogger(TimeSumUtility.class);
@@ -77,7 +87,6 @@ public class TimeSumUtility {
         for (TimeEntry e : allEntries) {
             // build the key from given TimeEntry
             final Instant entryDate = e.getStart();
-            LOGGER.info("Got entry at " + entryDate);
             final Calendar cal = Calendar.getInstance();
             cal.setTime(Date.from(entryDate));
             // reset to first of week
@@ -96,7 +105,6 @@ public class TimeSumUtility {
             final TimeSumWithDate sum = perWeek.get(key);
             final TimeSum timeSum = new TimeSum(e);
             sum.addDuration(timeSum.getDuration());
-            LOGGER.info("Add timesum " + timeSum + " to " + sum.getDate() + " with duration " + sum.getReadableDuration());
         }
 
         final List<TimeSumWithDate> sortedPerWeek = Arrays.asList(perWeek.values().toArray(new TimeSumWithDate[0]));
