@@ -3,7 +3,6 @@ package de.kopis.timeclicker.utils;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.UserSettings;
 
-import javax.validation.constraints.NotNull;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -22,6 +21,8 @@ public class TimeclickerEntityFactory {
    * @return a fully set up {@link TimeEntry}
    */
   public static TimeEntry buildTimeEntryFromEntity(Entity timeEntryEntity) {
+    if (timeEntryEntity == null) throw new IllegalArgumentException("No entity 'TimeEntry' provided");
+
     final TimeEntry entry = new TimeEntry();
     entry.setKey(KeyFactory.keyToString(timeEntryEntity.getKey()));
     if (checkProperty(timeEntryEntity, TimeEntry.ENTRY_START)) {
@@ -51,7 +52,9 @@ public class TimeclickerEntityFactory {
    * @param user
    * @return a {@link TimeEntry} with property <code>start</code> set to current date
    */
-  public static Entity createTimeEntryEntity(@NotNull User user) {
+  public static Entity createTimeEntryEntity(User user) {
+    if (user == null) throw new IllegalArgumentException("No user provided, can not create entity");
+
     Entity timeEntryEntity = new Entity("TimeEntry");
     timeEntryEntity.setProperty(TimeEntry.ENTRY_START, new Date());
     // set stop=null to make if queriable
