@@ -1,0 +1,29 @@
+<nav xmlns:th="http://www.thymeleaf.org"
+    class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="/">
+                    <span class="fas fa-home" aria-hidden="true"></span> Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/entries">
+                    <span class="fas fa-th-list" aria-hidden="true"></span> List</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/entries/add">
+                    <span class="fas fa-plus" aria-hidden="true"></span> Add new</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/settings">
+                    <span class="fas fa-cog" aria-hidden="true"></span> Settings</a>
+            </li>
+            <li th:if="${session.logoutUrl != null}">
+                <a class="nav-link" th:href="${session.logoutUrl}">Log out</a>
+            </li>
+        </ul>
+    </div>
+</nav>

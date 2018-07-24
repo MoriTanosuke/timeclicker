@@ -1,0 +1,45 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head"></head>
+<body>
+
+<header>
+    <th:block th:replace="fragments/nav"></th:block>
+</header>
+
+<main role="main">
+    <div class="container-fluid">
+        <h1>Timeclicker</h1>
+        <th:block th:if="${entry != null}">
+            Entry <a th:href="@{'/entries/' + ${entry.key}}" th:text="${entry.key}">key</a>
+            active since <span th:text="${entry.start}">eternity</span>. Sum <span th:text="${sum}">0</span>.
+        </th:block>
+        <th:block th:if="${entry == null}">
+            No active entry found. <a th:href="@{/entries/add}">Start a new one.</a>
+        </th:block>
+
+        <h2>Quick overview</h2>
+        <table class="table table-sm" style="width: auto !important;">
+            <tr>
+                <th scope="row">Daily</th>
+                <td th:text="${dailySum}">0</td>
+            </tr>
+            <tr>
+                <th scope="row">Weekly</th>
+                <td th:text="${weeklySum}">0</td>
+            </tr>
+            <tr>
+                <th scope="row">Monthly</th>
+                <td th:text="${monthlySum}">0</td>
+            </tr>
+        </table>
+    </div>
+</main>
+
+<footer>
+    <th:block th:replace="fragments/foot"></th:block>
+</footer>
+
+</body>
+</html>

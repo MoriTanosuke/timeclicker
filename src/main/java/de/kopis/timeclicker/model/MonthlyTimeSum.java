@@ -1,88 +1,93 @@
 package de.kopis.timeclicker.model;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.logging.Logger;
-
-import de.kopis.timeclicker.WicketApplication;
 import de.kopis.timeclicker.utils.WorkdayCalculator;
 
+import java.sql.Date;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Calendar;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class MonthlyTimeSum extends TimeSum {
-    private static final Logger LOGGER = Logger.getLogger(MonthlyTimeSum.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(MonthlyTimeSum.class);
 
-    private final Date firstOfMonth;
-    private final Date lastOfMonth;
-    private final long expectedDuration;
+  private final Instant firstOfMonth;
+  private final Instant lastOfMonth;
+  private final Duration expectedDuration;
 
-    public MonthlyTimeSum(Date month, long duration) {
-        super(duration);
-        this.firstOfMonth = makeFirstOfMonth(month);
-        lastOfMonth = makeLastOfMonth(month);
+  public MonthlyTimeSum(Instant month, Duration duration, Duration workPerDay) {
+    super(duration);
+    this.firstOfMonth = makeFirstOfMonth(month);
+    lastOfMonth = makeLastOfMonth(month);
 
-        expectedDuration = WorkdayCalculator.getWorkingDays(this.firstOfMonth, lastOfMonth) * WicketApplication.HOURS_PER_DAY_IN_MILLISECONDS;
-        LOGGER.finer("Setting expected duration for " + this.firstOfMonth + " to " + expectedDuration);
+    final int workingDays = WorkdayCalculator.getWorkingDays(this.firstOfMonth, lastOfMonth);
+    // TODO get user settings
+    expectedDuration = workPerDay.multipliedBy(workingDays);
+    LOGGER.debug("Setting expected duration for {} to {}", this.firstOfMonth, expectedDuration);
+  }
+
+  public static Instant makeLastOfMonth(Instant month) {
+    final Calendar thisMonth = Calendar.getInstance();
+    thisMonth.setTime(Date.from(month));
+    final Calendar cal = Calendar.getInstance();
+    cal.setTime(Date.from(month));
+    while (cal.get(Calendar.MONTH) == thisMonth.get(Calendar.MONTH)) {
+      cal.add(Calendar.DAY_OF_MONTH, 1);
     }
+    // roll back one day, we counted 1 too far
+    cal.add(Calendar.DAY_OF_MONTH, -1);
+    LOGGER.debug("Last day of firstOfMonth: {}", cal.get(Calendar.DAY_OF_MONTH));
+    return cal.getTime().toInstant();
+  }
 
-    public static Date makeLastOfMonth(Date month) {
-        final Calendar thisMonth = Calendar.getInstance();
-        thisMonth.setTime(month);
-        final Calendar cal = Calendar.getInstance();
-        cal.setTime(month);
-        while (cal.get(Calendar.MONTH) == thisMonth.get(Calendar.MONTH)) {
-            cal.add(Calendar.DAY_OF_MONTH, 1);
-        }
-        // roll back one day, we counted 1 too far
-        cal.add(Calendar.DAY_OF_MONTH, -1);
-        LOGGER.finer("Last day of firstOfMonth: " + cal.get(Calendar.DAY_OF_MONTH));
-        return cal.getTime();
+  public static Instant makeFirstOfMonth(Instant d) {
+    final Calendar cal = Calendar.getInstance();
+    cal.setTime(Date.from(d));
+    // reset to first of firstOfMonth
+    cal.set(Calendar.DAY_OF_MONTH, 1);
+    // reset to midnight
+    cal.set(Calendar.HOUR_OF_DAY, 0);
+    cal.set(Calendar.MINUTE, 0);
+    cal.set(Calendar.SECOND, 0);
+    cal.set(Calendar.MILLISECOND, 0);
+
+    return cal.getTime().toInstant();
+  }
+
+  public Instant getDate() {
+    return firstOfMonth;
+  }
+
+  public Duration getExpectedDuration() {
+    return expectedDuration;
+  }
+
+  public void add(final TimeEntry entry) {
+    validateInMonth(entry);
+    add(new TimeSum(entry));
+  }
+
+  /**
+   * Checks if the given {@link TimeEntry} is in the month of this sum.
+   *
+   * @param entry a {@link TimeEntry} to add to this sum
+   * @throws IllegalArgumentException if entry is outside of month
+   */
+  private void validateInMonth(final TimeEntry entry) {
+    final Calendar first = Calendar.getInstance();
+    first.setTime(Date.from(firstOfMonth));
+    final Calendar last = Calendar.getInstance();
+    last.setTime(Date.from(lastOfMonth));
+    final Calendar current = Calendar.getInstance();
+    // check only on start date
+    current.setTime(Date.from(entry.getStart()));
+    if (current.before(first)) {
+      throw new IllegalArgumentException(entry + " started before " + first);
     }
-
-    public static Date makeFirstOfMonth(Date d) {
-        final Calendar cal = Calendar.getInstance();
-        cal.setTime(d);
-        // reset to first of firstOfMonth
-        cal.set(Calendar.DAY_OF_MONTH, 1);
-        // reset to midnight
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-
-        return cal.getTime();
+    if (current.after(last)) {
+      throw new IllegalArgumentException(entry + " started after " + last);
     }
-
-    public Date getDate() {
-        return firstOfMonth;
-    }
-
-    public long getExpectedDuration() {
-        return expectedDuration;
-    }
-
-    public void add(final TimeEntry entry) {
-        validateInMonth(entry);
-        add(new TimeSum(entry));
-    }
-
-    /**
-     * Checks if the given {@link TimeEntry} is in the month of this sum.
-     *
-     * @param entry a {@link TimeEntry} to add to this sum
-     * @throws IllegalArgumentException if entry is outside of month
-     */
-    private void validateInMonth(final TimeEntry entry) {
-        final Calendar first = Calendar.getInstance();
-        first.setTime(firstOfMonth);
-        final Calendar last = Calendar.getInstance();
-        last.setTime(lastOfMonth);
-        final Calendar current = Calendar.getInstance();
-        // check only on start date
-        current.setTime(entry.getStart());
-        if (current.before(first)) {
-            throw new IllegalArgumentException(entry + " started before " + first);
-        }
-        if (current.after(last)) {
-            throw new IllegalArgumentException(entry + " started after " + last);
-        }
-    }
+  }
 }

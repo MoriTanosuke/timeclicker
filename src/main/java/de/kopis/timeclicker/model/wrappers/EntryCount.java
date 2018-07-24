@@ -1,9 +1,9 @@
 package de.kopis.timeclicker.model.wrappers;
 
 public class EntryCount {
-    public final int count;
+  public final int count;
 
-    public EntryCount(int count) {
-        this.count = count;
-    }
+  public EntryCount(int count) {
+    this.count = count;
+  }
 }
