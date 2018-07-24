@@ -10,8 +10,8 @@ import java.time.Instant;
 
 @Component
 public class InstantToStringConverter implements Converter<Instant, String> {
-    @Override
-    public String convert(Instant source) {
-        return Application.DATE_FORMAT.format(Date.from(source));
-    }
+  @Override
+  public String convert(Instant source) {
+    return Application.DATE_FORMAT.format(Date.from(source));
+  }
 }

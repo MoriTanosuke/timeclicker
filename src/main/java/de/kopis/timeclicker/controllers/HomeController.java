@@ -17,27 +17,27 @@ import com.google.appengine.api.users.UserServiceFactory;
 @Controller
 @RequestMapping("/")
 public class HomeController {
-    private TimeclickerAPI api = new TimeclickerAPI();
+  private TimeclickerAPI api = new TimeclickerAPI();
 
-    private UserService userService = UserServiceFactory.getUserService();
+  private UserService userService = UserServiceFactory.getUserService();
 
-    @GetMapping()
-    public String home(Model model) throws NotAuthenticatedException {
-        final User user = userService.getCurrentUser();
-        final TimeEntry latest = api.latest(user);
-        if (latest != null) {
-            model.addAttribute("entry", latest);
-            final TimeSum sum = new TimeSum(latest);
-            model.addAttribute("sum", sum);
-        }
-
-        final TimeSum dailySum = api.getDailySum(user);
-        model.addAttribute("dailySum", dailySum);
-        final TimeSum weeklySum = api.getWeeklySum(user);
-        model.addAttribute("weeklySum", weeklySum);
-        final TimeSum monthlySum = api.getMonthlySum(user);
-        model.addAttribute("monthlySum", monthlySum);
-
-        return "index";
+  @GetMapping()
+  public String home(Model model) throws NotAuthenticatedException {
+    final User user = userService.getCurrentUser();
+    final TimeEntry latest = api.latest(user);
+    if (latest != null) {
+      model.addAttribute("entry", latest);
+      final TimeSum sum = new TimeSum(latest);
+      model.addAttribute("sum", sum);
     }
+
+    final TimeSum dailySum = api.getDailySum(user);
+    model.addAttribute("dailySum", dailySum);
+    final TimeSum weeklySum = api.getWeeklySum(user);
+    model.addAttribute("weeklySum", weeklySum);
+    final TimeSum monthlySum = api.getMonthlySum(user);
+    model.addAttribute("monthlySum", monthlySum);
+
+    return "index";
+  }
 }

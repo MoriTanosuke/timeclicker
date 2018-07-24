@@ -20,32 +20,32 @@ import org.slf4j.LoggerFactory;
 
 @Component
 public class GaeLoginFilter implements Filter {
-    private static final Logger LOG = LoggerFactory.getLogger(GaeLoginFilter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(GaeLoginFilter.class);
 
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
+  @Override
+  public void init(FilterConfig filterConfig) throws ServletException {
 
+  }
+
+  @Override
+  public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+    final String requestUrl = ((HttpServletRequest) request).getRequestURL().toString();
+    final String path = new URL(requestUrl).getPath();
+    if (!path.contains("/_ah/")) {
+      final UserService userService = UserServiceFactory.getUserService();
+      if (userService.getCurrentUser() == null) {
+        final String loginURL = userService.createLoginURL("/");
+        LOG.debug("User not logged in, redirecting to login URL {}", loginURL);
+        ((HttpServletResponse) response).sendRedirect(loginURL);
+        return;
+      }
     }
 
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        final String requestUrl = ((HttpServletRequest) request).getRequestURL().toString();
-        final String path = new URL(requestUrl).getPath();
-        if (!path.contains("/_ah/")) {
-            final UserService userService = UserServiceFactory.getUserService();
-            if (userService.getCurrentUser() == null) {
-                final String loginURL = userService.createLoginURL("/");
-                LOG.debug("User not logged in, redirecting to login URL {}", loginURL);
-                ((HttpServletResponse) response).sendRedirect(loginURL);
-                return;
-            }
-        }
+    chain.doFilter(request, response);
+  }
 
-        chain.doFilter(request, response);
-    }
+  @Override
+  public void destroy() {
 
-    @Override
-    public void destroy() {
-
-    }
+  }
 }

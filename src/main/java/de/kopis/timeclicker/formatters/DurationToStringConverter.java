@@ -7,8 +7,8 @@ import java.time.Duration;
 
 @Component
 public class DurationToStringConverter implements Converter<Duration, String> {
-    @Override
-    public String convert(Duration source) {
-        return Long.toString(source.toMinutes());
-    }
+  @Override
+  public String convert(Duration source) {
+    return Long.toString(source.toMinutes());
+  }
 }

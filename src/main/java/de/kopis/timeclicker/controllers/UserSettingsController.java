@@ -24,40 +24,40 @@ import com.google.appengine.api.users.UserServiceFactory;
 @Controller
 @RequestMapping("/settings")
 public class UserSettingsController {
-    private TimeclickerAPI api = new TimeclickerAPI();
-    private UserService userService = UserServiceFactory.getUserService();
+  private TimeclickerAPI api = new TimeclickerAPI();
+  private UserService userService = UserServiceFactory.getUserService();
 
-    @GetMapping
-    public String showUserSettings(Model model) throws NotAuthenticatedException {
-        final User user = userService.getCurrentUser();
-        final UserSettings userSettings = api.getUserSettings(null, user);
-        model.addAttribute("settings", userSettings);
+  @GetMapping
+  public String showUserSettings(Model model) throws NotAuthenticatedException {
+    final User user = userService.getCurrentUser();
+    final UserSettings userSettings = api.getUserSettings(null, user);
+    model.addAttribute("settings", userSettings);
 
-        // add all timezones
-        String[] availableIDs = TimeZone.getAvailableIDs();
-        Arrays.sort(availableIDs);
-        model.addAttribute("timezones", availableIDs);
+    // add all timezones
+    String[] availableIDs = TimeZone.getAvailableIDs();
+    Arrays.sort(availableIDs);
+    model.addAttribute("timezones", availableIDs);
 
-        // add all locales
-        Locale[] locales = Locale.getAvailableLocales();
-        Arrays.sort(locales, Comparator.comparing(Locale::getDisplayName));
-        model.addAttribute("locales", locales);
+    // add all locales
+    Locale[] locales = Locale.getAvailableLocales();
+    Arrays.sort(locales, Comparator.comparing(Locale::getDisplayName));
+    model.addAttribute("locales", locales);
 
-        return "settings/add";
+    return "settings/add";
+  }
+
+  @PostMapping
+  public String saveUserSettings(Model model, @ModelAttribute UserSettings settings) throws NotAuthenticatedException, EntityNotFoundException {
+    final User user = userService.getCurrentUser();
+
+    // check key
+    if (settings.getKey() != null && settings.getKey().isEmpty()) {
+      settings.setKey(null);
     }
 
-    @PostMapping
-    public String saveUserSettings(Model model, @ModelAttribute UserSettings settings) throws NotAuthenticatedException, EntityNotFoundException {
-        final User user = userService.getCurrentUser();
+    api.setUserSettings(settings, user);
 
-        // check key
-        if(settings.getKey() != null && settings.getKey().isEmpty()) {
-            settings.setKey(null);
-        }
-
-        api.setUserSettings(settings, user);
-
-        return "redirect:/settings";
-    }
+    return "redirect:/settings";
+  }
 
 }

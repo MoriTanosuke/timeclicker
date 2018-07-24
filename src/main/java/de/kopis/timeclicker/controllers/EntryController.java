@@ -35,85 +35,85 @@ import org.slf4j.LoggerFactory;
 @Controller
 @RequestMapping("/entries")
 public class EntryController {
-    private TimeclickerAPI api = new TimeclickerAPI();
+  private TimeclickerAPI api = new TimeclickerAPI();
 
-    private UserService userService = UserServiceFactory.getUserService();
+  private UserService userService = UserServiceFactory.getUserService();
 
-    private final Logger LOG = LoggerFactory.getLogger(EntryController.class);
+  private final Logger LOG = LoggerFactory.getLogger(EntryController.class);
 
-    @GetMapping
-    public String list(Model model,
-                       @RequestParam(defaultValue = "31") int limit,
-                       @RequestParam(defaultValue = "0") int page) throws NotAuthenticatedException {
-        final User user = userService.getCurrentUser();
-        final List<TimeEntry> entries = api.list(limit, page, user);
-        model.addAttribute("entries", entries);
+  @GetMapping
+  public String list(Model model,
+                     @RequestParam(defaultValue = "31") int limit,
+                     @RequestParam(defaultValue = "0") int page) throws NotAuthenticatedException {
+    final User user = userService.getCurrentUser();
+    final List<TimeEntry> entries = api.list(limit, page, user);
+    model.addAttribute("entries", entries);
 
-        // build pagination
-        final EntryCount maxEntries = api.countAvailableEntries(user);
-        final int lastPage = maxEntries.count / limit;
-        model.addAttribute("limit", limit);
-        model.addAttribute("lastPage", lastPage);
-        model.addAttribute("previousPage", (page > 0) ? (page - 1) : page);
-        model.addAttribute("nextPage", (page < lastPage) ? (page + 1) : page);
+    // build pagination
+    final EntryCount maxEntries = api.countAvailableEntries(user);
+    final int lastPage = maxEntries.count / limit;
+    model.addAttribute("limit", limit);
+    model.addAttribute("lastPage", lastPage);
+    model.addAttribute("previousPage", (page > 0) ? (page - 1) : page);
+    model.addAttribute("nextPage", (page < lastPage) ? (page + 1) : page);
 
-        return "entries/list";
+    return "entries/list";
+  }
+
+  @PostMapping
+  public String create(@ModelAttribute TimeEntry input) throws NotAuthenticatedException {
+    final User user = userService.getCurrentUser();
+
+    // duration is optional
+    Duration breakDuration = input.getBreakDuration() != null ? input.getBreakDuration() : Duration.of(0, ChronoUnit.SECONDS);
+    // stop is optional
+    Date stop = null;
+    Instant inputStop = input.getStop();
+    if (inputStop != null) {
+      stop = Date.from(inputStop);
     }
 
-    @PostMapping
-    public String create(@ModelAttribute TimeEntry input) throws NotAuthenticatedException {
-        final User user = userService.getCurrentUser();
+    api.update(input.getKey(),
+        Date.from(input.getStart()), stop, breakDuration.toMillis(),
+        input.getDescription(), input.getTags(), input.getProject(),
+        user);
 
-        // duration is optional
-        Duration breakDuration = input.getBreakDuration() != null ? input.getBreakDuration() : Duration.of(0, ChronoUnit.SECONDS);
-        // stop is optional
-        Date stop = null;
-        Instant inputStop = input.getStop();
-        if(inputStop != null) {
-            stop = Date.from(inputStop);
-        }
+    return "redirect:/entries";
+  }
 
-        api.update(input.getKey(),
-                Date.from(input.getStart()), stop, breakDuration.toMillis(),
-                input.getDescription(), input.getTags(), input.getProject(),
-                user);
-
-        return "redirect:/entries";
+  @GetMapping("/{key}")
+  public String get(Model model, @PathVariable String key) throws NotAuthenticatedException {
+    final User user = userService.getCurrentUser();
+    final TimeEntry entry = api.show(key, user);
+    if (entry != null) {
+      model.addAttribute("entry", entry);
     }
 
-    @GetMapping("/{key}")
-    public String get(Model model, @PathVariable String key) throws NotAuthenticatedException {
-        final User user = userService.getCurrentUser();
-        final TimeEntry entry = api.show(key, user);
-        if (entry != null) {
-            model.addAttribute("entry", entry);
-        }
+    return "entries/add";
+  }
 
-        return "entries/add";
-    }
+  @DeleteMapping("/{key}")
+  public String delete(@PathVariable String key) throws NotAuthenticatedException {
+    final User user = userService.getCurrentUser();
+    api.delete(key, user);
 
-    @DeleteMapping("/{key}")
-    public String delete(@PathVariable String key) throws NotAuthenticatedException {
-        final User user = userService.getCurrentUser();
-        api.delete(key, user);
+    return "redirect:/entries";
+  }
 
-        return "redirect:/entries";
-    }
+  @GetMapping("/add")
+  public String create(Model model) throws NotAuthenticatedException {
+    model.addAttribute("entry", new TimeEntry());
 
-    @GetMapping("/add")
-    public String create(Model model) throws NotAuthenticatedException {
-        model.addAttribute("entry", new TimeEntry());
+    final User user = userService.getCurrentUser();
+    UserSettings userSettings = api.getUserSettings(null, user);
+    int offset = userSettings.getTimezone().getOffset(Instant.now().toEpochMilli());
+    model.addAttribute("timezoneOffset", offset);
 
-        final User user = userService.getCurrentUser();
-        UserSettings userSettings = api.getUserSettings(null, user);
-        int offset = userSettings.getTimezone().getOffset(Instant.now().toEpochMilli());
-        model.addAttribute("timezoneOffset", offset);
+    return "entries/add";
+  }
 
-        return "entries/add";
-    }
-
-    @InitBinder
-    public void initBinder(WebDataBinder binder) {
-        binder.registerCustomEditor(Date.class, new CustomDateEditor(Application.DATE_FORMAT, true, 19));
-    }
+  @InitBinder
+  public void initBinder(WebDataBinder binder) {
+    binder.registerCustomEditor(Date.class, new CustomDateEditor(Application.DATE_FORMAT, true, 19));
+  }
 }

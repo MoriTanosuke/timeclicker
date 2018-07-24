@@ -35,73 +35,73 @@ import org.junit.runner.RunWith;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 public class HomeControllerTest {
-    @Autowired
-    private MockMvc client;
+  @Autowired
+  private MockMvc client;
 
-    private final LocalServiceTestHelper helper = new LocalServiceTestHelper(
-            new LocalUserServiceTestConfig(),
-            new LocalDatastoreServiceTestConfig());
+  private final LocalServiceTestHelper helper = new LocalServiceTestHelper(
+      new LocalUserServiceTestConfig(),
+      new LocalDatastoreServiceTestConfig());
 
 
-    @Before
-    public void setUp() {
-        helper
-                .setEnvEmail("tester@localhost.localdomain")
-                .setEnvAuthDomain("localhost.localdomain")
-                .setEnvIsLoggedIn(true)
-                // necessary to set the user ID, otherwise it is NULL
-                .setEnvAttributes(ImmutableMap.of("com.google.appengine.api.users.UserService.user_id_key", "123"))
-                .setUp();
-    }
+  @Before
+  public void setUp() {
+    helper
+        .setEnvEmail("tester@localhost.localdomain")
+        .setEnvAuthDomain("localhost.localdomain")
+        .setEnvIsLoggedIn(true)
+        // necessary to set the user ID, otherwise it is NULL
+        .setEnvAttributes(ImmutableMap.of("com.google.appengine.api.users.UserService.user_id_key", "123"))
+        .setUp();
+  }
 
-    @After
-    public void tearDown() {
-        helper.tearDown();
-    }
+  @After
+  public void tearDown() {
+    helper.tearDown();
+  }
 
-    @Test
-    public void homeWithoutActiveEntry() throws Exception {
-        final String value = "No active entry found";
-        client.perform(MockMvcRequestBuilders.get("/"))
-                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
-                .andExpect(MockMvcResultMatchers.content().string(new BaseMatcher<String>() {
-                    @Override
-                    public boolean matches(Object item) {
-                        return ((String)item).contains(value);
-                    }
+  @Test
+  public void homeWithoutActiveEntry() throws Exception {
+    final String value = "No active entry found";
+    client.perform(MockMvcRequestBuilders.get("/"))
+        .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+        .andExpect(MockMvcResultMatchers.content().string(new BaseMatcher<String>() {
+          @Override
+          public boolean matches(Object item) {
+            return ((String) item).contains(value);
+          }
 
-                    @Override
-                    public void describeTo(Description description) {
-                        description.appendText("does not contain")
-                                .appendValue(value);
-                    }
-                }));
-    }
+          @Override
+          public void describeTo(Description description) {
+            description.appendText("does not contain")
+                .appendValue(value);
+          }
+        }));
+  }
 
-    @Test
-    public void homeWithActiveEntry() throws Exception {
-        UserService userService = UserServiceFactory.getUserService();
-        DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
+  @Test
+  public void homeWithActiveEntry() throws Exception {
+    UserService userService = UserServiceFactory.getUserService();
+    DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
 
-        User currentUser = userService.getCurrentUser();
-        final Entity entry = TimeclickerEntityFactory.createTimeEntryEntity(currentUser);
-        entry.setProperty("start", Date.from(Instant.now().minus(1, ChronoUnit.MINUTES)));
-        ds.put(entry);
+    User currentUser = userService.getCurrentUser();
+    final Entity entry = TimeclickerEntityFactory.createTimeEntryEntity(currentUser);
+    entry.setProperty("start", Date.from(Instant.now().minus(1, ChronoUnit.MINUTES)));
+    ds.put(entry);
 
-        final String value = "active since";
-        client.perform(MockMvcRequestBuilders.get("/"))
-                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
-                .andExpect(MockMvcResultMatchers.content().string(new BaseMatcher<String>() {
-                    @Override
-                    public boolean matches(Object item) {
-                        return ((String)item).contains(value);
-                    }
+    final String value = "active since";
+    client.perform(MockMvcRequestBuilders.get("/"))
+        .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
+        .andExpect(MockMvcResultMatchers.content().string(new BaseMatcher<String>() {
+          @Override
+          public boolean matches(Object item) {
+            return ((String) item).contains(value);
+          }
 
-                    @Override
-                    public void describeTo(Description description) {
-                        description.appendText("does not contain")
-                                .appendValue(value);
-                    }
-                }));
-    }
+          @Override
+          public void describeTo(Description description) {
+            description.appendText("does not contain")
+                .appendValue(value);
+          }
+        }));
+  }
 }
