@@ -52,8 +52,6 @@ public class TimeclickerEntityFactory {
    * @return a {@link TimeEntry} with property <code>start</code> set to current date
    */
   public static Entity createTimeEntryEntity(@NotNull User user) {
-    if (user == null) throw new IllegalArgumentException("No user provided, can not create entity");
-
     Entity timeEntryEntity = new Entity("TimeEntry");
     timeEntryEntity.setProperty(TimeEntry.ENTRY_START, new Date());
     // set stop=null to make if queriable
