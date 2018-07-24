@@ -15,7 +15,7 @@ public class StringToInstantConverter implements Converter<String, Instant> {
     if (source == null || source.isEmpty()) return null;
 
     try {
-      return Application.DATE_FORMAT.parse(source).toInstant();
+      return Application.getDateFormat().parse(source).toInstant();
     } catch (ParseException e) {
       throw new IllegalArgumentException("Can not parse date: " + source, e);
     }

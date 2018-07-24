@@ -15,8 +15,11 @@ public class Application implements WebMvcConfigurer {
 
   // TODO get locale from user settings
   public static final Locale LOCALE = Locale.getDefault();
-  public static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
-  public static final DateFormat DATE_FORMAT = new SimpleDateFormat(DATE_PATTERN, LOCALE);
+  private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
+
+  public static DateFormat getDateFormat() {
+    return new SimpleDateFormat(DATE_PATTERN, LOCALE);
+  }
 
   public static void main(String[] args) {
     SpringApplication.run(Application.class, args);

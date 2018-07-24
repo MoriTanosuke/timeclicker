@@ -12,6 +12,6 @@ import java.time.Instant;
 public class InstantToStringConverter implements Converter<Instant, String> {
   @Override
   public String convert(Instant source) {
-    return Application.DATE_FORMAT.format(Date.from(source));
+    return Application.getDateFormat().format(Date.from(source));
   }
 }

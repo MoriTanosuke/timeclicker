@@ -114,6 +114,6 @@ public class EntryController {
 
   @InitBinder
   public void initBinder(WebDataBinder binder) {
-    binder.registerCustomEditor(Date.class, new CustomDateEditor(Application.DATE_FORMAT, true, 19));
+    binder.registerCustomEditor(Date.class, new CustomDateEditor(Application.getDateFormat(), true, 19));
   }
 }
