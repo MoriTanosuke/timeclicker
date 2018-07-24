@@ -28,7 +28,7 @@ public class TimeSumUtility {
   private static final Logger LOGGER = LoggerFactory.getLogger(TimeSumUtility.class);
 
   public static double convertToHours(long workingDuration) {
-    return new BigDecimal(workingDuration / (60.0 * 60.0 * 1000.0)).setScale(2, RoundingMode.HALF_UP).doubleValue();
+    return BigDecimal.valueOf(workingDuration / (60.0 * 60.0 * 1000.0)).setScale(2, RoundingMode.HALF_UP).doubleValue();
   }
 
   public String[] getSortedKeys(final DateFormat dateFormat, final Map<Date, Number> mapOfSums) {
