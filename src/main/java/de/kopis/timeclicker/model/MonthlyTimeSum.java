@@ -24,7 +24,7 @@ public class MonthlyTimeSum extends TimeSum {
     lastOfMonth = makeLastOfMonth(month);
 
     expectedDuration = WorkdayCalculator.getWorkingDays(this.firstOfMonth, lastOfMonth) * Application.HOURS_PER_DAY_IN_MILLISECONDS;
-    LOGGER.debug("Setting expected duration for " + this.firstOfMonth + " to " + expectedDuration);
+    LOGGER.debug("Setting expected duration for {} to {}", this.firstOfMonth, expectedDuration);
   }
 
   public static Instant makeLastOfMonth(Instant month) {
@@ -37,7 +37,7 @@ public class MonthlyTimeSum extends TimeSum {
     }
     // roll back one day, we counted 1 too far
     cal.add(Calendar.DAY_OF_MONTH, -1);
-    LOGGER.debug("Last day of firstOfMonth: " + cal.get(Calendar.DAY_OF_MONTH));
+    LOGGER.debug("Last day of firstOfMonth: {}", cal.get(Calendar.DAY_OF_MONTH));
     return cal.getTime().toInstant();
   }
 
