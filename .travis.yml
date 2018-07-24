@@ -1,10 +1,22 @@
 language: java
-
 jdk:
   - oraclejdk8
+sudo: false
+install: true
 
-after_success:
-  - python <(curl -s https://raw.githubusercontent.com/TouK/sputnik-ci/master/sputnik-ci.py)
+addons:
+  sonarqube:
+    organization: "moritanosuke-github"
+    token:
+      secure: "F8D0gMee0UkDgM8oy+uAIpZqyJUoTTTky6WFrZg0UlKEyYXn9W7/mZPYvtZmSE/rXu3Rp2JpPWvB8Vmt0u9hQ8jf5va1mVXE/yoJxCzS2LPn8JCLUlIRzD4g91Bbfasx4BH4qK8zwa3PFVXwm6xi6drTHYQWiF41tvvuQiPSXJqVB/RAgbC/3amUXlmj++i1kD8Nbn4DOpQWdHlLwzehgy+XesKdoVdafGKXhzGBbERes4MKvqo0YslX5N22oOPLcWL8ePpLs7lcgTTi5a4GjXh5G3RkeoRNs3iZReXJ02lQXP5fotgG27WutLallbyngWahORlbpTref8CAz7Hr5vDXHr0kKakxfB4TyGA0M4YJf/cinY/dXInkMMmTFDMz4lYadFVb3P0V6pjEMyRjaJhrC3KUDfe94QwBq5DitSvumcMtCeoUdj0KYwC67jo+1GT8kWvC2u1OHuv1TD5LIbiXosemNlfykGIKv+vUY6jXv4Azj2h4+sOtNaB4Effc0n4ARrYSYRtpfaZy30wqt49jxRaXFeDDsFxhnwDPgOnkzwmMxOKPGdTeKVXFFAhijAs85P6WtJF+HVvs5tqhMLPlTexEOhjvLwo3g2VaX829Lp+niuX75KePFdpud+1kZnUXlQChFS/vyXb6J2Y0l0VD7vGY8etWEgp8gvlMb5w="
+
+script:
+  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar
+
+cache:
+  directories:
+    - '$HOME/.m2/repository'
+    - '$HOME/.sonar/cache'
 
 # disabled because of https://github.com/travis-ci/dpl/issues/389
 #deploy:
