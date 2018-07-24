@@ -2,7 +2,7 @@ Simple time tracking application hosted on Google AppEngine
 -----------------------------------------------------------
 
 [![Build Status](https://travis-ci.org/MoriTanosuke/timeclicker.svg)](https://travis-ci.org/MoriTanosuke/timeclicker)
-[![Sputnik](https://sputnik.ci/conf/badge)](https://sputnik.ci/app#/builds/MoriTanosuke/timeclicker)
+[![Sonarcloud](https://sonarcloud.io/api/project_badges/measure?project=de.kopis.timeclicker%3Atimeclicker&metric=alert_status)](https://sonarcloud.io/dashboard?id=de.kopis.timeclicker%3Atimeclicker)
 
 This application fits my needs of a simple 1-button application to track my time spent in the office. It's just that: one button to start/stop tracking and a simple webpage displaying the overall sum of time that I spent in the office.
 
