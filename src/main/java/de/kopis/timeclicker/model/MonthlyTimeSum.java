@@ -1,6 +1,5 @@
 package de.kopis.timeclicker.model;
 
-import de.kopis.timeclicker.Application;
 import de.kopis.timeclicker.utils.WorkdayCalculator;
 
 import java.sql.Date;
@@ -16,14 +15,16 @@ public class MonthlyTimeSum extends TimeSum {
 
   private final Instant firstOfMonth;
   private final Instant lastOfMonth;
-  private final long expectedDuration;
+  private final Duration expectedDuration;
 
-  public MonthlyTimeSum(Instant month, Duration duration) {
+  public MonthlyTimeSum(Instant month, Duration duration, Duration workPerDay) {
     super(duration);
     this.firstOfMonth = makeFirstOfMonth(month);
     lastOfMonth = makeLastOfMonth(month);
 
-    expectedDuration = WorkdayCalculator.getWorkingDays(this.firstOfMonth, lastOfMonth) * Application.HOURS_PER_DAY_IN_MILLISECONDS;
+    final int workingDays = WorkdayCalculator.getWorkingDays(this.firstOfMonth, lastOfMonth);
+    // TODO get user settings
+    expectedDuration = workPerDay.multipliedBy(workingDays);
     LOGGER.debug("Setting expected duration for {} to {}", this.firstOfMonth, expectedDuration);
   }
 
@@ -59,7 +60,7 @@ public class MonthlyTimeSum extends TimeSum {
     return firstOfMonth;
   }
 
-  public long getExpectedDuration() {
+  public Duration getExpectedDuration() {
     return expectedDuration;
   }
 

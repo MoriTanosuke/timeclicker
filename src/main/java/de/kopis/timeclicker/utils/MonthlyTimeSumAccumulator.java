@@ -13,10 +13,10 @@ import java.util.Map;
 public class MonthlyTimeSumAccumulator {
   private final Map<Instant, MonthlyTimeSum> accumulated = new HashMap<>();
 
-  public void accumulate(final TimeEntry entry1) {
+  public void accumulate(final TimeEntry entry1, Duration workPerDay) {
     final Instant month1 = MonthlyTimeSum.makeFirstOfMonth(entry1.getStart());
     if (!accumulated.containsKey(month1)) {
-      accumulated.put(month1, new MonthlyTimeSum(entry1.getStart(), Duration.of(0, ChronoUnit.SECONDS)));
+      accumulated.put(month1, new MonthlyTimeSum(entry1.getStart(), Duration.of(0, ChronoUnit.SECONDS), workPerDay));
     }
     accumulated.get(month1).add(entry1);
   }

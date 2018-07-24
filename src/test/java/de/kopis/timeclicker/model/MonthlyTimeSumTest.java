@@ -1,7 +1,5 @@
 package de.kopis.timeclicker.model;
 
-import de.kopis.timeclicker.Application;
-
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
@@ -14,13 +12,15 @@ import static org.junit.Assert.fail;
 
 public class MonthlyTimeSumTest extends AbstractTimeEntryTest {
 
+  public static final Duration HOURS_PER_DAY = Duration.ofHours(8);
+
   @Test
   public void testIsFirstOfMonth() {
     Calendar cal = Calendar.getInstance();
     cal.set(Calendar.MONTH, Calendar.SEPTEMBER);
     cal.set(Calendar.DAY_OF_MONTH, 13);
 
-    final MonthlyTimeSum sum = new MonthlyTimeSum(cal.getTime().toInstant(), Duration.of(0, ChronoUnit.SECONDS));
+    final MonthlyTimeSum sum = new MonthlyTimeSum(cal.getTime().toInstant(), Duration.ZERO, HOURS_PER_DAY);
     Calendar sumCal = Calendar.getInstance();
     sumCal.setTime(Date.from(sum.getDate()));
     assertEquals(Calendar.SEPTEMBER, sumCal.get(Calendar.MONTH));
@@ -35,10 +35,10 @@ public class MonthlyTimeSumTest extends AbstractTimeEntryTest {
     cal.set(Calendar.DAY_OF_MONTH, 13);
     // expect 30 days for Sept 2015, 22 workdays
 
-    final MonthlyTimeSum sum = new MonthlyTimeSum(cal.getTime().toInstant(), Duration.of(1234, ChronoUnit.MILLIS));
+    final MonthlyTimeSum sum = new MonthlyTimeSum(cal.getTime().toInstant(), Duration.of(1234, ChronoUnit.MILLIS), HOURS_PER_DAY);
     Calendar sumCal = Calendar.getInstance();
     sumCal.setTime(Date.from(sum.getDate()));
-    assertEquals(22 * Application.HOURS_PER_DAY_IN_MILLISECONDS, sum.getExpectedDuration());
+    assertEquals(HOURS_PER_DAY.multipliedBy(22), sum.getExpectedDuration());
   }
 
   @Test
@@ -47,13 +47,14 @@ public class MonthlyTimeSumTest extends AbstractTimeEntryTest {
     cal.set(Calendar.YEAR, 2015);
     cal.set(Calendar.MONTH, Calendar.SEPTEMBER);
     cal.set(Calendar.DAY_OF_MONTH, 13);
-    final MonthlyTimeSum sum = new MonthlyTimeSum(cal.getTime().toInstant(), Duration.of(0, ChronoUnit.MILLIS));
+    // expect 30 days for Sept 2015, 22 workdays
+    final MonthlyTimeSum sum = new MonthlyTimeSum(cal.getTime().toInstant(), Duration.ZERO, HOURS_PER_DAY);
 
     sum.add(new TimeSum(Duration.of(1234, ChronoUnit.MILLIS)));
     sum.add(new TimeSum(Duration.of(4321, ChronoUnit.MILLIS)));
 
     assertEquals(Duration.of(5555, ChronoUnit.MILLIS), sum.getDuration());
-    assertEquals(22 * Application.HOURS_PER_DAY_IN_MILLISECONDS, sum.getExpectedDuration());
+    assertEquals(HOURS_PER_DAY.multipliedBy(22), sum.getExpectedDuration());
   }
 
   @Test
@@ -77,7 +78,7 @@ public class MonthlyTimeSumTest extends AbstractTimeEntryTest {
     final Date d22 = cal.getTime();
     final TimeEntry entryTwoHours = buildTimeEntry(d21, d22);
 
-    final MonthlyTimeSum sum1 = new MonthlyTimeSum(d1.toInstant(), Duration.of(0, ChronoUnit.MILLIS));
+    final MonthlyTimeSum sum1 = new MonthlyTimeSum(d1.toInstant(), Duration.ZERO, HOURS_PER_DAY);
     sum1.add(entryOneHour);
     sum1.add(entryTwoHours);
 
@@ -106,7 +107,7 @@ public class MonthlyTimeSumTest extends AbstractTimeEntryTest {
     final Date d22 = cal.getTime();
     final TimeEntry entryInOctober = buildTimeEntry(d21, d22);
 
-    final MonthlyTimeSum sum1 = new MonthlyTimeSum(d1.toInstant(), Duration.of(0, ChronoUnit.MILLIS));
+    final MonthlyTimeSum sum1 = new MonthlyTimeSum(d1.toInstant(), Duration.ZERO, HOURS_PER_DAY);
     sum1.add(entryInSeptember);
     // this will throw an exception
     try {

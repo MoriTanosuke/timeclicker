@@ -14,6 +14,8 @@ import static org.junit.Assert.assertEquals;
 
 public class MonthlyTimeSumAccumulatorTest extends AbstractTimeEntryTest {
 
+  private static final Duration HOURS_PER_DAY = Duration.ofHours(8);
+
   @Test
   public void canAccumulateTimeEntries() {
     Calendar cal = Calendar.getInstance();
@@ -31,8 +33,8 @@ public class MonthlyTimeSumAccumulatorTest extends AbstractTimeEntryTest {
     final TimeEntry entry2 = buildTimeEntry(d21, d22);
 
     final MonthlyTimeSumAccumulator accumulator = new MonthlyTimeSumAccumulator();
-    accumulator.accumulate(entry1);
-    accumulator.accumulate(entry2);
+    accumulator.accumulate(entry1, HOURS_PER_DAY);
+    accumulator.accumulate(entry2, HOURS_PER_DAY);
 
     assertEquals(2, accumulator.getAll().size());
     assertEquals(Duration.of(2 * 60 * 60, ChronoUnit.SECONDS), accumulator.get(entry1.getStart()).getDuration());
