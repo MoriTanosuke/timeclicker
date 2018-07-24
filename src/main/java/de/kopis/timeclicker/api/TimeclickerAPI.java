@@ -311,7 +311,6 @@ public class TimeclickerAPI {
         LOGGER.info("Searching from " + firstDate + " to " + lastDate);
         final List<Entity> entities = searchTimeEntries(user, firstDate, lastDate);
 
-
         // calculate the sum from the result list
         final TimeSum sum = new TimeSum(Duration.of(0, ChronoUnit.SECONDS));
         for (Entity e : entities) {

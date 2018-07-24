@@ -18,6 +18,22 @@
         <th:block th:if="${entry == null}">
             No active entry found. <a th:href="@{/entries/add}">Start a new one.</a>
         </th:block>
+
+        <h2>Quick overview</h2>
+        <table class="table table-sm" style="width: auto !important;">
+            <tr>
+                <th scope="row">Daily</th>
+                <td th:text="${dailySum}">0</td>
+            </tr>
+            <tr>
+                <th scope="row">Weekly</th>
+                <td th:text="${weeklySum}">0</td>
+            </tr>
+            <tr>
+                <th scope="row">Monthly</th>
+                <td th:text="${monthlySum}">0</td>
+            </tr>
+        </table>
     </div>
 </main>
 
