@@ -11,6 +11,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import com.google.appengine.api.users.User;
@@ -24,12 +26,13 @@ public class ChartController {
   private final UserService userService = UserServiceFactory.getUserService();
 
   @GetMapping("/weekly")
-  public String getDailyChart(Model model) throws NotAuthenticatedException {
+  public String getWeeklyChart(Model model) throws NotAuthenticatedException {
     final User user = userService.getCurrentUser();
 
     // 12 weeks
     final List<TimeEntry> allEntries = api.list(31 * 12, 0, user);
     final List<TimeSumWithDate> sortedPerWeek = new TimeSumUtility().calculateWeeklyTimeSum(allEntries);
+    Collections.sort(sortedPerWeek, Comparator.comparing(TimeSumWithDate::getDate));
     model.addAttribute("weeklySums", sortedPerWeek);
 
     return "charts/weekly";
