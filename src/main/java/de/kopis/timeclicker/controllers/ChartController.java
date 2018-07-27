@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -22,15 +23,16 @@ import com.google.appengine.api.users.UserServiceFactory;
 @Controller
 @RequestMapping("/charts")
 public class ChartController {
-  public static final int LIMIT = 31 * 12;
   private final TimeclickerAPI api = new TimeclickerAPI();
   private final UserService userService = UserServiceFactory.getUserService();
 
   @GetMapping("/weekly")
-  public String getWeeklyChart(Model model) throws NotAuthenticatedException {
+  public String getWeeklyChart(Model model,
+                               @RequestParam(defaultValue = "31") int limit,
+                               @RequestParam(defaultValue = "0") int page) throws NotAuthenticatedException {
     final User user = userService.getCurrentUser();
 
-    final List<TimeEntry> allEntries = api.list(LIMIT, 0, user);
+    final List<TimeEntry> allEntries = api.list(limit, page, user);
     final List<TimeSumWithDate> sortedPerWeek = new TimeSumUtility().calculateWeeklyTimeSum(allEntries);
     Collections.sort(sortedPerWeek, Comparator.comparing(TimeSumWithDate::getDate));
     model.addAttribute("weeklySums", sortedPerWeek);
@@ -39,10 +41,12 @@ public class ChartController {
   }
 
   @GetMapping("/daily")
-  public String getDailyChart(Model model) throws NotAuthenticatedException {
+  public String getDailyChart(Model model,
+                              @RequestParam(defaultValue = "31") int limit,
+                              @RequestParam(defaultValue = "0") int page) throws NotAuthenticatedException {
     final User user = userService.getCurrentUser();
 
-    final List<TimeEntry> allEntries = api.list(LIMIT, 0, user);
+    final List<TimeEntry> allEntries = api.list(limit, page, user);
     final List<TimeSumWithDate> sortedPerDay = new TimeSumUtility().calculateDailyTimeSum(allEntries);
     Collections.sort(sortedPerDay, Comparator.comparing(TimeSumWithDate::getDate));
     model.addAttribute("dailySums", sortedPerDay);
