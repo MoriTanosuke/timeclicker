@@ -22,6 +22,7 @@ import com.google.appengine.api.users.UserServiceFactory;
 @Controller
 @RequestMapping("/charts")
 public class ChartController {
+  public static final int LIMIT = 31 * 12;
   private final TimeclickerAPI api = new TimeclickerAPI();
   private final UserService userService = UserServiceFactory.getUserService();
 
@@ -29,12 +30,23 @@ public class ChartController {
   public String getWeeklyChart(Model model) throws NotAuthenticatedException {
     final User user = userService.getCurrentUser();
 
-    // 12 weeks
-    final List<TimeEntry> allEntries = api.list(31 * 12, 0, user);
+    final List<TimeEntry> allEntries = api.list(LIMIT, 0, user);
     final List<TimeSumWithDate> sortedPerWeek = new TimeSumUtility().calculateWeeklyTimeSum(allEntries);
     Collections.sort(sortedPerWeek, Comparator.comparing(TimeSumWithDate::getDate));
     model.addAttribute("weeklySums", sortedPerWeek);
 
     return "charts/weekly";
+  }
+
+  @GetMapping("/daily")
+  public String getDailyChart(Model model) throws NotAuthenticatedException {
+    final User user = userService.getCurrentUser();
+
+    final List<TimeEntry> allEntries = api.list(LIMIT, 0, user);
+    final List<TimeSumWithDate> sortedPerDay = new TimeSumUtility().calculateDailyTimeSum(allEntries);
+    Collections.sort(sortedPerDay, Comparator.comparing(TimeSumWithDate::getDate));
+    model.addAttribute("dailySums", sortedPerDay);
+
+    return "charts/daily";
   }
 }

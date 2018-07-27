@@ -12,7 +12,7 @@
 <main role="main">
     <div class="container-fluid">
         <h1>Timeclicker</h1>
-        <h2>Weekly sum</h2>
+        <h2>Daily sum</h2>
 
         <div id="chart" style="width:100%; height:400px;"></div>
 
@@ -24,7 +24,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="entry : ${weeklySums}">
+            <tr th:each="entry : ${dailySums}">
                 <td th:text="${entry.date}">start</td>
                 <td th:text="${{entry.duration}}">stop</td>
             </tr>
@@ -52,10 +52,11 @@
 
         return seconds + (minutes * 60) + (hours * 60 * 60);
     }
+
     $(function () {
         /*<![CDATA[*/
         var data = [];
-        [[${weeklySums}]].forEach(function (e) {
+        [[${dailySums}]].forEach(function (e) {
             var d = Date.parse(e.date);
             data.push([d, parseDuration(e.readableDuration)]);
         });
@@ -66,7 +67,7 @@
                     type: 'column'
                 },
                 title: {
-                    text: 'Weekly'
+                    text: 'Daily'
                 },
                 xAxis: {
                     title: {
