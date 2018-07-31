@@ -11,7 +11,6 @@ public class DurationUtils {
 
   public static String getReadableDuration(Duration duration) {
     String readableDuration = formatDuration(duration);
-    LOGGER.debug("readable duration: " + readableDuration);
     if (duration.isNegative()) {
       readableDuration = "-" + readableDuration;
     }
