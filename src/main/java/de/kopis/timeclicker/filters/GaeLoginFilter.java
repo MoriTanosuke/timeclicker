@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 @Component
 public class GaeLoginFilter implements Filter {
-  private static final Logger LOG = LoggerFactory.getLogger(GaeLoginFilter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(GaeLoginFilter.class);
 
   @Override
   public void init(FilterConfig filterConfig) throws ServletException {
@@ -35,7 +35,7 @@ public class GaeLoginFilter implements Filter {
       final UserService userService = UserServiceFactory.getUserService();
       if (userService.getCurrentUser() == null) {
         final String loginURL = userService.createLoginURL("/");
-        LOG.debug("User not logged in, redirecting to login URL {}", loginURL);
+        LOGGER.debug("User not logged in, redirecting to login URL {}", loginURL);
         ((HttpServletResponse) response).sendRedirect(loginURL);
         return;
       }

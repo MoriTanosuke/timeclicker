@@ -47,7 +47,7 @@ public class TimeclickerAPI {
     if (entry != null) {
       DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
       datastore.delete(KeyFactory.stringToKey(entry.getKey()));
-      LOGGER.info("User " + user.getUserId() + " deleted entry " + entry.getKey());
+      LOGGER.info("User {} deleted entry {}", user.getUserId(), entry.getKey());
     } else {
       LOGGER.warn("No entry found for user {} and key {}", user, key);
     }
@@ -68,7 +68,7 @@ public class TimeclickerAPI {
       datastore.put(timeEntryEntity);
 
       TimeEntry entry = TimeclickerEntityFactory.buildTimeEntryFromEntity(timeEntryEntity);
-      LOGGER.info("User " + user.getUserId() + " stopped entry " + timeEntryEntity.getKey());
+      LOGGER.info("User {} stopped entry {}", user.getUserId(), timeEntryEntity.getKey());
       return entry;
     } catch (EntityNotFoundException e) {
       LOGGER.warn("Can not find entity with key {}", KeyFactory.stringToKey(key));
@@ -95,7 +95,7 @@ public class TimeclickerAPI {
 
     TimeEntry entry = TimeclickerEntityFactory.buildTimeEntryFromEntity(timeEntryEntity);
 
-    LOGGER.info("User " + user.getUserId() + " started a new entry");
+    LOGGER.info("User {} started a new entry", user.getUserId());
     return entry;
   }
 
@@ -110,7 +110,7 @@ public class TimeclickerAPI {
         throw new RuntimeException("Referenced entry does not belong to this user!");
       }
       TimeEntry entry = TimeclickerEntityFactory.buildTimeEntryFromEntity(timeEntryEntity);
-      LOGGER.info("User " + user.getUserId() + " showed entry " + entry.getKey());
+      LOGGER.info("User {} showed entry {}", user.getUserId(), entry.getKey());
       return entry;
     } catch (EntityNotFoundException e) {
       LOGGER.warn("Can not find entity with key {}", KeyFactory.stringToKey(key));
@@ -140,7 +140,8 @@ public class TimeclickerAPI {
           throw new RuntimeException("Referenced entry does not belong to this user!");
         }
       } else {
-        LOGGER.info("User " + user.getUserId() + " starting to save new entry for project=" + project + " with start=" + start + " stop=" + stop);
+        LOGGER.info("User {} starting to save new entry for project={} with start={} stop={}",
+            user.getUserId(), project, start, stop);
         timeEntryEntity = TimeclickerEntityFactory.createTimeEntryEntity(user);
       }
       timeEntryEntity.setProperty(TimeEntry.ENTRY_START, start);
@@ -150,7 +151,7 @@ public class TimeclickerAPI {
       timeEntryEntity.setProperty(TimeEntry.ENTRY_DESCRIPTION, description);
       timeEntryEntity.setProperty(TimeEntry.ENTRY_TAGS, tags);
       datastore.put(timeEntryEntity);
-      LOGGER.info("User " + user.getUserId() + " updated entry " + timeEntryEntity.getKey());
+      LOGGER.info("User {} updated entry {}", user.getUserId(), timeEntryEntity.getKey());
     } catch (EntityNotFoundException e) {
       LOGGER.warn("Can not find entity with key {}", KeyFactory.stringToKey(key));
     }
@@ -174,7 +175,7 @@ public class TimeclickerAPI {
     datastore.put(timeEntryEntity);
 
     TimeEntry entry = TimeclickerEntityFactory.buildTimeEntryFromEntity(timeEntryEntity);
-    LOGGER.info("User " + user.getUserId() + " stopped the latest entry");
+    LOGGER.info("User {} stopped the latest entry", user.getUserId());
     return entry;
   }
 
@@ -193,7 +194,7 @@ public class TimeclickerAPI {
     Entity entity = findLatest(user, datastore);
     if (entity != null) {
       TimeEntry timeEntry = TimeclickerEntityFactory.buildTimeEntryFromEntity(entity);
-      LOGGER.info("User " + user.getUserId() + " loaded the latest entry");
+      LOGGER.info("User {} loaded the latest entry", user.getUserId());
       return timeEntry;
     }
 
@@ -211,7 +212,7 @@ public class TimeclickerAPI {
       final TimeEntry entry = TimeclickerEntityFactory.buildTimeEntryFromEntity(timeEntryEntity);
       l.add(entry);
     }
-    LOGGER.info("User " + user.getUserId() + " listed all entries");
+    LOGGER.info("User {} listed all entries", user.getUserId());
     return l;
   }
 
@@ -241,7 +242,7 @@ public class TimeclickerAPI {
       sum.addDuration(duration);
     }
 
-    LOGGER.info("User " + user.getUserId() + " calculated overall sum: " + sum);
+    LOGGER.info("User {} calculated overall sum={}", user.getUserId(), sum);
     return sum;
   }
 
@@ -257,7 +258,7 @@ public class TimeclickerAPI {
     // get first of next month
     cal.add(Calendar.MONTH, 1);
     final Date lastDate = cal.getTime();
-    LOGGER.info("Searching from " + firstDate + " to " + lastDate);
+    LOGGER.info("Searching from {} to {}", firstDate, lastDate);
     final List<Entity> entities = searchTimeEntries(user, firstDate, lastDate);
 
 
@@ -268,7 +269,7 @@ public class TimeclickerAPI {
       sum.addDuration(duration);
     }
 
-    LOGGER.info("User " + user.getUserId() + " calculated monthly sum: " + sum);
+    LOGGER.info("User {} calculated monthly sum={}", user.getUserId(), sum);
     return sum;
   }
 
@@ -284,7 +285,7 @@ public class TimeclickerAPI {
     // get first of next week
     cal.add(Calendar.DAY_OF_YEAR, 7);
     final Date lastDate = cal.getTime();
-    LOGGER.info("Searching from " + firstDate + " to " + lastDate);
+    LOGGER.info("Searching from {} to {}", firstDate, lastDate);
     final List<Entity> entities = searchTimeEntries(user, firstDate, lastDate);
 
 
@@ -295,7 +296,7 @@ public class TimeclickerAPI {
       sum.addDuration(duration);
     }
 
-    LOGGER.info("User " + user.getUserId() + " calculated weekly sum: " + sum);
+    LOGGER.info("User {} calculated weekly sum={}", user.getUserId(), sum);
     return sum;
   }
 
@@ -308,7 +309,7 @@ public class TimeclickerAPI {
     // get tomorrow
     cal.add(Calendar.DAY_OF_YEAR, 1);
     final Date lastDate = cal.getTime();
-    LOGGER.info("Searching from " + firstDate + " to " + lastDate);
+    LOGGER.info("Searching from {} to {}", firstDate, lastDate);
     final List<Entity> entities = searchTimeEntries(user, firstDate, lastDate);
 
     // calculate the sum from the result list
@@ -318,7 +319,7 @@ public class TimeclickerAPI {
       sum.addDuration(duration);
     }
 
-    LOGGER.info("User " + user.getUserId() + " calculated daily sum: " + sum);
+    LOGGER.info("User {} calculated daily sum={}", user.getUserId(), sum);
     return sum;
   }
 

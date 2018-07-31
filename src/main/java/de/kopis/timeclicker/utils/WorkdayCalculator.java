@@ -14,7 +14,7 @@ public class WorkdayCalculator {
   private static final List<Integer> WORKDAYS_WEEK = Arrays.asList(Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY);
 
   public static int getWorkingDays(final Instant startDate, final Instant endDate) {
-    LOGGER.debug("Calculating work days from " + startDate + " to " + endDate);
+    LOGGER.debug("Calculating work days from {} to {}", startDate, endDate);
 
     final Calendar startCal = Calendar.getInstance();
     startCal.setTime(Date.from(startDate));
@@ -49,7 +49,7 @@ public class WorkdayCalculator {
       workDays = 1;
     }
 
-    LOGGER.debug("Workdays: " + workDays);
+    LOGGER.debug("Workdays=", workDays);
     return workDays;
   }
 

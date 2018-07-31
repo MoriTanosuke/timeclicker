@@ -19,7 +19,7 @@ public class FormattedDurationPrinter {
       readableDuration = String.format("%02d hours, %02d minutes, %02d seconds", d.getDays() * 24 + d.getHours(),
           d.getMinutes(), d.getSeconds());
     } catch (DatatypeConfigurationException e) {
-      LOGGER.warn("Can not format duration: " + e.getMessage());
+      LOGGER.warn("Can not format duration={}", e.getMessage());
     }
     return readableDuration;
   }

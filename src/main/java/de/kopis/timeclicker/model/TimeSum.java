@@ -50,7 +50,7 @@ public class TimeSum implements Serializable, Comparable {
     }
 
     Duration duration = Duration.between(start, stop).minus(entry.getBreakDuration());
-    LOGGER.debug("Calculated duration: " + duration);
+    LOGGER.debug("Calculated duration={}", duration);
     return duration;
   }
 

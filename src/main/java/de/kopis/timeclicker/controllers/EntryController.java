@@ -39,7 +39,7 @@ public class EntryController {
 
   private UserService userService = UserServiceFactory.getUserService();
 
-  private final Logger LOG = LoggerFactory.getLogger(EntryController.class);
+  private final Logger LOGGER = LoggerFactory.getLogger(EntryController.class);
 
   @GetMapping
   public String list(Model model,
