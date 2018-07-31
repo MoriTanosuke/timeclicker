@@ -18,12 +18,14 @@
             <tr>
                 <th scope="col">Date</th>
                 <th scope="col">Sum</th>
+                <th scope="col">Remaining</th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="entry : ${weeklySums}">
                 <td th:text="${entry.date}">start</td>
                 <td th:text="${{entry.duration}}">stop</td>
+                <td th:text="${{remaining.get(entry.date)}}">remains</td>
             </tr>
             </tbody>
         </table>
