@@ -6,19 +6,29 @@
     <div class="collapse navbar-collapse" id="navbarCollapse">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item active">
-                <a class="nav-link" href="/">
+                <a class="nav-link" th:href="@{/}">
                     <span class="fas fa-home" aria-hidden="true"></span> Home</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/entries">
+                <a class="nav-link" th:href="@{/entries}">
                     <span class="fas fa-th-list" aria-hidden="true"></span> List</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/entries/add">
+                <a class="nav-link" th:href="@{/entries/add}">
                     <span class="fas fa-plus" aria-hidden="true"></span> Add new</a>
             </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
+                   aria-haspopup="true" aria-expanded="false">
+                    Charts
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" th:href="@{/charts/daily}">Daily</a>
+                    <a class="dropdown-item" th:href="@{/charts/weekly}">Weekly</a>
+                </div>
+            </li>
             <li class="nav-item">
-                <a class="nav-link" href="/settings">
+                <a class="nav-link" th:href="@{/settings}">
                     <span class="fas fa-cog" aria-hidden="true"></span> Settings</a>
             </li>
             <li th:if="${session.logoutUrl != null}">
