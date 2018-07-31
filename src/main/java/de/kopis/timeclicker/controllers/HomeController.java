@@ -1,6 +1,7 @@
 package de.kopis.timeclicker.controllers;
 
 import de.kopis.timeclicker.api.TimeclickerAPI;
+import de.kopis.timeclicker.exceptions.EntryNotOwnedByUserException;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
@@ -22,7 +23,7 @@ public class HomeController {
   private UserService userService = UserServiceFactory.getUserService();
 
   @GetMapping()
-  public String home(Model model) throws NotAuthenticatedException {
+  public String home(Model model) throws NotAuthenticatedException, EntryNotOwnedByUserException {
     final User user = userService.getCurrentUser();
     final TimeEntry latest = api.latest(user);
     if (latest != null) {

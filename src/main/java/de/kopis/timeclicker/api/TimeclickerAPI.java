@@ -1,5 +1,6 @@
 package de.kopis.timeclicker.api;
 
+import de.kopis.timeclicker.exceptions.EntryNotOwnedByUserException;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
@@ -40,7 +41,7 @@ public class TimeclickerAPI {
   private static final transient Logger LOGGER = LoggerFactory.getLogger(TimeclickerAPI.class);
 
   @ApiMethod(name = "delete", path = "delete", httpMethod = "post")
-  public void delete(@Named("key") String key, User user) throws NotAuthenticatedException {
+  public void delete(@Named("key") String key, User user) throws NotAuthenticatedException, EntryNotOwnedByUserException {
     if (user == null) throw new NotAuthenticatedException();
 
     final TimeEntry entry = show(key, user);
@@ -54,14 +55,14 @@ public class TimeclickerAPI {
   }
 
   @ApiMethod(name = "stop", path = "stop", httpMethod = "post")
-  public TimeEntry stop(@Named("stopKey") String key, User user) throws NotAuthenticatedException {
+  public TimeEntry stop(@Named("stopKey") String key, User user) throws NotAuthenticatedException, EntryNotOwnedByUserException {
     if (user == null) throw new NotAuthenticatedException();
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     try {
       Entity timeEntryEntity = datastore.get(KeyFactory.stringToKey(key));
       if (!timeEntryEntity.getProperty(TimeEntry.ENTRY_USER_ID).equals(user.getUserId())) {
-        throw new RuntimeException("Referenced entry does not belong to this user!");
+        throw new EntryNotOwnedByUserException();
       }
       //TODO check if entry is still open before closing it
       timeEntryEntity.setProperty(TimeEntry.ENTRY_STOP, new Date());
@@ -77,7 +78,7 @@ public class TimeclickerAPI {
   }
 
   @ApiMethod(name = "start", path = "start", httpMethod = "post")
-  public TimeEntry start(User user) throws NotAuthenticatedException {
+  public TimeEntry start(User user) throws NotAuthenticatedException, EntryNotOwnedByUserException {
     if (user == null) throw new NotAuthenticatedException();
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
@@ -100,14 +101,14 @@ public class TimeclickerAPI {
   }
 
   @ApiMethod(name = "show", path = "show")
-  public TimeEntry show(@Named("showKey") String key, User user) throws NotAuthenticatedException {
+  public TimeEntry show(@Named("showKey") String key, User user) throws NotAuthenticatedException, EntryNotOwnedByUserException {
     if (user == null) throw new NotAuthenticatedException();
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     try {
       Entity timeEntryEntity = datastore.get(KeyFactory.stringToKey(key));
       if (!timeEntryEntity.getProperty(TimeEntry.ENTRY_USER_ID).equals(user.getUserId())) {
-        throw new RuntimeException("Referenced entry does not belong to this user!");
+        throw new EntryNotOwnedByUserException();
       }
       TimeEntry entry = TimeclickerEntityFactory.buildTimeEntryFromEntity(timeEntryEntity);
       LOGGER.info("User {} showed entry {}", user.getUserId(), entry.getKey());
@@ -125,7 +126,7 @@ public class TimeclickerAPI {
                      @Named("description") String description,
                      @Named("tags") String tags,
                      @Named("project") String project,
-                     User user) throws NotAuthenticatedException {
+                     User user) throws NotAuthenticatedException, EntryNotOwnedByUserException {
     if (user == null) throw new NotAuthenticatedException();
 
     final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
@@ -137,7 +138,7 @@ public class TimeclickerAPI {
         timeEntryEntity = datastore.get(KeyFactory.stringToKey(key));
 
         if (!timeEntryEntity.getProperty(TimeEntry.ENTRY_USER_ID).equals(user.getUserId())) {
-          throw new RuntimeException("Referenced entry does not belong to this user!");
+          throw new EntryNotOwnedByUserException();
         }
       } else {
         LOGGER.info("User {} starting to save new entry for project={} with start={} stop={}",
@@ -158,7 +159,7 @@ public class TimeclickerAPI {
   }
 
   @ApiMethod(name = "stopLatest", path = "stop/latest", httpMethod = "post")
-  public TimeEntry stopLatest(User user) throws NotAuthenticatedException {
+  public TimeEntry stopLatest(User user) throws NotAuthenticatedException, EntryNotOwnedByUserException {
     if (user == null) throw new NotAuthenticatedException();
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
@@ -187,7 +188,7 @@ public class TimeclickerAPI {
    * @throws NotAuthenticatedException
    */
   @ApiMethod(name = "latest", path = "latest")
-  public TimeEntry latest(User user) throws NotAuthenticatedException {
+  public TimeEntry latest(User user) throws NotAuthenticatedException, EntryNotOwnedByUserException {
     if (user == null) throw new NotAuthenticatedException();
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
@@ -324,7 +325,7 @@ public class TimeclickerAPI {
   }
 
   @ApiMethod(name = "getUserSettings", path = "settings", httpMethod = "get")
-  public UserSettings getUserSettings(@Named("key") String key, User user) throws NotAuthenticatedException {
+  public UserSettings getUserSettings(@Named("key") String key, User user) throws NotAuthenticatedException, EntryNotOwnedByUserException {
     if (user == null) throw new NotAuthenticatedException();
 
     LOGGER.info("Searching for settings for user {}", user.getUserId());
@@ -335,7 +336,7 @@ public class TimeclickerAPI {
       try {
         entity = datastore.get(KeyFactory.stringToKey(key));
         if (!entity.getProperty(TimeEntry.ENTRY_USER_ID).equals(user.getUserId())) {
-          throw new RuntimeException("Referenced entry does not belong to this user!");
+          throw new EntryNotOwnedByUserException();
         }
       } catch (EntityNotFoundException e) {
         LOGGER.warn("Can not load user settings for user {} with key {}", user, key);
@@ -357,7 +358,7 @@ public class TimeclickerAPI {
   }
 
   @ApiMethod(name = "setUserSettings", path = "settings", httpMethod = "post")
-  public void setUserSettings(UserSettings settings, User user) throws NotAuthenticatedException, EntityNotFoundException {
+  public void setUserSettings(UserSettings settings, User user) throws NotAuthenticatedException, EntityNotFoundException, EntryNotOwnedByUserException {
     if (user == null) throw new NotAuthenticatedException();
     LOGGER.info("Updating settings {} for user {}", settings, user.getUserId());
 
@@ -370,7 +371,7 @@ public class TimeclickerAPI {
       try {
         entity = datastore.get(KeyFactory.stringToKey(key));
         if (!entity.getProperty(TimeEntry.ENTRY_USER_ID).equals(user.getUserId())) {
-          throw new RuntimeException("Referenced entry does not belong to this user!");
+          throw new EntryNotOwnedByUserException();
         }
         LOGGER.debug("Updating entity with key={}: {}", key, entity);
         // update existing entity
@@ -463,7 +464,7 @@ public class TimeclickerAPI {
    * @param datastore current {@link DatastoreService}
    * @return {@link Entity} if an open entry was found, else <code>null</code>
    */
-  private Entity findLatest(User user, DatastoreService datastore) {
+  private Entity findLatest(User user, DatastoreService datastore) throws EntryNotOwnedByUserException {
     Query.FilterPredicate userFilter = new Query.FilterPredicate(TimeEntry.ENTRY_USER_ID,
         Query.FilterOperator.EQUAL,
         user.getUserId());
@@ -485,7 +486,7 @@ public class TimeclickerAPI {
 
     Entity timeEntryEntity = entities.get(0);
     if (!timeEntryEntity.getProperty(TimeEntry.ENTRY_USER_ID).equals(user.getUserId())) {
-      throw new RuntimeException("Referenced entry does not belong to this user!");
+      throw new EntryNotOwnedByUserException();
     }
     return timeEntryEntity;
   }

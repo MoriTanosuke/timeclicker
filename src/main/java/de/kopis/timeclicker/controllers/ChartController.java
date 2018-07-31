@@ -1,6 +1,7 @@
 package de.kopis.timeclicker.controllers;
 
 import de.kopis.timeclicker.api.TimeclickerAPI;
+import de.kopis.timeclicker.exceptions.EntryNotOwnedByUserException;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSumWithDate;
@@ -35,7 +36,7 @@ public class ChartController {
   @GetMapping("/weekly")
   public String getWeeklyChart(Model model,
                                @RequestParam(defaultValue = "31") int limit,
-                               @RequestParam(defaultValue = "0") int page) throws NotAuthenticatedException {
+                               @RequestParam(defaultValue = "0") int page) throws NotAuthenticatedException, EntryNotOwnedByUserException {
     final User user = userService.getCurrentUser();
 
     final List<TimeEntry> allEntries = api.list(limit, page, user);
@@ -57,7 +58,7 @@ public class ChartController {
   @GetMapping("/daily")
   public String getDailyChart(Model model,
                               @RequestParam(defaultValue = "31") int limit,
-                              @RequestParam(defaultValue = "0") int page) throws NotAuthenticatedException {
+                              @RequestParam(defaultValue = "0") int page) throws NotAuthenticatedException, EntryNotOwnedByUserException {
     final User user = userService.getCurrentUser();
 
     final List<TimeEntry> allEntries = api.list(limit, page, user);

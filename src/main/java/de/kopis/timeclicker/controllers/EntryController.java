@@ -2,6 +2,7 @@ package de.kopis.timeclicker.controllers;
 
 import de.kopis.timeclicker.Application;
 import de.kopis.timeclicker.api.TimeclickerAPI;
+import de.kopis.timeclicker.exceptions.EntryNotOwnedByUserException;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.UserSettings;
@@ -61,7 +62,7 @@ public class EntryController {
   }
 
   @PostMapping
-  public String create(@ModelAttribute TimeEntry input) throws NotAuthenticatedException {
+  public String create(@ModelAttribute TimeEntry input) throws NotAuthenticatedException, EntryNotOwnedByUserException {
     final User user = userService.getCurrentUser();
 
     // duration is optional
@@ -82,7 +83,7 @@ public class EntryController {
   }
 
   @GetMapping("/{key}")
-  public String get(Model model, @PathVariable String key) throws NotAuthenticatedException {
+  public String get(Model model, @PathVariable String key) throws NotAuthenticatedException, EntryNotOwnedByUserException {
     final User user = userService.getCurrentUser();
     final TimeEntry entry = api.show(key, user);
     if (entry != null) {
@@ -93,7 +94,7 @@ public class EntryController {
   }
 
   @DeleteMapping("/{key}")
-  public String delete(@PathVariable String key) throws NotAuthenticatedException {
+  public String delete(@PathVariable String key) throws NotAuthenticatedException, EntryNotOwnedByUserException {
     final User user = userService.getCurrentUser();
     api.delete(key, user);
 
@@ -101,7 +102,7 @@ public class EntryController {
   }
 
   @GetMapping("/add")
-  public String create(Model model) throws NotAuthenticatedException {
+  public String create(Model model) throws NotAuthenticatedException, EntryNotOwnedByUserException {
     model.addAttribute("entry", new TimeEntry());
 
     final User user = userService.getCurrentUser();

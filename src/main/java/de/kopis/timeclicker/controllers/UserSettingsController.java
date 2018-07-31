@@ -1,6 +1,7 @@
 package de.kopis.timeclicker.controllers;
 
 import de.kopis.timeclicker.api.TimeclickerAPI;
+import de.kopis.timeclicker.exceptions.EntryNotOwnedByUserException;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.UserSettings;
 
@@ -28,7 +29,7 @@ public class UserSettingsController {
   private UserService userService = UserServiceFactory.getUserService();
 
   @GetMapping
-  public String showUserSettings(Model model) throws NotAuthenticatedException {
+  public String showUserSettings(Model model) throws NotAuthenticatedException, EntryNotOwnedByUserException {
     final User user = userService.getCurrentUser();
     final UserSettings userSettings = api.getUserSettings(null, user);
     model.addAttribute("settings", userSettings);
@@ -47,7 +48,7 @@ public class UserSettingsController {
   }
 
   @PostMapping
-  public String saveUserSettings(Model model, @ModelAttribute UserSettings settings) throws NotAuthenticatedException, EntityNotFoundException {
+  public String saveUserSettings(Model model, @ModelAttribute UserSettings settings) throws NotAuthenticatedException, EntityNotFoundException, EntryNotOwnedByUserException {
     final User user = userService.getCurrentUser();
 
     // check key

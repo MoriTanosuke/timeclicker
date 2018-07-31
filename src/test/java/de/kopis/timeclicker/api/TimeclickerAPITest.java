@@ -1,5 +1,6 @@
 package de.kopis.timeclicker.api;
 
+import de.kopis.timeclicker.exceptions.EntryNotOwnedByUserException;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 
@@ -51,7 +52,7 @@ public class TimeclickerAPITest {
   }
 
   @Test
-  public void testDelete() throws NotAuthenticatedException {
+  public void testDelete() throws NotAuthenticatedException, EntryNotOwnedByUserException {
     final TimeEntry startedEntry = api.start(user);
 
     // delete the entry
@@ -63,7 +64,7 @@ public class TimeclickerAPITest {
   }
 
   @Test
-  public void testStop() throws NotAuthenticatedException {
+  public void testStop() throws NotAuthenticatedException, EntryNotOwnedByUserException {
     final TimeEntry startedEntry = api.start(user);
 
     final TimeEntry stoppedEntry = api.stop(startedEntry.getKey(), user);
@@ -72,7 +73,7 @@ public class TimeclickerAPITest {
   }
 
   @Test
-  public void testStopLatest() throws NotAuthenticatedException {
+  public void testStopLatest() throws NotAuthenticatedException, EntryNotOwnedByUserException {
     final TimeEntry startedEntry = api.start(user);
 
     api.stopLatest(user);
@@ -83,7 +84,7 @@ public class TimeclickerAPITest {
   }
 
   @Test
-  public void testStart() throws NotAuthenticatedException {
+  public void testStart() throws NotAuthenticatedException, EntryNotOwnedByUserException {
     final TimeEntry entry = api.start(user);
     assertNotNull(entry);
     assertNotNull(entry.getKey());
@@ -92,7 +93,7 @@ public class TimeclickerAPITest {
   }
 
   @Test
-  public void testUpdate() throws NotAuthenticatedException {
+  public void testUpdate() throws NotAuthenticatedException, EntryNotOwnedByUserException {
     final TimeEntry entry = api.start(user);
     // update end to start+42h
     api.update(entry.getKey(),
