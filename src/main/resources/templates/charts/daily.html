@@ -4,9 +4,7 @@
 <head th:replace="fragments/head"></head>
 <body>
 
-<header>
-    <th:block th:replace="fragments/nav"></th:block>
-</header>
+<header th:replace="fragments/nav"></header>
 
 
 <main role="main">
@@ -33,11 +31,9 @@
     </div>
 </main>
 
-<footer>
-    <th:block th:replace="fragments/foot"></th:block>
-</footer>
+<footer th:replace="fragments/foot"></footer>
 
-<script src="https://code.highcharts.com/highcharts.js"></script>
+<script th:src="@{/webjars/highcharts/6.1.1/highcharts.js}"></script>
 <script th:inline="javascript">
     function formatDuration(num) {
         return (num / 60 / 60).toFixed(2) + "h";
