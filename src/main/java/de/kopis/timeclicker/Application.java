@@ -13,8 +13,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Locale;
-import java.util.TimeZone;
 
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
@@ -26,16 +24,15 @@ import org.slf4j.LoggerFactory;
 public class Application implements WebMvcConfigurer {
   private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
 
-  // TODO get locale from user settings
+  private static final Duration DEFAULT_CACHE_DURATION = Duration.ofSeconds(10);
   private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss Z";
-  private static CachedSetting<TimeZone> timezone = new CachedSetting<>(TimeZone.getDefault());
-  private static CachedSetting<Locale> locale = new CachedSetting<>(Locale.getDefault());
+  private static CachedSetting<UserSettings> settings;
 
   public static DateFormat getDateFormat() {
     update();
 
-    final DateFormat sdf = new SimpleDateFormat(DATE_PATTERN, locale.get());
-    sdf.setTimeZone(timezone.get());
+    final DateFormat sdf = new SimpleDateFormat(DATE_PATTERN, settings.get().getLocale());
+    sdf.setTimeZone(settings.get().getTimezone());
 
     return sdf;
   }
@@ -45,37 +42,32 @@ public class Application implements WebMvcConfigurer {
   }
 
   private static void update() {
-    if (!timezone.isValid() || !locale.isValid()) {
+    if (settings == null || !settings.isValid()) {
       UserService userService = UserServiceFactory.getUserService();
       User user = userService.getCurrentUser();
       TimeclickerAPI api = new TimeclickerAPI();
       try {
-        UserSettings settings = api.getUserSettings(null, user);
-        timezone = new CachedSetting<>(settings.getTimezone(), Duration.ofSeconds(10));
-        locale = new CachedSetting<>(settings.getLocale(), Duration.ofSeconds(10));
+        UserSettings s = api.getUserSettings(null, user);
+        settings = new CachedSetting<>(s, DEFAULT_CACHE_DURATION);
       } catch (NotAuthenticatedException | EntryNotOwnedByUserException e) {
         // fallback to default
-        timezone = new CachedSetting<>(TimeZone.getDefault());
-        locale = new CachedSetting<>(Locale.getDefault());
-        LOGGER.warn("Using default timezone {}, default locale {}",
-            timezone.get().getDisplayName(),
-            locale.get().getDisplayName(),
+        LOGGER.warn("Settings not valid, using defaults",
             e.getMessage());
       }
     } else {
-      LOGGER.debug("Timezone {} is valid until {}, locale {} is valid until {}",
-          timezone.get().getDisplayName(), timezone.getValidUntil(),
-          locale.get().getDisplayName(), locale.getValidUntil());
+      LOGGER.debug("Timezone {}, locale {} - valid until {}",
+          settings.get().getTimezone().getDisplayName(), settings.get().getLocale().getDisplayName(),
+          settings.getValidUntil());
     }
   }
 }
 
 class CachedSetting<T> {
-  private T t;
+  private final T t;
   private final Instant validUntil;
 
   CachedSetting(T t) {
-    this(t, Instant.now().minusSeconds(1));
+    this(t, Duration.ZERO);
   }
 
   CachedSetting(T t, Duration validDuration) {
