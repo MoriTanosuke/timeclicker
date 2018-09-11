@@ -51,8 +51,8 @@ public class Application implements WebMvcConfigurer {
         settings = new CachedSetting<>(s, DEFAULT_CACHE_DURATION);
       } catch (NotAuthenticatedException | EntryNotOwnedByUserException e) {
         // fallback to default
-        LOGGER.warn("Settings not valid, using defaults",
-            e.getMessage());
+        LOGGER.warn("Settings not valid, using defaults", e);
+        settings = new CachedSetting<>(new UserSettings(), DEFAULT_CACHE_DURATION);
       }
     } else {
       LOGGER.debug("Timezone {}, locale {} - valid until {}",
@@ -66,18 +66,9 @@ class CachedSetting<T> {
   private final T t;
   private final Instant validUntil;
 
-  CachedSetting(T t) {
-    this(t, Duration.ZERO);
-  }
-
   CachedSetting(T t, Duration validDuration) {
     this.t = t;
     this.validUntil = Instant.now().plus(validDuration);
-  }
-
-  CachedSetting(T t, Instant validUntil) {
-    this.t = t;
-    this.validUntil = validUntil;
   }
 
   public T get() {

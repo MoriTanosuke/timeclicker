@@ -19,7 +19,8 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class ApplicationTest {
-  public static final TimeZone USER_TIMEZONE = TimeZone.getTimeZone("Singapore");
+  private static final TimeZone USER_TIMEZONE = TimeZone.getTimeZone("Singapore");
+  private static final int DEFAULT_CACHE_DURATION = 11 * 1000;
   private final LocalServiceTestHelper helper = new LocalServiceTestHelper(
       new LocalUserServiceTestConfig(),
       new LocalDatastoreServiceTestConfig());
@@ -40,9 +41,11 @@ public class ApplicationTest {
     final UserService userService = UserServiceFactory.getUserService();
     user = userService.getCurrentUser();
     // set a custom timezone for the current user
-    final UserSettings settings = new UserSettings();
+    UserSettings settings = new UserSettings();
     settings.setTimezone(USER_TIMEZONE);
     api.setUserSettings(settings, user);
+    // make sure cache is expired
+    Thread.sleep(DEFAULT_CACHE_DURATION);
   }
 
   @After
@@ -51,7 +54,29 @@ public class ApplicationTest {
   }
 
   @Test
-  public void getDateFormat() {
+  public void formatsWithUserTimezone() throws Exception {
+    // now check if user timezone is used
     assertEquals(USER_TIMEZONE, Application.getDateFormat().getTimeZone());
+  }
+
+  @Test
+  public void reloadsSettingsAfter10Seconds() throws Exception {
+    assertEquals(USER_TIMEZONE, Application.getDateFormat().getTimeZone());
+    // set different timezone
+    final UserSettings settings = api.getUserSettings(null, user);
+    TimeZone newTimezone = TimeZone.getTimeZone("UTC");
+    settings.setTimezone(newTimezone);
+    api.setUserSettings(settings, user);
+    // check if Application still caches the previous timezone
+    assertEquals(USER_TIMEZONE, Application.getDateFormat().getTimeZone());
+    // wait to expire
+    Thread.sleep(DEFAULT_CACHE_DURATION);
+    assertEquals(newTimezone, Application.getDateFormat().getTimeZone());
+  }
+
+  @Test
+  public void unauthenticatedUsersUseDefaults() {
+    helper.setEnvIsLoggedIn(false).setUp();
+    assertEquals(TimeZone.getDefault(), Application.getDateFormat().getTimeZone());
   }
 }
