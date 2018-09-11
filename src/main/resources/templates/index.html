@@ -11,7 +11,7 @@
         <h1>Timeclicker</h1>
         <th:block th:if="${entry != null}">
             Entry <a th:href="@{'/entries/' + ${entry.key}}" th:text="${entry.key}">key</a>
-            active since <span th:text="${entry.start}">eternity</span>. Sum <span th:text="${sum}">0</span>.
+            active since <em><span th:text="${{entry.start}}">eternity</span></em>. Sum <span th:text="${sum}">0</span>.
         </th:block>
         <th:block th:if="${entry == null}">
             No active entry found. <a th:href="@{/entries/add}">Start a new one.</a>
