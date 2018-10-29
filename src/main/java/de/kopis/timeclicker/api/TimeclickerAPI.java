@@ -228,22 +228,30 @@ public class TimeclickerAPI {
     if (user == null) throw new NotAuthenticatedException();
 
     final Map<String, TagSummary> tagSummaries = new HashMap<>();
+    tagSummaries.put(TagSummary.EMPTY_TAG, new TagSummary());
 
     // Load all entities
     final List<Entity> entities = listEntities(user, page, limit);
 
-    // TODO add loaded entities to tagsummaries
+    // add loaded entities to tagsummaries
     for (Entity entity : entities) {
       final TimeEntry e = TimeclickerEntityFactory.buildTimeEntryFromEntity(entity);
-      final String[] entityTags = e.getTags().split("\\s*,\\s*");
-      // add the entity to all tags
-      for (String et : entityTags) {
-        if (et.isEmpty()) continue;
-        // we might have tags in the database which are not yet added to the overall list
-        if (!tagSummaries.containsKey(et)) {
-          tagSummaries.put(et, new TagSummary(et));
+      String tags = e.getTags();
+      if (tags == null || tags.isEmpty()) {
+        // found an entity without any tags, but we want to show them too
+        tagSummaries.get(TagSummary.EMPTY_TAG).add(e);
+
+      } else {
+        final String[] entityTags = tags.split("\\s*,\\s*");
+        // add the entity to all tags
+        for (String et : entityTags) {
+          if (et.isEmpty()) continue;
+          // we might have tags in the database which are not yet added to the overall list
+          if (!tagSummaries.containsKey(et)) {
+            tagSummaries.put(et, new TagSummary(et));
+          }
+          tagSummaries.get(et).add(e);
         }
-        tagSummaries.get(et).add(e);
       }
     }
 

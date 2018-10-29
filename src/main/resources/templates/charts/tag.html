@@ -40,7 +40,8 @@
         /*<![CDATA[*/
         var data = [];
         [[${tagSummary}]].forEach(function (e) {
-            data.push([e.tag, parseDuration(e.readableDuration)]);
+            var tag = e.tag || "no tag";
+            data.push([tag, parseDuration(e.readableDuration)]);
         });
         /*]]>*/
         $(function () {

@@ -2,9 +2,12 @@ package de.kopis.timeclicker.api;
 
 import de.kopis.timeclicker.exceptions.EntryNotOwnedByUserException;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TagSummary;
 import de.kopis.timeclicker.model.TimeEntry;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.util.Collection;
 import java.util.Date;
 
 import com.google.appengine.api.users.User;
@@ -154,5 +157,21 @@ public class TimeclickerAPITest {
   @Ignore("not yet implemented")
   public void testGetProjects() {
     fail("not yet implemented");
+  }
+
+  @Test
+  public void testGetTagSummary() throws NotAuthenticatedException, EntryNotOwnedByUserException {
+    final TimeEntry entry = new TimeEntry(Instant.ofEpochSecond(0), Instant.ofEpochSecond(60 * 60));
+
+    api.update(entry.getKey(),
+        Date.from(entry.getStart()), Date.from(entry.getStart().plus(Duration.ofHours(42))),
+        entry.getBreakDuration().toMillis(),
+        entry.getDescription(),
+        entry.getTags(),
+        entry.getProject(),
+        user);
+
+    final Collection<TagSummary> summaries = api.getSummaryForTags(Integer.MAX_VALUE, 0, user);
+    assertEquals(1, summaries.size());
   }
 }
