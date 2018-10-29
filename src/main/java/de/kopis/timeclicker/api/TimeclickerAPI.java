@@ -2,6 +2,7 @@ package de.kopis.timeclicker.api;
 
 import de.kopis.timeclicker.exceptions.EntryNotOwnedByUserException;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TagSummary;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
 import de.kopis.timeclicker.model.UserSettings;
@@ -14,8 +15,11 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
@@ -215,6 +219,36 @@ public class TimeclickerAPI {
     }
     LOGGER.info("User {} listed all entries", user.getUserId());
     return l;
+  }
+
+  @ApiMethod(name = "tagsummary", path = "tagsummary")
+  public Collection<TagSummary> getSummaryForTags(@Named("limit") @DefaultValue("31") int limit,
+                                                  @Named("page") @DefaultValue("0") int page,
+                                                  User user) throws NotAuthenticatedException {
+    if (user == null) throw new NotAuthenticatedException();
+
+    final Map<String, TagSummary> tagSummaries = new HashMap<>();
+
+    // Load all entities
+    final List<Entity> entities = listEntities(user, page, limit);
+
+    // TODO add loaded entities to tagsummaries
+    for (Entity entity : entities) {
+      final TimeEntry e = TimeclickerEntityFactory.buildTimeEntryFromEntity(entity);
+      final String[] entityTags = e.getTags().split("\\s*,\\s*");
+      // add the entity to all tags
+      for (String et : entityTags) {
+        if (et.isEmpty()) continue;
+        // we might have tags in the database which are not yet added to the overall list
+        if (!tagSummaries.containsKey(et)) {
+          tagSummaries.put(et, new TagSummary(et));
+        }
+        tagSummaries.get(et).add(e);
+      }
+    }
+
+    LOGGER.info("User {} listed all entries for tags {}", user.getUserId(), tagSummaries.keySet());
+    return tagSummaries.values();
   }
 
   @ApiMethod(name = "count", path = "count")

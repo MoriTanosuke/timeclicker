@@ -3,6 +3,7 @@ package de.kopis.timeclicker.controllers;
 import de.kopis.timeclicker.api.TimeclickerAPI;
 import de.kopis.timeclicker.exceptions.EntryNotOwnedByUserException;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TagSummary;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSumWithDate;
 import de.kopis.timeclicker.model.UserSettings;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.Duration;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -75,5 +77,17 @@ public class ChartController {
     model.addAttribute("remaining", remaining);
 
     return "charts/daily";
+  }
+
+  @GetMapping("/tag")
+  public String getSumPerTagChart(Model model,
+                                  @RequestParam(defaultValue = "31") int limit,
+                                  @RequestParam(defaultValue = "0") int page) throws NotAuthenticatedException {
+    final User user = userService.getCurrentUser();
+
+    final Collection<TagSummary> allEntries = api.getSummaryForTags(limit, page, user);
+    model.addAttribute("tagSummary", allEntries);
+
+    return "charts/tag";
   }
 }

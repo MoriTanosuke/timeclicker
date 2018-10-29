@@ -36,21 +36,8 @@
 <footer th:replace="fragments/foot"></footer>
 
 <script th:src="@{/webjars/highcharts/6.1.1/highcharts.js}"></script>
+<script th:src="@{/lib.js}"></script>
 <script th:inline="javascript">
-    function formatDuration(num) {
-        return (num / 60 / 60).toFixed(2) + "h";
-    }
-
-    function parseDuration(str) {
-        // 12:34:56
-        var elems = str.split(':');
-        var hours = Number.parseInt(elems[0]);
-        var minutes = Number.parseInt(elems[1]);
-        var seconds = Number.parseInt(elems[2]);
-
-        return seconds + (minutes * 60) + (hours * 60 * 60);
-    }
-
     $(function () {
         /*<![CDATA[*/
         var data = [];
@@ -62,7 +49,8 @@
         $(function () {
             var myChart = Highcharts.chart('chart', {
                 chart: {
-                    type: 'column'
+                    type: 'column',
+                    plotBackgroundColor: null
                 },
                 title: {
                     text: 'Daily'
