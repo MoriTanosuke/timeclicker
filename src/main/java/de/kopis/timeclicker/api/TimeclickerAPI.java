@@ -12,6 +12,7 @@ import de.kopis.timeclicker.utils.TimeSumUtility;
 import de.kopis.timeclicker.utils.TimeclickerEntityFactory;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -230,7 +231,7 @@ public class TimeclickerAPI {
     if (user == null) throw new NotAuthenticatedException();
 
     // Load all entities since given date
-    final List<Entity> entities = listEntities(since, user);
+    final List<Entity> entities = searchTimeEntries(user, since, Date.from(Instant.now()));
     final Collection<TagSummary> tagSummaries = buildTagSummaries(user, entities);
 
     LOGGER.info("User {} created tagsummaries for all tags since {}", user.getUserId(), since);
@@ -496,12 +497,6 @@ public class TimeclickerAPI {
 
   private List<Entity> listEntities(User user) {
     final PreparedQuery pq = buildTimeEntryQuery(user);
-    final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
-    return pq.asList(fetchOptions);
-  }
-
-  private List<Entity> listEntities(Date since, User user) {
-    final PreparedQuery pq = buildTimeEntryQuery(since, user);
     final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
     return pq.asList(fetchOptions);
   }

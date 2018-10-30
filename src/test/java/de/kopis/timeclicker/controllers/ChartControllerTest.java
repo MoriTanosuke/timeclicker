@@ -76,4 +76,10 @@ public class ChartControllerTest {
     client.perform(MockMvcRequestBuilders.get("/charts/daily"))
         .andExpect(MockMvcResultMatchers.status().is2xxSuccessful());
   }
+
+  @Test
+  public void getTagChart() throws Exception {
+    client.perform(MockMvcRequestBuilders.get("/charts/tag"))
+        .andExpect(MockMvcResultMatchers.status().is2xxSuccessful());
+  }
 }

@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Date;
+import java.util.UUID;
 
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
@@ -162,6 +163,7 @@ public class TimeclickerAPITest {
   @Test
   public void testGetTagSummary() throws NotAuthenticatedException, EntryNotOwnedByUserException {
     final TimeEntry entry = new TimeEntry(Instant.ofEpochSecond(0), Instant.ofEpochSecond(60 * 60));
+    entry.setTags(UUID.randomUUID().toString());
 
     api.update(entry.getKey(),
         Date.from(entry.getStart()), Date.from(entry.getStart().plus(Duration.ofHours(42))),
@@ -173,5 +175,26 @@ public class TimeclickerAPITest {
 
     final Collection<TagSummary> summaries = api.getSummaryForTags(Integer.MAX_VALUE, 0, user);
     assertEquals(1, summaries.size());
+  }
+
+  @Test
+  public void testGetTagSummarySince() throws NotAuthenticatedException, EntryNotOwnedByUserException {
+    final TimeEntry entry = new TimeEntry(Instant.ofEpochSecond(5 * 60 * 60), Instant.ofEpochSecond(6 * 60 * 60));
+    entry.setTags(UUID.randomUUID().toString());
+
+    final Date start = Date.from(entry.getStart());
+    final Date stop = Date.from(entry.getStart().plus(Duration.ofHours(42)));
+    api.update(entry.getKey(),
+        start, stop,
+        entry.getBreakDuration().toMillis(),
+        entry.getDescription(),
+        entry.getTags(),
+        entry.getProject(),
+        user);
+
+    // we try to list after the existing entry, should return without any results
+    final Collection<TagSummary> summaries = api.getSummaryForTagsSince(Date.from(start.toInstant().plus(Duration.ofHours(7 * 24))),
+        Integer.MAX_VALUE, 0, user);
+    assertEquals(0, summaries.size());
   }
 }
