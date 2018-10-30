@@ -9,6 +9,7 @@ import de.kopis.timeclicker.model.TimeSumWithDate;
 import de.kopis.timeclicker.model.UserSettings;
 import de.kopis.timeclicker.utils.TimeSumUtility;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -82,10 +85,24 @@ public class ChartController {
   @GetMapping("/tag")
   public String getSumPerTagChart(Model model,
                                   @RequestParam(defaultValue = "31") int limit,
-                                  @RequestParam(defaultValue = "0") int page) throws NotAuthenticatedException {
+                                  @RequestParam(defaultValue = "0") int page,
+                                  @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate since) throws NotAuthenticatedException {
     final User user = userService.getCurrentUser();
 
-    final Collection<TagSummary> allEntries = api.getSummaryForTags(limit, page, user);
+    final Collection<TagSummary> allEntries;
+    if (since != null) {
+      ZoneId zone;
+      try {
+        final UserSettings settings = api.getUserSettings(null, user);
+        zone = ZoneId.of(settings.getTimezone().getID());
+      } catch (EntryNotOwnedByUserException e) {
+        zone = ZoneId.systemDefault();
+      }
+      Date date = Date.from(since.atStartOfDay(zone).toInstant());
+      allEntries = api.getSummaryForTagsSince(date, limit, page, user);
+    } else {
+      allEntries = api.getSummaryForTags(limit, page, user);
+    }
     model.addAttribute("tagSummary", allEntries);
 
     return "charts/tag";

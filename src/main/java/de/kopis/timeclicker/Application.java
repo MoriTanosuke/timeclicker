@@ -9,7 +9,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
@@ -28,10 +27,10 @@ public class Application implements WebMvcConfigurer {
   private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss Z";
   private static CachedSetting<UserSettings> settings;
 
-  public static DateFormat getDateFormat() {
+  public static SimpleDateFormat getDateFormat() {
     update();
 
-    final DateFormat sdf = new SimpleDateFormat(DATE_PATTERN, settings.get().getLocale());
+    final SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN, settings.get().getLocale());
     sdf.setTimeZone(settings.get().getTimezone());
 
     return sdf;
