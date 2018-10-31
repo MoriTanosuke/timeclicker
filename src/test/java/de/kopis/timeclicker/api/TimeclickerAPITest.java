@@ -1,16 +1,5 @@
 package de.kopis.timeclicker.api;
 
-import de.kopis.timeclicker.exceptions.EntryNotOwnedByUserException;
-import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
-import de.kopis.timeclicker.model.TagSummary;
-import de.kopis.timeclicker.model.TimeEntry;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.Date;
-import java.util.UUID;
-
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -18,15 +7,22 @@ import com.google.appengine.repackaged.com.google.common.collect.ImmutableMap;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.appengine.tools.development.testing.LocalUserServiceTestConfig;
+import de.kopis.timeclicker.exceptions.EntryNotOwnedByUserException;
+import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TagSummary;
+import de.kopis.timeclicker.model.TimeEntry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Date;
+import java.util.UUID;
+
+import static org.junit.Assert.*;
 
 public class TimeclickerAPITest {
   private final LocalServiceTestHelper helper = new LocalServiceTestHelper(
@@ -165,7 +161,7 @@ public class TimeclickerAPITest {
     final TimeEntry entry = new TimeEntry(Instant.ofEpochSecond(0), Instant.ofEpochSecond(60 * 60));
     entry.setTags(UUID.randomUUID().toString());
 
-    api.update(entry.getKey(),
+    api.update(null,
         Date.from(entry.getStart()), Date.from(entry.getStart().plus(Duration.ofHours(42))),
         entry.getBreakDuration().toMillis(),
         entry.getDescription(),
@@ -174,7 +170,8 @@ public class TimeclickerAPITest {
         user);
 
     final Collection<TagSummary> summaries = api.getSummaryForTags(Integer.MAX_VALUE, 0, user);
-    assertEquals(1, summaries.size());
+    // empty tag + random tag
+    assertEquals("Tags found: " + summaries, 2, summaries.size());
   }
 
   @Test
@@ -184,7 +181,7 @@ public class TimeclickerAPITest {
 
     final Date start = Date.from(entry.getStart());
     final Date stop = Date.from(entry.getStart().plus(Duration.ofHours(42)));
-    api.update(entry.getKey(),
+    api.update(null,
         start, stop,
         entry.getBreakDuration().toMillis(),
         entry.getDescription(),
@@ -195,6 +192,7 @@ public class TimeclickerAPITest {
     // we try to list after the existing entry, should return without any results
     final Collection<TagSummary> summaries = api.getSummaryForTagsSince(Date.from(start.toInstant().plus(Duration.ofHours(7 * 24))),
         Integer.MAX_VALUE, 0, user);
-    assertEquals(0, summaries.size());
+    // only empty tag
+    assertEquals("Tags found: " + summaries, 1, summaries.size());
   }
 }

@@ -49,4 +49,12 @@ public class TagSummary {
 
     this.duration = this.duration.plus(e.getDuration());
   }
+
+  @Override
+  public String toString() {
+    return "TagSummary{" +
+            "tag='" + tag + '\'' +
+            ", duration=" + duration +
+            '}';
+  }
 }
