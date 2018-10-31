@@ -1,7 +1,20 @@
 package de.kopis.timeclicker.controllers;
 
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
+import com.google.appengine.repackaged.com.google.common.collect.ImmutableMap;
+import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
+import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
+import com.google.appengine.tools.development.testing.LocalUserServiceTestConfig;
 import de.kopis.timeclicker.utils.TimeclickerEntityFactory;
-
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,21 +26,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
-
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
-import com.google.appengine.repackaged.com.google.common.collect.ImmutableMap;
-import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
-import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
-import com.google.appengine.tools.development.testing.LocalUserServiceTestConfig;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -76,4 +74,10 @@ public class ChartControllerTest {
     client.perform(MockMvcRequestBuilders.get("/charts/daily"))
         .andExpect(MockMvcResultMatchers.status().is2xxSuccessful());
   }
+
+    @Test
+    public void getTagChart() throws Exception {
+        client.perform(MockMvcRequestBuilders.get("/charts/tag"))
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful());
+    }
 }

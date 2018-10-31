@@ -1,7 +1,14 @@
 package de.kopis.timeclicker.api;
 
+import com.google.api.server.spi.config.Api;
+import com.google.api.server.spi.config.ApiMethod;
+import com.google.api.server.spi.config.DefaultValue;
+import com.google.api.server.spi.config.Named;
+import com.google.appengine.api.datastore.*;
+import com.google.appengine.api.users.User;
 import de.kopis.timeclicker.exceptions.EntryNotOwnedByUserException;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TagSummary;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSum;
 import de.kopis.timeclicker.model.UserSettings;
@@ -9,30 +16,13 @@ import de.kopis.timeclicker.model.wrappers.EntryCount;
 import de.kopis.timeclicker.model.wrappers.Project;
 import de.kopis.timeclicker.utils.TimeSumUtility;
 import de.kopis.timeclicker.utils.TimeclickerEntityFactory;
-
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-
-import com.google.api.server.spi.config.Api;
-import com.google.api.server.spi.config.ApiMethod;
-import com.google.api.server.spi.config.DefaultValue;
-import com.google.api.server.spi.config.Named;
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.EntityNotFoundException;
-import com.google.appengine.api.datastore.FetchOptions;
-import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.api.datastore.PreparedQuery;
-import com.google.appengine.api.datastore.PropertyProjection;
-import com.google.appengine.api.datastore.Query;
-import com.google.appengine.api.users.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 @Api(name = "timeclicker", version = "v1", scopes = {Constants.EMAIL_SCOPE},
     clientIds = {Constants.WEB_CLIENT_ID, Constants.ANDROID_CLIENT_ID, "292824132082.apps.googleusercontent.com"},
@@ -206,7 +196,7 @@ public class TimeclickerAPI {
   public List<TimeEntry> list(@Named("limit") @DefaultValue("31") int limit, @Named("page") @DefaultValue("0") int page, User user) throws NotAuthenticatedException {
     if (user == null) throw new NotAuthenticatedException();
 
-    final List<Entity> entities = listEntities(user, page, limit);
+      final List<Entity> entities = listEntities(page, limit, user);
 
     final List<TimeEntry> l = new ArrayList<>();
     for (Entity timeEntryEntity : entities) {
@@ -216,6 +206,64 @@ public class TimeclickerAPI {
     LOGGER.info("User {} listed all entries", user.getUserId());
     return l;
   }
+
+    @ApiMethod(name = "tagsummarysince", path = "tagsummarysince")
+    public Collection<TagSummary> getSummaryForTagsSince(@Named("since") Date since,
+                                                         @Named("limit") @DefaultValue("31") int limit,
+                                                         @Named("page") @DefaultValue("0") int page,
+                                                         User user) throws NotAuthenticatedException {
+        if (user == null) throw new NotAuthenticatedException();
+
+        // Load all entities since given date
+        final List<Entity> entities = searchTimeEntries(user, since, Date.from(Instant.now()));
+        final Collection<TagSummary> tagSummaries = buildTagSummaries(user, entities);
+
+        LOGGER.info("User {} created tagsummaries for all tags since {}", user.getUserId(), since);
+        return tagSummaries;
+    }
+
+    @ApiMethod(name = "tagsummary", path = "tagsummary")
+    public Collection<TagSummary> getSummaryForTags(@Named("limit") @DefaultValue("31") int limit,
+                                                    @Named("page") @DefaultValue("0") int page,
+                                                    User user) throws NotAuthenticatedException {
+        if (user == null) throw new NotAuthenticatedException();
+
+        // Load all entities
+        final List<Entity> entities = listEntities(page, limit, user);
+        final Collection<TagSummary> tagSummaries = buildTagSummaries(user, entities);
+
+        LOGGER.info("User {} created tagsummaries for all tags", user.getUserId());
+        return tagSummaries;
+    }
+
+    private Collection<TagSummary> buildTagSummaries(User user, List<Entity> entities) {
+        final Map<String, TagSummary> tagSummaries = new HashMap<>();
+        tagSummaries.put(TagSummary.EMPTY_TAG, new TagSummary());
+
+        // add loaded entities to tagsummaries
+        for (Entity entity : entities) {
+            final TimeEntry e = TimeclickerEntityFactory.buildTimeEntryFromEntity(entity);
+            String tags = e.getTags();
+            if (tags == null || tags.isEmpty()) {
+                // found an entity without any tags, but we want to show them too
+                tagSummaries.get(TagSummary.EMPTY_TAG).add(e);
+
+            } else {
+                final String[] entityTags = tags.split("\\s*,\\s*");
+                // add the entity to all tags
+                for (String et : entityTags) {
+                    if (et.isEmpty()) continue;
+                    // we might have tags in the database which are not yet added to the overall list
+                    if (!tagSummaries.containsKey(et)) {
+                        tagSummaries.put(et, new TagSummary(et));
+                    }
+                    tagSummaries.get(et).add(e);
+                }
+            }
+        }
+
+        return tagSummaries.values();
+    }
 
   @ApiMethod(name = "count", path = "count")
   public EntryCount countAvailableEntries(User user) throws NotAuthenticatedException {
@@ -437,12 +485,33 @@ public class TimeclickerAPI {
     return pq.asList(fetchOptions);
   }
 
-  private List<Entity> listEntities(User user, int page, int pageSize) {
+    private List<Entity> listEntities(int page, int pageSize, User user) {
     LOGGER.debug("Listing page={} size={}", page, pageSize);
     final PreparedQuery pq = buildTimeEntryQuery(user);
     final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults().offset(pageSize * page).limit(pageSize);
     return pq.asList(fetchOptions);
   }
+
+    private PreparedQuery buildTimeEntryQuery(final Date since, final User user) {
+        final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        // load all time entries for this user
+        final Query.Filter propertyFilter = new Query.FilterPredicate(TimeEntry.ENTRY_USER_ID,
+                Query.FilterOperator.EQUAL,
+                user.getUserId());
+        //TODO refactor method "buildTimeEntryQuery" into single method?
+        // filter all entries before date "since"
+        final Query.Filter dateFilter = new Query.FilterPredicate(
+                TimeEntry.ENTRY_START,
+                Query.FilterOperator.GREATER_THAN_OR_EQUAL,
+                since);
+        final Query.Filter compositeFilter = new Query.CompositeFilter(
+                Query.CompositeFilterOperator.AND,
+                Arrays.asList(propertyFilter, dateFilter));
+        final Query q = new Query("TimeEntry")
+                .setFilter(compositeFilter)
+                .addSort(TimeEntry.ENTRY_START, Query.SortDirection.DESCENDING);
+        return datastore.prepare(q);
+    }
 
   private PreparedQuery buildTimeEntryQuery(final User user) {
     final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();

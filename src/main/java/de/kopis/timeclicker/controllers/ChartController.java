@@ -1,13 +1,17 @@
 package de.kopis.timeclicker.controllers;
 
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import de.kopis.timeclicker.api.TimeclickerAPI;
 import de.kopis.timeclicker.exceptions.EntryNotOwnedByUserException;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.TagSummary;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSumWithDate;
 import de.kopis.timeclicker.model.UserSettings;
 import de.kopis.timeclicker.utils.TimeSumUtility;
-
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,16 +19,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.Duration;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.*;
 
 @Controller
 @RequestMapping("/charts")
@@ -76,4 +73,30 @@ public class ChartController {
 
     return "charts/daily";
   }
+
+    @GetMapping("/tag")
+    public String getSumPerTagChart(Model model,
+                                    @RequestParam(defaultValue = "31") int limit,
+                                    @RequestParam(defaultValue = "0") int page,
+                                    @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate since) throws NotAuthenticatedException {
+        final User user = userService.getCurrentUser();
+
+        final Collection<TagSummary> allEntries;
+        if (since != null) {
+            ZoneId zone;
+            try {
+                final UserSettings settings = api.getUserSettings(null, user);
+                zone = ZoneId.of(settings.getTimezone().getID());
+            } catch (EntryNotOwnedByUserException e) {
+                zone = ZoneId.systemDefault();
+            }
+            Date date = Date.from(since.atStartOfDay(zone).toInstant());
+            allEntries = api.getSummaryForTagsSince(date, limit, page, user);
+        } else {
+            allEntries = api.getSummaryForTags(limit, page, user);
+        }
+        model.addAttribute("tagSummary", allEntries);
+
+        return "charts/tag";
+    }
 }
