@@ -1,20 +1,9 @@
 package de.kopis.timeclicker.api;
 
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
-import com.google.appengine.repackaged.com.google.common.collect.ImmutableMap;
-import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
-import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
-import com.google.appengine.tools.development.testing.LocalUserServiceTestConfig;
 import de.kopis.timeclicker.exceptions.EntryNotOwnedByUserException;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TagSummary;
 import de.kopis.timeclicker.model.TimeEntry;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -22,7 +11,22 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
 
-import static org.junit.Assert.*;
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
+import com.google.appengine.repackaged.com.google.common.collect.ImmutableMap;
+import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
+import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
+import com.google.appengine.tools.development.testing.LocalUserServiceTestConfig;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 public class TimeclickerAPITest {
   private final LocalServiceTestHelper helper = new LocalServiceTestHelper(

@@ -1,8 +1,5 @@
 package de.kopis.timeclicker.controllers;
 
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
 import de.kopis.timeclicker.api.TimeclickerAPI;
 import de.kopis.timeclicker.exceptions.EntryNotOwnedByUserException;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
@@ -11,17 +8,27 @@ import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSumWithDate;
 import de.kopis.timeclicker.model.UserSettings;
 import de.kopis.timeclicker.utils.TimeSumUtility;
+
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.*;
 
 @Controller
 @RequestMapping("/charts")

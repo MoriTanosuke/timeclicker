@@ -1,11 +1,11 @@
 package de.kopis.timeclicker.formatters;
 
-import org.springframework.format.Formatter;
-import org.springframework.stereotype.Component;
-
 import java.text.ParseException;
 import java.time.Duration;
 import java.util.Locale;
+
+import org.springframework.format.Formatter;
+import org.springframework.stereotype.Component;
 
 @Component
 public class DurationToStringFormatter implements Formatter<Duration> {

@@ -1,7 +1,5 @@
 package de.kopis.timeclicker.filters;
 
-import org.springframework.stereotype.Component;
-
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -13,6 +11,7 @@ import java.io.IOException;
 
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import org.springframework.stereotype.Component;
 
 @Component
 public class LogoutUrlFilter implements Filter {

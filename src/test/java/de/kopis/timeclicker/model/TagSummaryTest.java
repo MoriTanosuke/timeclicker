@@ -1,9 +1,9 @@
 package de.kopis.timeclicker.model;
 
-import org.junit.Test;
-
 import java.time.Duration;
 import java.time.Instant;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

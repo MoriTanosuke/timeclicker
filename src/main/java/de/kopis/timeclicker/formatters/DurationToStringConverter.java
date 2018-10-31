@@ -1,9 +1,9 @@
 package de.kopis.timeclicker.formatters;
 
+import java.time.Duration;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
-
-import java.time.Duration;
 
 @Component
 public class DurationToStringConverter implements Converter<Duration, String> {

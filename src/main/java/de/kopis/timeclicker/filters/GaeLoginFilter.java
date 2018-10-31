@@ -1,7 +1,5 @@
 package de.kopis.timeclicker.filters;
 
-import org.springframework.stereotype.Component;
-
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -17,6 +15,7 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 @Component
 public class GaeLoginFilter implements Filter {
