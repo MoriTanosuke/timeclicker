@@ -8,10 +8,13 @@ import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.TimeSumWithDate;
 import de.kopis.timeclicker.model.UserSettings;
 import de.kopis.timeclicker.utils.TimeSumUtility;
+import de.kopis.timeclicker.utils.WorkdayCalculator;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -36,6 +39,39 @@ public class ChartController {
   private final TimeclickerAPI api = new TimeclickerAPI();
   private final UserService userService = UserServiceFactory.getUserService();
   private static final TimeSumUtility TIME_SUM_UTILITY = new TimeSumUtility();
+
+  @GetMapping("/monthly")
+  public String getMonthlyChart(Model model,
+                                @RequestParam(defaultValue = "31") int limit,
+                                @RequestParam(defaultValue = "0") int page) throws NotAuthenticatedException, EntryNotOwnedByUserException {
+    final User user = userService.getCurrentUser();
+
+    final List<TimeEntry> allEntries = api.list(limit, page, user);
+    final List<TimeSumWithDate> sortedPerMonth = TIME_SUM_UTILITY.calculateMonthlyTimeSum(allEntries);
+    Collections.sort(sortedPerMonth, Comparator.comparing(TimeSumWithDate::getDate));
+    model.addAttribute("monthlySums", sortedPerMonth);
+
+    final UserSettings settings = api.getUserSettings(null, user);
+    final Map<Date, Duration> remaining = new TreeMap<>();
+    sortedPerMonth.forEach(sum -> {
+      final Instant startDate = sum.getDate().toInstant();
+      final Calendar cal = Calendar.getInstance();
+      // next month
+      cal.add(Calendar.MONTH, 1);
+      // previous day
+      cal.add(Calendar.DAY_OF_YEAR, -1);
+      // should be last day of the month
+      final Instant stopDate = cal.toInstant();
+      final int workingDays = WorkdayCalculator.getWorkingDays(startDate, stopDate);
+      //TODO should i calculate the real amount of working days for each month?
+      // currently there is the hardcoded assumption that the user works 5 days a week, 4 weeks per month
+      Duration monthlyDuration = settings.getWorkingDurationPerDay().multipliedBy(workingDays).minus(sum.getDuration());
+      remaining.put(sum.getDate(), monthlyDuration);
+    });
+    model.addAttribute("remaining", remaining);
+
+    return "charts/monthly";
+  }
 
   @GetMapping("/weekly")
   public String getWeeklyChart(Model model,

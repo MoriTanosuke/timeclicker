@@ -13,7 +13,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -71,12 +70,9 @@ public class TimeSumUtility {
     }
 
     final List<TimeSumWithDate> sortedPerDay = Arrays.asList(perDay.values().toArray(new TimeSumWithDate[0]));
-    Collections.sort(sortedPerDay, new Comparator<TimeSumWithDate>() {
-      @Override
-      public int compare(TimeSumWithDate o1, TimeSumWithDate o2) {
-        // sort DESC by start date
-        return o2.getDate().compareTo(o1.getDate());
-      }
+    Collections.sort(sortedPerDay, (o1, o2) -> {
+      // sort DESC by start date
+      return o2.getDate().compareTo(o1.getDate());
     });
     return sortedPerDay;
   }
@@ -108,12 +104,9 @@ public class TimeSumUtility {
     }
 
     final List<TimeSumWithDate> sortedPerWeek = Arrays.asList(perWeek.values().toArray(new TimeSumWithDate[0]));
-    Collections.sort(sortedPerWeek, new Comparator<TimeSumWithDate>() {
-      @Override
-      public int compare(TimeSumWithDate o1, TimeSumWithDate o2) {
-        // sort DESC by start date
-        return o2.getDate().compareTo(o1.getDate());
-      }
+    Collections.sort(sortedPerWeek, (o1, o2) -> {
+      // sort DESC by start date
+      return o2.getDate().compareTo(o1.getDate());
     });
     return sortedPerWeek;
   }
@@ -145,12 +138,9 @@ public class TimeSumUtility {
     }
 
     final List<TimeSumWithDate> sortedPerMonth = Arrays.asList(perMonth.values().toArray(new TimeSumWithDate[0]));
-    Collections.sort(sortedPerMonth, new Comparator<TimeSumWithDate>() {
-      @Override
-      public int compare(TimeSumWithDate o1, TimeSumWithDate o2) {
-        // sort DESC by start date
-        return o2.getDate().compareTo(o1.getDate());
-      }
+    Collections.sort(sortedPerMonth, (o1, o2) -> {
+      // sort DESC by start date
+      return o2.getDate().compareTo(o1.getDate());
     });
     return sortedPerMonth;
   }
