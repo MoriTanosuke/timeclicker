@@ -65,6 +65,12 @@ public class ChartControllerTest {
   }
 
   @Test
+  public void getMonthlyChart() throws Exception {
+    client.perform(MockMvcRequestBuilders.get("/charts/monthly"))
+        .andExpect(MockMvcResultMatchers.status().is2xxSuccessful());
+  }
+
+  @Test
   public void getWeeklyChart() throws Exception {
     client.perform(MockMvcRequestBuilders.get("/charts/weekly"))
         .andExpect(MockMvcResultMatchers.status().is2xxSuccessful());
@@ -81,4 +87,10 @@ public class ChartControllerTest {
         client.perform(MockMvcRequestBuilders.get("/charts/tag"))
                 .andExpect(MockMvcResultMatchers.status().is2xxSuccessful());
     }
+
+  @Test
+  public void getTagChartSince() throws Exception {
+    client.perform(MockMvcRequestBuilders.get("/charts/tag?since=2018-01-01"))
+        .andExpect(MockMvcResultMatchers.status().is2xxSuccessful());
+  }
 }
