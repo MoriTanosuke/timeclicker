@@ -1,22 +1,21 @@
 package de.kopis.timeclicker;
 
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import de.kopis.timeclicker.api.TimeclickerAPI;
 import de.kopis.timeclicker.exceptions.EntryNotOwnedByUserException;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.UserSettings;
-
-import java.text.SimpleDateFormat;
-import java.time.Duration;
-import java.time.Instant;
-
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
 
 @SpringBootApplication(scanBasePackages = {"de.kopis.timeclicker"})
 public class Application implements WebMvcConfigurer {
@@ -26,10 +25,10 @@ public class Application implements WebMvcConfigurer {
   private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss Z";
   private static CachedSetting<UserSettings> settings;
 
-    public static SimpleDateFormat getDateFormat() {
+  public static SimpleDateFormat getDateFormat() {
     update();
 
-        final SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN, settings.get().getLocale());
+    final SimpleDateFormat sdf = new SimpleDateFormat(DATE_PATTERN, settings.get().getLocale());
     sdf.setTimeZone(settings.get().getTimezone());
 
     return sdf;
@@ -54,8 +53,8 @@ public class Application implements WebMvcConfigurer {
       }
     } else {
       LOGGER.debug("Timezone {}, locale {} - valid until {}",
-          settings.get().getTimezone().getDisplayName(), settings.get().getLocale().getDisplayName(),
-          settings.getValidUntil());
+              settings.get().getTimezone().getDisplayName(), settings.get().getLocale().getDisplayName(),
+              settings.getValidUntil());
     }
   }
 }

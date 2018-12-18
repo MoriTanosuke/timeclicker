@@ -41,7 +41,6 @@ public class HomeControllerTest {
       new LocalUserServiceTestConfig(),
       new LocalDatastoreServiceTestConfig());
 
-
   @Before
   public void setUp() {
     helper
@@ -71,7 +70,7 @@ public class HomeControllerTest {
 
           @Override
           public void describeTo(Description description) {
-            description.appendText("does not contain")
+            description.appendText("does not contain ")
                 .appendValue(value);
           }
         }));

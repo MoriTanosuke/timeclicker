@@ -1,5 +1,8 @@
 package de.kopis.timeclicker.controllers;
 
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import de.kopis.timeclicker.Application;
 import de.kopis.timeclicker.api.TimeclickerAPI;
 import de.kopis.timeclicker.exceptions.EntryNotOwnedByUserException;
@@ -7,16 +10,6 @@ import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.UserSettings;
 import de.kopis.timeclicker.model.wrappers.EntryCount;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.List;
-
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
@@ -32,6 +25,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.List;
+
 @Controller
 @RequestMapping("/entries")
 public class EntryController {
@@ -43,10 +44,28 @@ public class EntryController {
 
   @GetMapping
   public String list(Model model,
+                     @RequestParam(required = false) String from,
+                     @RequestParam(required = false) String to,
                      @RequestParam(defaultValue = "31") int limit,
                      @RequestParam(defaultValue = "0") int page) throws NotAuthenticatedException {
     final User user = userService.getCurrentUser();
-    final List<TimeEntry> entries = api.list(limit, page, user);
+    final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    Date dateFrom = null;
+    Date dateTo = null;
+    try {
+      if (from != null && !"".equals(from)) {
+        model.addAttribute("from", from);
+        dateFrom = dateFormat.parse(from);
+      }
+      if (to != null && !"".equals(to)) {
+        model.addAttribute("to", to);
+        dateTo = dateFormat.parse(to);
+      }
+    } catch(ParseException e) {
+      LOGGER.warn("Can not parse date", e);
+    }
+    final List<TimeEntry> entries = api.listByDate(dateFrom, dateTo, limit, page, user);
+    LOGGER.debug("{} entries found: {}", entries.size(), entries);
     model.addAttribute("entries", entries);
 
     // build pagination
@@ -74,9 +93,9 @@ public class EntryController {
     }
 
     api.update(input.getKey(),
-        Date.from(input.getStart()), stop, breakDuration.toMillis(),
-        input.getDescription(), input.getTags(), input.getProject(),
-        user);
+      Date.from(input.getStart()), stop, breakDuration.toMillis(),
+      input.getDescription(), input.getTags(), input.getProject(),
+      user);
 
     return "redirect:/entries";
   }
