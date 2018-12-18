@@ -1,14 +1,14 @@
 package de.kopis.timeclicker.model;
 
+import de.kopis.timeclicker.utils.TimeSumUtility;
 import de.kopis.timeclicker.utils.WorkdayCalculator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Date;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Calendar;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class MonthlyTimeSum extends TimeSum {
   private static final Logger LOGGER = LoggerFactory.getLogger(MonthlyTimeSum.class);
@@ -19,41 +19,13 @@ public class MonthlyTimeSum extends TimeSum {
 
   public MonthlyTimeSum(Instant month, Duration duration, Duration workPerDay) {
     super(duration);
-    this.firstOfMonth = makeFirstOfMonth(month);
-    lastOfMonth = makeLastOfMonth(month);
+    firstOfMonth = TimeSumUtility.makeFirstOfMonth(month);
+    lastOfMonth = TimeSumUtility.makeLastOfMonth(month);
 
-    final int workingDays = WorkdayCalculator.getWorkingDays(this.firstOfMonth, lastOfMonth);
+    final int workingDays = WorkdayCalculator.getWorkingDays(firstOfMonth, lastOfMonth);
     // TODO get user settings
     expectedDuration = workPerDay.multipliedBy(workingDays);
-    LOGGER.debug("Setting expected duration for {} to {}", this.firstOfMonth, expectedDuration);
-  }
-
-  public static Instant makeLastOfMonth(Instant month) {
-    final Calendar thisMonth = Calendar.getInstance();
-    thisMonth.setTime(Date.from(month));
-    final Calendar cal = Calendar.getInstance();
-    cal.setTime(Date.from(month));
-    while (cal.get(Calendar.MONTH) == thisMonth.get(Calendar.MONTH)) {
-      cal.add(Calendar.DAY_OF_MONTH, 1);
-    }
-    // roll back one day, we counted 1 too far
-    cal.add(Calendar.DAY_OF_MONTH, -1);
-    LOGGER.debug("Last day of firstOfMonth: {}", cal.get(Calendar.DAY_OF_MONTH));
-    return cal.getTime().toInstant();
-  }
-
-  public static Instant makeFirstOfMonth(Instant d) {
-    final Calendar cal = Calendar.getInstance();
-    cal.setTime(Date.from(d));
-    // reset to first of firstOfMonth
-    cal.set(Calendar.DAY_OF_MONTH, 1);
-    // reset to midnight
-    cal.set(Calendar.HOUR_OF_DAY, 0);
-    cal.set(Calendar.MINUTE, 0);
-    cal.set(Calendar.SECOND, 0);
-    cal.set(Calendar.MILLISECOND, 0);
-
-    return cal.getTime().toInstant();
+    LOGGER.debug("Setting expected duration for {} to {}", firstOfMonth, expectedDuration);
   }
 
   public Instant getDate() {
