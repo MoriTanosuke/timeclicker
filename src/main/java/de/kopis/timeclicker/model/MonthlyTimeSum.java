@@ -2,13 +2,14 @@ package de.kopis.timeclicker.model;
 
 import de.kopis.timeclicker.utils.TimeSumUtility;
 import de.kopis.timeclicker.utils.WorkdayCalculator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.Date;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Calendar;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MonthlyTimeSum extends TimeSum {
   private static final Logger LOGGER = LoggerFactory.getLogger(MonthlyTimeSum.class);

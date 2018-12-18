@@ -1,21 +1,22 @@
 package de.kopis.timeclicker;
 
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
 import de.kopis.timeclicker.api.TimeclickerAPI;
 import de.kopis.timeclicker.exceptions.EntryNotOwnedByUserException;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.UserSettings;
+
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
+
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import java.text.SimpleDateFormat;
-import java.time.Duration;
-import java.time.Instant;
 
 @SpringBootApplication(scanBasePackages = {"de.kopis.timeclicker"})
 public class Application implements WebMvcConfigurer {

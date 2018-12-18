@@ -1,7 +1,6 @@
 package de.kopis.timeclicker.model;
 
 import de.kopis.timeclicker.utils.TimeSumUtility;
-import org.junit.Test;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -9,6 +8,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
