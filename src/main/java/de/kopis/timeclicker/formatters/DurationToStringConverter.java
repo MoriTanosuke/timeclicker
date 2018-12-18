@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 public class DurationToStringConverter implements Converter<Duration, String> {
   @Override
   public String convert(Duration source) {
+    // return in minutes
     return Long.toString(source.toMinutes());
   }
 }
