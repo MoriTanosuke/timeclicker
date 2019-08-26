@@ -2,6 +2,7 @@ package de.kopis.timeclicker.api;
 
 import de.kopis.timeclicker.exceptions.EntryNotOwnedByUserException;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
+import de.kopis.timeclicker.model.EmotionRating;
 import de.kopis.timeclicker.model.TagSummary;
 import de.kopis.timeclicker.model.TimeEntry;
 
@@ -9,6 +10,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import com.google.appengine.api.users.User;
@@ -23,10 +25,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class TimeclickerAPITest {
   private final LocalServiceTestHelper helper = new LocalServiceTestHelper(
@@ -110,6 +109,17 @@ public class TimeclickerAPITest {
 
     final TimeEntry updatedEntry = api.show(entry.getKey(), user);
     assertEquals(entry.getStart().plus(Duration.ofHours(42)), updatedEntry.getStop());
+  }
+
+  @Test
+  public void testListRatings() throws NotAuthenticatedException {
+    final EmotionRating rating1 = new EmotionRating(Instant.now(), EmotionRating.Emotion.GOOD);
+    api.rate(rating1, user);
+    final EmotionRating rating2 = new EmotionRating(Instant.now(), EmotionRating.Emotion.NEUTRAL);
+    api.rate(rating2, user);
+
+    final List<EmotionRating> ratings = api.listRatings(100, 0, user);
+    assertEquals(2, ratings.size());
   }
 
   @Test

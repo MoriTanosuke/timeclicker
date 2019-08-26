@@ -1,0 +1,59 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head"></head>
+<body>
+
+<header th:replace="fragments/nav"></header>
+
+<main role="main">
+    <div class="container-fluid">
+        <h1>Timeclicker</h1>
+        <h2>Add rating</h2>
+        <form action="#" th:action="@{/ratings}" th:object="${rating}" method="post">
+            <input type="hidden" th:field="*{key}"/>
+
+            <div class="form-group">
+                <label th:for="date">Date:</label>
+                <div class="input-group mb-3">
+                    <input type="text" th:field="*{date}" th:required="true" class="form-control"/>
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" id="button-start-now" onclick="insertNow(document.getElementById('date'))"><span class="fas fa-clock"></span> Now</button>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label th:for="project">Emotion:</label>
+                <select th:field="*{emotion}" class="form-control">
+                    <option th:each="state : ${T(de.kopis.timeclicker.model.EmotionRating.Emotion).values()}"
+                            th:value="${state}"
+                            th:text="${state}">
+                </select>
+            </div>
+            <input type="submit" value="Submit"/>
+            <input type="reset" value="Reset"/>
+            <a th:href="@{'/ratings'}">Go back</a>
+        </form>
+    </div>
+</main>
+
+<footer th:replace="fragments/foot"></footer>
+
+<script>
+    function insertNow(element) {
+        var d = new Date();
+        var timezoneOffset = Math.abs(d.getTimezoneOffset()) / 60;
+        var datestring =
+            d.getFullYear()   + "-" +
+            (d.getMonth()   < 10 ? '0' : '') + (d.getMonth() + 1) + "-" +
+            (d.getDate()    < 10 ? '0' : '') +  d.getDate()       + " " +
+            (d.getHours() < 10 ? '0' : '') + d.getHours() + ":" +
+            (d.getMinutes() < 10 ? '0' : '') +  d.getMinutes()    + ":" +
+            (d.getSeconds() < 10 ? '0' : '') + d.getSeconds() + " " +
+            "+" + (timezoneOffset + "").padStart(2, "0") + "00";
+        element.value = datestring;
+    }
+</script>
+
+</body>
+</html>

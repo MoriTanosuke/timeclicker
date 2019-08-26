@@ -5,6 +5,7 @@ import de.kopis.timeclicker.exceptions.EntryNotOwnedByUserException;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
 import de.kopis.timeclicker.model.UserSettings;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
@@ -23,6 +24,7 @@ public class Application implements WebMvcConfigurer {
   private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
 
   private static final Duration DEFAULT_CACHE_DURATION = Duration.ofSeconds(10);
+  //2019-09-20 15:41:19 +0200
   private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss Z";
   private static CachedSetting<UserSettings> settings;
 

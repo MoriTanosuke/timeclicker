@@ -1,0 +1,66 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head"></head>
+<body>
+
+<header th:replace="fragments/nav"></header>
+
+<main role="main">
+    <div class="container-fluid">
+        <h1>Timeclicker</h1>
+        <h2>List ratings</h2>
+
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <li class="page-item"><a class="page-link" th:href="@{/ratings(limit=${limit},page=0)}">
+                    <span class="fas fa-step-backward" aria-hidden="true"></span> First</a></li>
+                <li class="page-item"><a class="page-link" th:href="@{/ratings(limit=${limit},page=${previousPage})}">
+                    <span class="fas fa-chevron-left" aria-hidden="true"></span> Previous</a></li>
+                <li class="page-item"><a class="page-link" th:href="@{/ratings/add}">
+                    <span class="fas fa-plus" aria-hidden="true"></span> New</a></li>
+                <li class="page-item"><a class="page-link" th:href="@{/ratings(limit=${limit},page=${nextPage})}">
+                    <span class="fas fa-chevron-right" aria-hidden="true"></span> Next</a></li>
+                <li class="page-item"><a class="page-link" th:href="@{/ratings(limit=${limit},page=${lastPage})}">
+                    <span class="fas fa-step-forward" aria-hidden="true"></span> Last</a></li>
+            </ul>
+        </nav>
+
+        <table class="table table-striped table-hover">
+            <thead class="thead-dark">
+            <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Rating</th>
+                <th scope="col">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="entry : ${entries}">
+                <td th:text="${{entry.date}}">date</td>
+                <td>
+                    <th:block th:if="${{entry.emotion == T(de.kopis.timeclicker.model.EmotionRating.Emotion).GOOD}}">😀</th:block>
+                    <th:block th:if="${{entry.emotion == T(de.kopis.timeclicker.model.EmotionRating.Emotion).NEUTRAL}}">😐</th:block>
+                    <th:block th:if="${{entry.emotion == T(de.kopis.timeclicker.model.EmotionRating.Emotion).BAD}}">😡</th:block>
+                </td>
+                <td>
+                    <div role="group" aria-label="Actions" class="btn-toolbar">
+                        <a th:href="@{'/ratings/' + ${entry.key}}" class="btn btn-link" title="edit">
+                            <span class="fas fa-edit"></span>
+                        </a>
+                        <form th:action="@{'/ratings/' + ${entry.key}}" th:method="delete">
+                            <button type="submit" class="btn btn-link" title="delete">
+                                <span class="fas fa-trash"></span>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<footer th:replace="fragments/foot"></footer>
+
+</body>
+</html>

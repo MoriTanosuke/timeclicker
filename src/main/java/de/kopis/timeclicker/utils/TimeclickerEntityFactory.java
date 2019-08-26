@@ -1,5 +1,9 @@
 package de.kopis.timeclicker.utils;
 
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.users.User;
+import de.kopis.timeclicker.model.EmotionRating;
 import de.kopis.timeclicker.model.TimeEntry;
 import de.kopis.timeclicker.model.UserSettings;
 
@@ -8,10 +12,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
-
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.api.users.User;
 
 public class TimeclickerEntityFactory {
   /**
@@ -61,6 +61,21 @@ public class TimeclickerEntityFactory {
     timeEntryEntity.setProperty(TimeEntry.ENTRY_STOP, null);
     timeEntryEntity.setProperty(TimeEntry.ENTRY_USER_ID, user.getUserId());
     return timeEntryEntity;
+  }
+
+  /**
+   * Create a new {@link de.kopis.timeclicker.model.EmotionRating} for the given user.
+   *
+   * @param user
+   * @return a {@link de.kopis.timeclicker.model.EmotionRating} with property <code>date</code> set to current date
+   */
+  public static Entity createEmotionRatingEntity(User user) {
+    if (user == null) throw new IllegalArgumentException("No user provided, can not create entity");
+
+    Entity entity = new Entity(EmotionRating.EMOTION_RATING_ENTITY);
+    entity.setProperty(EmotionRating.EMOTION_RATING_USER_ID, user.getUserId());
+    entity.setProperty(EmotionRating.EMOTION_RATING_DATE, new Date());
+    return entity;
   }
 
   public static UserSettings buildUserSettingsFromEntity(Entity userSettingsEntity) {
@@ -121,5 +136,13 @@ public class TimeclickerEntityFactory {
    */
   private static boolean checkProperty(Entity entity, String propertyName) {
     return entity.hasProperty(propertyName) && entity.getProperty(propertyName) != null;
+  }
+
+  public static EmotionRating buildEmotionRatingFromEntity(Entity entity) {
+    return new EmotionRating(
+          KeyFactory.keyToString(entity.getKey()),
+          ((Date) entity.getProperty(EmotionRating.EMOTION_RATING_DATE)).toInstant(),
+          // uses the enum name, not the #toString value
+          EmotionRating.Emotion.valueOf((String) entity.getProperty(EmotionRating.EMOTION_RATING_EMOTION)));
   }
 }

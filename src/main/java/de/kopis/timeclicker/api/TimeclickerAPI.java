@@ -2,10 +2,8 @@ package de.kopis.timeclicker.api;
 
 import de.kopis.timeclicker.exceptions.EntryNotOwnedByUserException;
 import de.kopis.timeclicker.exceptions.NotAuthenticatedException;
-import de.kopis.timeclicker.model.TagSummary;
-import de.kopis.timeclicker.model.TimeEntry;
-import de.kopis.timeclicker.model.TimeSum;
-import de.kopis.timeclicker.model.UserSettings;
+import de.kopis.timeclicker.exceptions.RatingNotOwnedByUserException;
+import de.kopis.timeclicker.model.*;
 import de.kopis.timeclicker.model.wrappers.EntryCount;
 import de.kopis.timeclicker.model.wrappers.Project;
 import de.kopis.timeclicker.utils.TimeSumUtility;
@@ -14,28 +12,13 @@ import de.kopis.timeclicker.utils.TimeclickerEntityFactory;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.DefaultValue;
 import com.google.api.server.spi.config.Named;
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.EntityNotFoundException;
-import com.google.appengine.api.datastore.FetchOptions;
-import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.api.datastore.PreparedQuery;
-import com.google.appengine.api.datastore.PropertyProjection;
-import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.*;
 import com.google.appengine.api.users.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,6 +87,66 @@ public class TimeclickerAPI {
 
     LOGGER.info("User {} started a new entry", user.getUserId());
     return entry;
+  }
+
+  @ApiMethod(name = "rate", path = "rate", httpMethod = "post")
+  public EmotionRating rate(EmotionRating rating, User user) throws NotAuthenticatedException {
+    if (user == null) throw new NotAuthenticatedException();
+
+    LOGGER.debug("Got {}", rating);
+
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
+    Entity entity = null;
+    if (rating.getKey() != null && !rating.getKey().isEmpty()) {
+      try {
+        entity = datastore.get(KeyFactory.stringToKey(rating.getKey()));
+      } catch (EntityNotFoundException e) {
+        LOGGER.warn("Can not find entity with key {}", KeyFactory.stringToKey(rating.getKey()));
+      }
+    }
+
+    if (entity == null) {
+      LOGGER.info("Creating new rating entity for user {}", user);
+      entity = TimeclickerEntityFactory.createEmotionRatingEntity(user);
+    }
+
+    entity.setProperty(EmotionRating.EMOTION_RATING_DATE, rating.getAsDate());
+    entity.setProperty(EmotionRating.EMOTION_RATING_EMOTION, rating.getEmotion().name());
+    datastore.put(entity);
+
+    EmotionRating emotionRating = TimeclickerEntityFactory.buildEmotionRatingFromEntity(entity);
+    LOGGER.info("User {} rated {} as {}", user.getUserId(), rating.getDate(), rating.getEmotion());
+    return emotionRating;
+  }
+
+  @ApiMethod(name = "rate.delete", path = "rate/delete", httpMethod = "post")
+  public void deleteRating(@Named("key") String key, User user) throws NotAuthenticatedException, RatingNotOwnedByUserException {
+    if (user == null) throw new NotAuthenticatedException();
+
+    final EmotionRating rating = showRating(key, user);
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    datastore.delete(KeyFactory.stringToKey(rating.getKey()));
+    LOGGER.info("User {} deleted rating {}", user.getUserId(), rating.getKey());
+  }
+
+  @ApiMethod(name = "rate.show", path = "rate/show")
+  public EmotionRating showRating(@Named("showKey") String key, User user) throws NotAuthenticatedException, RatingNotOwnedByUserException {
+    if (user == null) throw new NotAuthenticatedException();
+
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    try {
+      Entity entity = datastore.get(KeyFactory.stringToKey(key));
+      if (!entity.getProperty(TimeEntry.ENTRY_USER_ID).equals(user.getUserId())) {
+        throw new RatingNotOwnedByUserException();
+      }
+      EmotionRating entry = TimeclickerEntityFactory.buildEmotionRatingFromEntity(entity);
+      LOGGER.info("User {} showed rating {}", user.getUserId(), entry.getKey());
+      return entry;
+    } catch (EntityNotFoundException e) {
+      LOGGER.warn("Can not find entity with key {}", KeyFactory.stringToKey(key));
+    }
+    return null;
   }
 
   @ApiMethod(name = "show", path = "show")
@@ -212,7 +255,7 @@ public class TimeclickerAPI {
   public List<TimeEntry> list(@Named("limit") @DefaultValue("31") int limit, @Named("page") @DefaultValue("0") int page, User user) throws NotAuthenticatedException {
     if (user == null) throw new NotAuthenticatedException();
 
-      final List<Entity> entities = listEntities(page, limit, user);
+    final List<Entity> entities = listEntities(page, limit, user);
 
     final List<TimeEntry> l = new ArrayList<>();
     for (Entity timeEntryEntity : entities) {
@@ -223,63 +266,88 @@ public class TimeclickerAPI {
     return l;
   }
 
-    @ApiMethod(name = "tagsummarysince", path = "tagsummarysince")
-    public Collection<TagSummary> getSummaryForTagsSince(@Named("since") Date since,
-                                                         @Named("limit") @DefaultValue("31") int limit,
-                                                         @Named("page") @DefaultValue("0") int page,
-                                                         User user) throws NotAuthenticatedException {
-        if (user == null) throw new NotAuthenticatedException();
+  @ApiMethod(name = "rating.list", path = "ratings")
+  public List<EmotionRating> listRatings(@Named("limit") @DefaultValue("31") int limit, @Named("page") @DefaultValue("0") int page, User user) throws NotAuthenticatedException {
+    if (user == null) throw new NotAuthenticatedException();
 
-        // Load all entities since given date
-        final List<Entity> entities = searchTimeEntries(user, since, Date.from(Instant.now()));
-        final Collection<TagSummary> tagSummaries = buildTagSummaries(user, entities);
-
-        LOGGER.info("User {} created tagsummaries for all tags since {}", user.getUserId(), since);
-        return tagSummaries;
+    LOGGER.debug("Listing ratings page={} size={}", page, limit);
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    final Query.Filter propertyFilter =
+        new Query.FilterPredicate(EmotionRating.EMOTION_RATING_USER_ID,
+            Query.FilterOperator.EQUAL,
+            user.getUserId());
+    final Query q = new Query(EmotionRating.EMOTION_RATING_ENTITY)
+        .setFilter(propertyFilter)
+        .addSort(EmotionRating.EMOTION_RATING_DATE, Query.SortDirection.DESCENDING);
+    final PreparedQuery pq = datastore.prepare(q);
+    final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults().offset(limit * page).limit(limit);
+    final List<Entity> entities = pq.asList(fetchOptions);
+    final List<EmotionRating> ratings = new ArrayList<>();
+    for (Entity entity : entities) {
+      final EmotionRating rating = TimeclickerEntityFactory.buildEmotionRatingFromEntity(entity);
+      ratings.add(rating);
     }
 
-    @ApiMethod(name = "tagsummary", path = "tagsummary")
-    public Collection<TagSummary> getSummaryForTags(@Named("limit") @DefaultValue("31") int limit,
-                                                    @Named("page") @DefaultValue("0") int page,
-                                                    User user) throws NotAuthenticatedException {
-        if (user == null) throw new NotAuthenticatedException();
+    return ratings;
+  }
 
-        // Load all entities
-        final List<Entity> entities = listEntities(page, limit, user);
-        final Collection<TagSummary> tagSummaries = buildTagSummaries(user, entities);
+  @ApiMethod(name = "tagsummarysince", path = "tagsummarysince")
+  public Collection<TagSummary> getSummaryForTagsSince(@Named("since") Date since,
+                                                       @Named("limit") @DefaultValue("31") int limit,
+                                                       @Named("page") @DefaultValue("0") int page,
+                                                       User user) throws NotAuthenticatedException {
+    if (user == null) throw new NotAuthenticatedException();
 
-        LOGGER.info("User {} created tagsummaries for all tags", user.getUserId());
-        return tagSummaries;
-    }
+    // Load all entities since given date
+    final List<Entity> entities = searchTimeEntries(user, since, Date.from(Instant.now()));
+    final Collection<TagSummary> tagSummaries = buildTagSummaries(user, entities);
 
-    private Collection<TagSummary> buildTagSummaries(User user, List<Entity> entities) {
-        final Map<String, TagSummary> tagSummaries = new HashMap<>();
-        tagSummaries.put(TagSummary.EMPTY_TAG, new TagSummary());
+    LOGGER.info("User {} created tagsummaries for all tags since {}", user.getUserId(), since);
+    return tagSummaries;
+  }
 
-        // add loaded entities to tagsummaries
-        for (Entity entity : entities) {
-            final TimeEntry e = TimeclickerEntityFactory.buildTimeEntryFromEntity(entity);
-            String tags = e.getTags();
-            if (tags == null || tags.isEmpty()) {
-                // found an entity without any tags, but we want to show them too
-                tagSummaries.get(TagSummary.EMPTY_TAG).add(e);
+  @ApiMethod(name = "tagsummary", path = "tagsummary")
+  public Collection<TagSummary> getSummaryForTags(@Named("limit") @DefaultValue("31") int limit,
+                                                  @Named("page") @DefaultValue("0") int page,
+                                                  User user) throws NotAuthenticatedException {
+    if (user == null) throw new NotAuthenticatedException();
 
-            } else {
-                final String[] entityTags = tags.split("\\s*,\\s*");
-                // add the entity to all tags
-                for (String et : entityTags) {
-                    if (et.isEmpty()) continue;
-                    // we might have tags in the database which are not yet added to the overall list
-                    if (!tagSummaries.containsKey(et)) {
-                        tagSummaries.put(et, new TagSummary(et));
-                    }
-                    tagSummaries.get(et).add(e);
-                }
-            }
+    // Load all entities
+    final List<Entity> entities = listEntities(page, limit, user);
+    final Collection<TagSummary> tagSummaries = buildTagSummaries(user, entities);
+
+    LOGGER.info("User {} created tagsummaries for all tags", user.getUserId());
+    return tagSummaries;
+  }
+
+  private Collection<TagSummary> buildTagSummaries(User user, List<Entity> entities) {
+    final Map<String, TagSummary> tagSummaries = new HashMap<>();
+    tagSummaries.put(TagSummary.EMPTY_TAG, new TagSummary());
+
+    // add loaded entities to tagsummaries
+    for (Entity entity : entities) {
+      final TimeEntry e = TimeclickerEntityFactory.buildTimeEntryFromEntity(entity);
+      String tags = e.getTags();
+      if (tags == null || tags.isEmpty()) {
+        // found an entity without any tags, but we want to show them too
+        tagSummaries.get(TagSummary.EMPTY_TAG).add(e);
+
+      } else {
+        final String[] entityTags = tags.split("\\s*,\\s*");
+        // add the entity to all tags
+        for (String et : entityTags) {
+          if (et.isEmpty()) continue;
+          // we might have tags in the database which are not yet added to the overall list
+          if (!tagSummaries.containsKey(et)) {
+            tagSummaries.put(et, new TagSummary(et));
+          }
+          tagSummaries.get(et).add(e);
         }
-
-        return tagSummaries.values();
+      }
     }
+
+    return tagSummaries.values();
+  }
 
   @ApiMethod(name = "count", path = "count")
   public EntryCount countAvailableEntries(User user) throws NotAuthenticatedException {
@@ -501,33 +569,33 @@ public class TimeclickerAPI {
     return pq.asList(fetchOptions);
   }
 
-    private List<Entity> listEntities(int page, int pageSize, User user) {
+  private List<Entity> listEntities(int page, int pageSize, User user) {
     LOGGER.debug("Listing page={} size={}", page, pageSize);
     final PreparedQuery pq = buildTimeEntryQuery(user);
     final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults().offset(pageSize * page).limit(pageSize);
     return pq.asList(fetchOptions);
   }
 
-    private PreparedQuery buildTimeEntryQuery(final Date since, final User user) {
-        final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        // load all time entries for this user
-        final Query.Filter propertyFilter = new Query.FilterPredicate(TimeEntry.ENTRY_USER_ID,
-                Query.FilterOperator.EQUAL,
-                user.getUserId());
-        //TODO refactor method "buildTimeEntryQuery" into single method?
-        // filter all entries before date "since"
-        final Query.Filter dateFilter = new Query.FilterPredicate(
-                TimeEntry.ENTRY_START,
-                Query.FilterOperator.GREATER_THAN_OR_EQUAL,
-                since);
-        final Query.Filter compositeFilter = new Query.CompositeFilter(
-                Query.CompositeFilterOperator.AND,
-                Arrays.asList(propertyFilter, dateFilter));
-        final Query q = new Query("TimeEntry")
-                .setFilter(compositeFilter)
-                .addSort(TimeEntry.ENTRY_START, Query.SortDirection.DESCENDING);
-        return datastore.prepare(q);
-    }
+  private PreparedQuery buildTimeEntryQuery(final Date since, final User user) {
+    final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    // load all time entries for this user
+    final Query.Filter propertyFilter = new Query.FilterPredicate(TimeEntry.ENTRY_USER_ID,
+        Query.FilterOperator.EQUAL,
+        user.getUserId());
+    //TODO refactor method "buildTimeEntryQuery" into single method?
+    // filter all entries before date "since"
+    final Query.Filter dateFilter = new Query.FilterPredicate(
+        TimeEntry.ENTRY_START,
+        Query.FilterOperator.GREATER_THAN_OR_EQUAL,
+        since);
+    final Query.Filter compositeFilter = new Query.CompositeFilter(
+        Query.CompositeFilterOperator.AND,
+        Arrays.asList(propertyFilter, dateFilter));
+    final Query q = new Query("TimeEntry")
+        .setFilter(compositeFilter)
+        .addSort(TimeEntry.ENTRY_START, Query.SortDirection.DESCENDING);
+    return datastore.prepare(q);
+  }
 
   private PreparedQuery buildTimeEntryQuery(final User user) {
     final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
