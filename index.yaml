@@ -1,0 +1,21 @@
+indexes:
+  - kind: TimeEntry
+    properties:
+      - name: userId
+      - name: start
+        direction: asc
+  - kind: TimeEntry
+    properties:
+      - name: userId
+      - name: start
+        direction: desc
+  - kind: TimeEntry
+    properties:
+      - name: userId
+      - name: project
+        direction: asc
+  - kind: EmotionRating
+    properties:
+      - name: userId
+      - name: date
+        direction: desc
