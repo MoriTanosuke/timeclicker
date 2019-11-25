@@ -3,10 +3,12 @@ package de.kopis.timeclicker.model;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class TimeEntryTest {
   final Duration duration = Duration.of(42, ChronoUnit.MINUTES);
@@ -57,6 +59,44 @@ public class TimeEntryTest {
     final Duration breakDuration = Duration.of(5, ChronoUnit.MINUTES);
     t1.setBreakDuration(breakDuration);
     assertEquals(duration.minus(breakDuration), t1.getDuration());
+  }
+
+  @Test
+  public void hasOneTag() {
+    final Instant start = Instant.now();
+    final TimeEntry entry = new TimeEntry(start, start.plus(duration));
+    entry.setTags("tag1,tag2,tag3");
+
+    final Set<String> checkedTags = new HashSet<>();
+    checkedTags.add("tag2");
+
+    assertTrue(entry.hasAnyTag(checkedTags));
+  }
+
+  @Test
+  public void hasMultipleTags() {
+    final Instant start = Instant.now();
+    final TimeEntry entry = new TimeEntry(start, start.plus(duration));
+    entry.setTags("tag1,tag2,tag3");
+
+    final Set<String> checkedTags = new HashSet<>();
+    checkedTags.add("tag2");
+    checkedTags.add("tag3");
+    checkedTags.add("tag5");
+
+    assertTrue(entry.hasAnyTag(checkedTags));
+  }
+
+  @Test
+  public void hasNoTag() {
+    final Instant start = Instant.now();
+    final TimeEntry entry = new TimeEntry(start, start.plus(duration));
+    entry.setTags("tag1,tag2,tag3");
+
+    final Set<String> checkedTags = new HashSet<>();
+    checkedTags.add("tag5");
+
+    assertFalse(entry.hasAnyTag(checkedTags));
   }
 
 }

@@ -10,6 +10,7 @@ import de.kopis.timeclicker.model.wrappers.EntryCount;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -20,13 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/entries")
@@ -39,15 +34,20 @@ public class EntryController {
 
   @GetMapping
   public String list(Model model,
+                     @RequestParam(required = false) List<String> tags,
                      @RequestParam(defaultValue = "31") int limit,
                      @RequestParam(defaultValue = "0") int page) throws NotAuthenticatedException {
     final User user = userService.getCurrentUser();
-    final List<TimeEntry> entries = api.list(limit, page, user);
+    if(tags == null) {
+      tags = Collections.emptyList();
+    }
+    final List<TimeEntry> entries = api.list(String.join(",", tags), limit, page, user);
     model.addAttribute("entries", entries);
 
     // build pagination
     final EntryCount maxEntries = api.countAvailableEntries(user);
     final int lastPage = maxEntries.count / limit;
+    model.addAttribute("tags", tags);
     model.addAttribute("limit", limit);
     model.addAttribute("lastPage", lastPage);
     model.addAttribute("previousPage", (page > 0) ? (page - 1) : page);

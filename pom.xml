@@ -10,7 +10,7 @@
     </parent>
 
     <packaging>war</packaging>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.2.1-SNAPSHOT</version>
 
     <groupId>de.kopis.timeclicker</groupId>
     <artifactId>timeclicker</artifactId>
@@ -22,8 +22,8 @@
 
     <properties>
         <app.id>timeclicker-1079</app.id>
-        <appengine.version>1.9.63</appengine.version>
-        <gcloud.plugin.version>1.3.1</gcloud.plugin.version>
+        <appengine.version>1.9.77</appengine.version>
+        <gcloud.plugin.version>2.2.0</gcloud.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
     </properties>
@@ -182,7 +182,8 @@
                 <configuration>
                     <enableJarClasses>false</enableJarClasses>
                     <port>8181</port>
-                    <deploy.project>${app.id}</deploy.project>
+                    <deploy.projectId>${app.id}</deploy.projectId>
+                    <deploy.version>GCLOUD_CONFIG</deploy.version>
                     <deploy.stopPreviousVersion>true</deploy.stopPreviousVersion>
                     <deploy.promote>true</deploy.promote>
                 </configuration>

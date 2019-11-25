@@ -16,7 +16,6 @@ import java.util.*;
 
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
-import com.google.api.server.spi.config.DefaultValue;
 import com.google.api.server.spi.config.Named;
 import com.google.appengine.api.datastore.*;
 import com.google.appengine.api.users.User;
@@ -234,7 +233,7 @@ public class TimeclickerAPI {
    *
    * @param user current {@link User}
    * @return latest open {@link TimeEntry} or <code>null</code>
-   * @throws NotAuthenticatedException
+   * @throws NotAuthenticatedException if user is <code>null</code>
    */
   @ApiMethod(name = "latest", path = "latest")
   public TimeEntry latest(User user) throws NotAuthenticatedException, EntryNotOwnedByUserException {
@@ -252,32 +251,59 @@ public class TimeclickerAPI {
   }
 
   @ApiMethod(name = "list", path = "list")
-  public List<TimeEntry> list(@Named("limit") @DefaultValue("31") int limit, @Named("page") @DefaultValue("0") int page, User user) throws NotAuthenticatedException {
+  public List<TimeEntry> list(
+      @Named("tags") String taglist,
+      @Named("limit") Integer limit,
+      @Named("page") Integer page,
+      User user
+  ) throws NotAuthenticatedException {
     if (user == null) throw new NotAuthenticatedException();
 
+    if (limit == null) {
+      limit = 31;
+    }
+    if (page == null) {
+      page = 0;
+    }
+
+    final Set<String> tags;
+    if (taglist != null && !taglist.isEmpty()) {
+      tags = new HashSet<>(Arrays.asList(taglist.split(",")));
+      LOGGER.debug("Filtering by tags: {}", tags);
+    } else {
+      tags = Collections.emptySet();
+    }
     final List<Entity> entities = listEntities(page, limit, user);
 
     final List<TimeEntry> l = new ArrayList<>();
     for (Entity timeEntryEntity : entities) {
       final TimeEntry entry = TimeclickerEntityFactory.buildTimeEntryFromEntity(timeEntryEntity);
-      l.add(entry);
+      if(tags.isEmpty() || entry.hasAnyTag(tags)) {
+        l.add(entry);
+      }
     }
     LOGGER.info("User {} listed all entries", user.getUserId());
     return l;
   }
 
   @ApiMethod(name = "rating.list", path = "ratings")
-  public List<EmotionRating> listRatings(@Named("limit") @DefaultValue("31") int limit, @Named("page") @DefaultValue("0") int page, User user) throws NotAuthenticatedException {
+  public List<EmotionRating> listRatings(@Named("limit") Integer limit,
+                                         @Named("page") Integer page,
+                                         User user) throws NotAuthenticatedException {
     if (user == null) throw new NotAuthenticatedException();
 
+    if (limit == null) {
+      limit = 31;
+    }
+    if (page == null) {
+      page = 0;
+    }
+
     LOGGER.debug("Listing ratings page={} size={}", page, limit);
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    final Query.Filter propertyFilter =
-        new Query.FilterPredicate(EmotionRating.EMOTION_RATING_USER_ID,
-            Query.FilterOperator.EQUAL,
-            user.getUserId());
+    final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    final Query.FilterPredicate userFilter = buildPropertyFilter(EmotionRating.EMOTION_RATING_USER_ID, user.getUserId());
     final Query q = new Query(EmotionRating.EMOTION_RATING_ENTITY)
-        .setFilter(propertyFilter)
+        .setFilter(userFilter)
         .addSort(EmotionRating.EMOTION_RATING_DATE, Query.SortDirection.DESCENDING);
     final PreparedQuery pq = datastore.prepare(q);
     final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults().offset(limit * page).limit(limit);
@@ -293,8 +319,6 @@ public class TimeclickerAPI {
 
   @ApiMethod(name = "tagsummarysince", path = "tagsummarysince")
   public Collection<TagSummary> getSummaryForTagsSince(@Named("since") Date since,
-                                                       @Named("limit") @DefaultValue("31") int limit,
-                                                       @Named("page") @DefaultValue("0") int page,
                                                        User user) throws NotAuthenticatedException {
     if (user == null) throw new NotAuthenticatedException();
 
@@ -307,10 +331,17 @@ public class TimeclickerAPI {
   }
 
   @ApiMethod(name = "tagsummary", path = "tagsummary")
-  public Collection<TagSummary> getSummaryForTags(@Named("limit") @DefaultValue("31") int limit,
-                                                  @Named("page") @DefaultValue("0") int page,
+  public Collection<TagSummary> getSummaryForTags(@Named("limit") Integer limit,
+                                                  @Named("page") Integer page,
                                                   User user) throws NotAuthenticatedException {
     if (user == null) throw new NotAuthenticatedException();
+
+    if (limit == null) {
+      limit = 31;
+    }
+    if (page == null) {
+      page = 0;
+    }
 
     // Load all entities
     final List<Entity> entities = listEntities(page, limit, user);
@@ -474,12 +505,9 @@ public class TimeclickerAPI {
         LOGGER.warn("Can not load user settings for user {} with key {}", user, key);
       }
     } else {
-      final Query.Filter propertyFilter =
-          new Query.FilterPredicate(TimeEntry.ENTRY_USER_ID,
-              Query.FilterOperator.EQUAL,
-              user.getUserId());
+      final Query.FilterPredicate userFilter = buildPropertyFilter(TimeEntry.ENTRY_USER_ID, user.getUserId());
       final Query q = new Query("UserSettings")
-          .setFilter(propertyFilter);
+          .setFilter(userFilter);
       final PreparedQuery pq = datastore.prepare(q);
       entity = pq.asSingleEntity();
     }
@@ -498,7 +526,7 @@ public class TimeclickerAPI {
 
     final String key = settings.getKey();
 
-    Entity entity = null;
+    Entity entity;
     if (key != null) {
       try {
         entity = datastore.get(KeyFactory.stringToKey(key));
@@ -531,12 +559,9 @@ public class TimeclickerAPI {
 
     //TODO collect all used projects
     final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    final Query.Filter propertyFilter =
-        new Query.FilterPredicate(TimeEntry.ENTRY_USER_ID,
-            Query.FilterOperator.EQUAL,
-            user.getUserId());
+    final Query.FilterPredicate userFilter = buildPropertyFilter(TimeEntry.ENTRY_USER_ID, user.getUserId());
     final Query q = new Query("TimeEntry")
-        .setFilter(propertyFilter)
+        .setFilter(userFilter)
         // only get distinct entries
         .addProjection(new PropertyProjection(TimeEntry.ENTRY_PROJECT, String.class))
         .setDistinct(true);
@@ -553,61 +578,65 @@ public class TimeclickerAPI {
   }
 
   private int countDates(User user) throws NotAuthenticatedException {
-    final List<TimeEntry> entities = list(9999, 0, user);
+    final List<TimeEntry> entities = list(null, 9999, 0, user);
     return new TimeSumUtility().calculateDailyTimeSum(entities).size();
   }
 
   private int countEntities(User user) {
-    final PreparedQuery pq = buildTimeEntryQuery(user);
+    final PreparedQuery pq = buildTimeEntryQuery(buildPropertyFilter(TimeEntry.ENTRY_USER_ID, user.getUserId()));
     final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
     return pq.countEntities(fetchOptions);
   }
 
   private List<Entity> listEntities(User user) {
-    final PreparedQuery pq = buildTimeEntryQuery(user);
+    final PreparedQuery pq = buildTimeEntryQuery(buildPropertyFilter(TimeEntry.ENTRY_USER_ID, user.getUserId()));
     final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
     return pq.asList(fetchOptions);
   }
 
   private List<Entity> listEntities(int page, int pageSize, User user) {
     LOGGER.debug("Listing page={} size={}", page, pageSize);
-    final PreparedQuery pq = buildTimeEntryQuery(user);
-    final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults().offset(pageSize * page).limit(pageSize);
+    final PreparedQuery pq = buildTimeEntryQuery(buildPropertyFilter(TimeEntry.ENTRY_USER_ID, user.getUserId()));
+    final FetchOptions fetchOptions = FetchOptions.Builder.withDefaults()
+        .offset(pageSize * page)
+        .limit(pageSize);
     return pq.asList(fetchOptions);
   }
 
   private PreparedQuery buildTimeEntryQuery(final Date since, final User user) {
     final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     // load all time entries for this user
-    final Query.Filter propertyFilter = new Query.FilterPredicate(TimeEntry.ENTRY_USER_ID,
-        Query.FilterOperator.EQUAL,
-        user.getUserId());
     //TODO refactor method "buildTimeEntryQuery" into single method?
     // filter all entries before date "since"
-    final Query.Filter dateFilter = new Query.FilterPredicate(
-        TimeEntry.ENTRY_START,
-        Query.FilterOperator.GREATER_THAN_OR_EQUAL,
-        since);
-    final Query.Filter compositeFilter = new Query.CompositeFilter(
-        Query.CompositeFilterOperator.AND,
-        Arrays.asList(propertyFilter, dateFilter));
+    final Query.FilterPredicate userFilter = buildPropertyFilter(TimeEntry.ENTRY_USER_ID, user.getUserId());
     final Query q = new Query("TimeEntry")
-        .setFilter(compositeFilter)
+        .setFilter(new Query.CompositeFilter(Query.CompositeFilterOperator.AND,
+            Arrays.asList(userFilter,
+                new Query.FilterPredicate(TimeEntry.ENTRY_START, Query.FilterOperator.GREATER_THAN_OR_EQUAL, since))))
         .addSort(TimeEntry.ENTRY_START, Query.SortDirection.DESCENDING);
     return datastore.prepare(q);
   }
 
-  private PreparedQuery buildTimeEntryQuery(final User user) {
+  private PreparedQuery buildTimeEntryQuery(Query.Filter... additionalFilters) {
     final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    // load all time entries for this user
-    final Query.Filter propertyFilter =
-        new Query.FilterPredicate(TimeEntry.ENTRY_USER_ID,
-            Query.FilterOperator.EQUAL,
-            user.getUserId());
+
+    Query.Filter filter;
+    if(additionalFilters != null && additionalFilters.length > 1) {
+      filter = Query.CompositeFilterOperator.and(additionalFilters);
+    } else if(additionalFilters != null && additionalFilters.length == 1) {
+      filter = additionalFilters[0];
+    } else {
+      filter = null;
+    }
+
     final Query q = new Query("TimeEntry")
-        .setFilter(propertyFilter)
+        .setFilter(filter)
         .addSort(TimeEntry.ENTRY_START, Query.SortDirection.DESCENDING);
     return datastore.prepare(q);
+  }
+
+  private Query.FilterPredicate buildPropertyFilter(String propertyName, String propertyValue) {
+    return new Query.FilterPredicate(propertyName, Query.FilterOperator.EQUAL, propertyValue);
   }
 
   /**
@@ -618,19 +647,15 @@ public class TimeclickerAPI {
    * @return {@link Entity} if an open entry was found, else <code>null</code>
    */
   private Entity findLatest(User user, DatastoreService datastore) throws EntryNotOwnedByUserException {
-    Query.FilterPredicate userFilter = new Query.FilterPredicate(TimeEntry.ENTRY_USER_ID,
-        Query.FilterOperator.EQUAL,
-        user.getUserId());
-    Query.FilterPredicate stopNullFilter = new Query.FilterPredicate(TimeEntry.ENTRY_STOP,
-        Query.FilterOperator.EQUAL,
-        null);
-    Query.Filter propertyFilter = Query.CompositeFilterOperator.and(userFilter, stopNullFilter);
-    Query q = new Query("TimeEntry").setFilter(propertyFilter);
+    final Query.FilterPredicate userFilter = buildPropertyFilter(TimeEntry.ENTRY_USER_ID, user.getUserId());
+    final Query.FilterPredicate nullFilter = buildPropertyFilter(TimeEntry.ENTRY_STOP, null);
+    final Query q = new Query("TimeEntry").setFilter(Query.CompositeFilterOperator.and(
+        userFilter, nullFilter));
     // sort descending to get the newest
     q.addSort(TimeEntry.ENTRY_START, Query.SortDirection.DESCENDING);
-    PreparedQuery pq = datastore.prepare(q);
+    final PreparedQuery pq = datastore.prepare(q);
     // only return 1 match
-    List<Entity> entities = pq.asList(FetchOptions.Builder.withLimit(1));
+    final List<Entity> entities = pq.asList(FetchOptions.Builder.withLimit(1));
     if (entities == null || entities.size() == 0) {
       // no open entity found
       LOGGER.warn("No entity found");
@@ -646,15 +671,14 @@ public class TimeclickerAPI {
 
   private List<Entity> searchTimeEntries(User user, Date firstDate, Date lastDate) {
     // define query where START > FIRST OF MONTH and STOP < LAST OF MONTH
-    Query.FilterPredicate userFilter = new Query.FilterPredicate(TimeEntry.ENTRY_USER_ID,
-        Query.FilterOperator.EQUAL,
-        user.getUserId());
-    Query.FilterPredicate startAfter = new Query.FilterPredicate(TimeEntry.ENTRY_START, Query.FilterOperator.GREATER_THAN_OR_EQUAL, firstDate);
-    Query.FilterPredicate stopBefore = new Query.FilterPredicate(TimeEntry.ENTRY_START, Query.FilterOperator.LESS_THAN, lastDate);
-    Query.Filter propertyFilter = Query.CompositeFilterOperator.and(userFilter, startAfter, stopBefore);
-    Query q = new Query("TimeEntry").setFilter(propertyFilter);
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    PreparedQuery pq = datastore.prepare(q);
+    final Query.FilterPredicate userFilter = buildPropertyFilter(TimeEntry.ENTRY_USER_ID, user.getUserId());
+    final Query.FilterPredicate startAfter = new Query.FilterPredicate(TimeEntry.ENTRY_START, Query.FilterOperator.GREATER_THAN_OR_EQUAL, firstDate);
+    final Query.FilterPredicate stopBefore = new Query.FilterPredicate(TimeEntry.ENTRY_START, Query.FilterOperator.LESS_THAN, lastDate);
+    final Query.Filter propertyFilter = Query.CompositeFilterOperator.and(userFilter, startAfter, stopBefore);
+    final Query q = new Query("TimeEntry").setFilter(propertyFilter);
+
+    final DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    final PreparedQuery pq = datastore.prepare(q);
 
     // TODO use a limit? FetchOptions.Builder.withLimit(1)
     return pq.asList(FetchOptions.Builder.withDefaults());

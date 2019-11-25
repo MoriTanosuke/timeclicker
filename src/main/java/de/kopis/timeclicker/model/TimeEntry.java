@@ -5,6 +5,9 @@ import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public class TimeEntry implements Serializable {
@@ -19,10 +22,10 @@ public class TimeEntry implements Serializable {
   public static final String ENTRY_BREAK_DURATION = "breakDuration";
 
   // Supplier for default value of stop - used during testing
-  protected Supplier<Instant> stopSupplier = () -> Instant.now();
+  protected Supplier<Instant> stopSupplier = Instant::now;
 
-  private Instant start = null;
-  private Instant stop = null;
+  private Instant start;
+  private Instant stop;
   private Duration breakDuration = Duration.of(0, ChronoUnit.SECONDS);
   private String key;
   private String tags;
@@ -100,7 +103,7 @@ public class TimeEntry implements Serializable {
 
   public Duration getDuration() {
     if (this.start == null && this.stop == null) return Duration.ZERO;
-    if (this.start == null && this.stop != null)
+    if (this.start == null)
       throw new IllegalArgumentException("start is null, stop is " + this.stop + "  - can not calculate duration");
 
     Instant t1 = this.start;
@@ -121,5 +124,15 @@ public class TimeEntry implements Serializable {
         ", tags='" + tags + "'" +
         ", project='" + project + "'" +
         '}';
+  }
+
+  public boolean hasAnyTag(Set<String> tags) {
+    String t = getTags();
+    if(t == null) {
+      t = "";
+    }
+    final Set<String> entryTags = new HashSet<>(Arrays.asList(t.split(",")));
+    entryTags.retainAll(tags);
+    return !entryTags.isEmpty();
   }
 }

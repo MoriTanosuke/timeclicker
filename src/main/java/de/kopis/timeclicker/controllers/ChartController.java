@@ -14,14 +14,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
@@ -46,9 +39,9 @@ public class ChartController {
                                 @RequestParam(defaultValue = "0") int page) throws NotAuthenticatedException, EntryNotOwnedByUserException {
     final User user = userService.getCurrentUser();
 
-    final List<TimeEntry> allEntries = api.list(limit, page, user);
+    final List<TimeEntry> allEntries = api.list(null, limit, page, user);
     final List<TimeSumWithDate> sortedPerMonth = TIME_SUM_UTILITY.calculateMonthlyTimeSum(allEntries);
-    Collections.sort(sortedPerMonth, Comparator.comparing(TimeSumWithDate::getDate));
+    sortedPerMonth.sort(Comparator.comparing(TimeSumWithDate::getDate));
     model.addAttribute("monthlySums", sortedPerMonth);
 
     final UserSettings settings = api.getUserSettings(null, user);
@@ -79,9 +72,9 @@ public class ChartController {
                                @RequestParam(defaultValue = "0") int page) throws NotAuthenticatedException, EntryNotOwnedByUserException {
     final User user = userService.getCurrentUser();
 
-    final List<TimeEntry> allEntries = api.list(limit, page, user);
+    final List<TimeEntry> allEntries = api.list(null, limit, page, user);
     final List<TimeSumWithDate> sortedPerWeek = TIME_SUM_UTILITY.calculateWeeklyTimeSum(allEntries);
-    Collections.sort(sortedPerWeek, Comparator.comparing(TimeSumWithDate::getDate));
+    sortedPerWeek.sort(Comparator.comparing(TimeSumWithDate::getDate));
     model.addAttribute("weeklySums", sortedPerWeek);
 
     final UserSettings settings = api.getUserSettings(null, user);
@@ -101,9 +94,9 @@ public class ChartController {
                               @RequestParam(defaultValue = "0") int page) throws NotAuthenticatedException, EntryNotOwnedByUserException {
     final User user = userService.getCurrentUser();
 
-    final List<TimeEntry> allEntries = api.list(limit, page, user);
+    final List<TimeEntry> allEntries = api.list(null, limit, page, user);
     final List<TimeSumWithDate> sortedPerDay = new TimeSumUtility().calculateDailyTimeSum(allEntries);
-    Collections.sort(sortedPerDay, Comparator.comparing(TimeSumWithDate::getDate));
+    sortedPerDay.sort(Comparator.comparing(TimeSumWithDate::getDate));
     model.addAttribute("dailySums", sortedPerDay);
 
     final UserSettings settings = api.getUserSettings(null, user);
@@ -134,7 +127,7 @@ public class ChartController {
                 zone = ZoneId.systemDefault();
             }
             Date date = Date.from(since.atStartOfDay(zone).toInstant());
-            allEntries = api.getSummaryForTagsSince(date, limit, page, user);
+            allEntries = api.getSummaryForTagsSince(date, user);
         } else {
             allEntries = api.getSummaryForTags(limit, page, user);
         }

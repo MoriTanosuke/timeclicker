@@ -8,10 +8,7 @@ import de.kopis.timeclicker.model.TimeEntry;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
@@ -170,43 +167,99 @@ public class TimeclickerAPITest {
     fail("not yet implemented");
   }
 
-    @Test
-    public void testGetTagSummary() throws NotAuthenticatedException, EntryNotOwnedByUserException {
-        final TimeEntry entry = new TimeEntry(Instant.ofEpochSecond(0), Instant.ofEpochSecond(60 * 60));
-        entry.setTags(UUID.randomUUID().toString());
+  @Test
+  public void testListAll() throws Exception {
+    final TimeEntry entry1 = new TimeEntry(Instant.ofEpochSecond(0), Instant.ofEpochSecond(60 * 60));
+    entry1.setTags(UUID.randomUUID().toString());
+    final TimeEntry entry2 = new TimeEntry(Instant.ofEpochSecond(2 * 60 * 60), Instant.ofEpochSecond(3 * 60 * 60));
+    entry2.setTags(UUID.randomUUID().toString());
 
-        api.update(null,
-                Date.from(entry.getStart()), Date.from(entry.getStart().plus(Duration.ofHours(42))),
-                entry.getBreakDuration().toMillis(),
-                entry.getDescription(),
-                entry.getTags(),
-                entry.getProject(),
+    Arrays.asList(entry1, entry2).forEach(e ->
+        {
+          try {
+            api.update(null,
+                Date.from(e.getStart()), Date.from(e.getStart().plus(Duration.ofHours(42))),
+                e.getBreakDuration().toMillis(),
+                e.getDescription(),
+                e.getTags(),
+                e.getProject(),
                 user);
+          } catch (Exception ex) {
+            // ignore this for this testcase
+          }
+        }
+    );
 
-        final Collection<TagSummary> summaries = api.getSummaryForTags(Integer.MAX_VALUE, 0, user);
-        // empty tag + random tag
-        assertEquals("Tags found: " + summaries, 2, summaries.size());
-    }
+    List<TimeEntry> listedEntries = api.list(null, null, null, user);
+    assertEquals(2, listedEntries.size());
+  }
 
-    @Test
-    public void testGetTagSummarySince() throws NotAuthenticatedException, EntryNotOwnedByUserException {
-        final TimeEntry entry = new TimeEntry(Instant.ofEpochSecond(5 * 60 * 60), Instant.ofEpochSecond(6 * 60 * 60));
-        entry.setTags(UUID.randomUUID().toString());
+  @Test
+  public void testListOnlyOneTag() throws Exception {
+    final TimeEntry entry1 = new TimeEntry(Instant.ofEpochSecond(0), Instant.ofEpochSecond(60 * 60));
+    entry1.setTags(UUID.randomUUID().toString());
+    final TimeEntry entry2 = new TimeEntry(Instant.ofEpochSecond(2 * 60 * 60), Instant.ofEpochSecond(3 * 60 * 60));
+    entry2.setTags(UUID.randomUUID().toString());
 
-        final Date start = Date.from(entry.getStart());
-        final Date stop = Date.from(entry.getStart().plus(Duration.ofHours(42)));
-        api.update(null,
-                start, stop,
-                entry.getBreakDuration().toMillis(),
-                entry.getDescription(),
-                entry.getTags(),
-                entry.getProject(),
+    Arrays.asList(entry1, entry2).forEach(e ->
+        {
+          try {
+            api.update(null,
+                Date.from(e.getStart()), Date.from(e.getStart().plus(Duration.ofHours(42))),
+                e.getBreakDuration().toMillis(),
+                e.getDescription(),
+                e.getTags(),
+                e.getProject(),
                 user);
+          } catch (Exception ex) {
+            // ignore this for this testcase
+          }
+        }
+    );
 
-        // we try to list after the existing entry, should return without any results
-        final Collection<TagSummary> summaries = api.getSummaryForTagsSince(Date.from(start.toInstant().plus(Duration.ofHours(7 * 24))),
-                Integer.MAX_VALUE, 0, user);
-        // only empty tag
-        assertEquals("Tags found: " + summaries, 1, summaries.size());
-    }
+    List<TimeEntry> listedEntries = api.list(entry2.getTags(), null, null, user);
+    assertEquals(1, listedEntries.size());
+    assertEquals(entry2.getTags(), listedEntries.get(0).getTags());
+  }
+
+  @Test
+  public void testGetTagSummary() throws NotAuthenticatedException, EntryNotOwnedByUserException {
+    final TimeEntry entry = new TimeEntry(Instant.ofEpochSecond(0), Instant.ofEpochSecond(60 * 60));
+    entry.setTags(UUID.randomUUID().toString());
+
+    api.update(null,
+        Date.from(entry.getStart()), Date.from(entry.getStart().plus(Duration.ofHours(42))),
+        entry.getBreakDuration().toMillis(),
+        entry.getDescription(),
+        entry.getTags(),
+        entry.getProject(),
+        user);
+
+    final Collection<TagSummary> summaries = api.getSummaryForTags(Integer.MAX_VALUE, 0, user);
+    // empty tag + random tag
+    assertEquals("Tags found: " + summaries, 2, summaries.size());
+  }
+
+  @Test
+  public void testGetTagSummarySince() throws NotAuthenticatedException, EntryNotOwnedByUserException {
+    final TimeEntry entry = new TimeEntry(Instant.ofEpochSecond(5 * 60 * 60), Instant.ofEpochSecond(6 * 60 * 60));
+    entry.setTags(UUID.randomUUID().toString());
+
+    final Date start = Date.from(entry.getStart());
+    final Date stop = Date.from(entry.getStart().plus(Duration.ofHours(42)));
+    api.update(null,
+        start, stop,
+        entry.getBreakDuration().toMillis(),
+        entry.getDescription(),
+        entry.getTags(),
+        entry.getProject(),
+        user);
+
+    // we try to list after the existing entry, should return without any results
+    final Collection<TagSummary> summaries = api.getSummaryForTagsSince(
+        Date.from(start.toInstant().plus(Duration.ofHours(7 * 24))),
+        user);
+    // only empty tag
+    assertEquals("Tags found: " + summaries, 1, summaries.size());
+  }
 }
