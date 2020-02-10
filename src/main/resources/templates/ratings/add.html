@@ -15,10 +15,11 @@
 
             <div class="form-group">
                 <label th:for="date">Date:</label>
-                <div class="input-group mb-3">
-                    <input type="text" th:field="*{date}" th:required="true" class="form-control"/>
-                    <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="button" id="button-start-now" onclick="insertNow(document.getElementById('date'))"><span class="fas fa-clock"></span> Now</button>
+                <div class="input-group date mb-3" id="datetimepicker1" data-target-input="nearest">
+                    <input type="text" th:field="*{date}" th:required="true" class="form-control datetimepicker-input"
+                           data-target="#datetimepicker1"/>
+                    <div class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker">
+                        <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                     </div>
                 </div>
             </div>
@@ -40,19 +41,13 @@
 <footer th:replace="fragments/foot"></footer>
 
 <script>
-    function insertNow(element) {
-        var d = new Date();
-        var timezoneOffset = Math.abs(d.getTimezoneOffset()) / 60;
-        var datestring =
-            d.getFullYear()   + "-" +
-            (d.getMonth()   < 10 ? '0' : '') + (d.getMonth() + 1) + "-" +
-            (d.getDate()    < 10 ? '0' : '') +  d.getDate()       + " " +
-            (d.getHours() < 10 ? '0' : '') + d.getHours() + ":" +
-            (d.getMinutes() < 10 ? '0' : '') +  d.getMinutes()    + ":" +
-            (d.getSeconds() < 10 ? '0' : '') + d.getSeconds() + " " +
-            "+" + (timezoneOffset + "").padStart(2, "0") + "00";
-        element.value = datestring;
-    }
+    $(function () {
+        const options = {
+            locale: 'de',
+            format: 'YYYY-MM-DD HH:mm:ss ZZ'
+        };
+        $('#datetimepicker1').datetimepicker(options);
+    });
 </script>
 
 </body>
